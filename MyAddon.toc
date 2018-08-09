@@ -1,0 +1,5 @@
+## Interface: 80000
+## Title: |cff9382c9MyAddon|r
+## Notes: 我的插件
+
+MyAddon.lua
