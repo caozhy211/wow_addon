@@ -580,13 +580,13 @@ local matchTBL = {
     ["本地防務"] = "防務",
 }
 
-local function AbbreviatedChannelName(name, abbrreviation)
+local function AbbreviatedChannelName(name, abbreviation)
     for i = 1, NUM_CHAT_WINDOWS do
         if (i ~= 2) then
             local f = _G["ChatFrame" .. i]
             local am = f.AddMessage
             f.AddMessage = function(frame, text, ...)
-                return am(frame, text:gsub('|h%[(%d+)%. ' .. name .. '.-%]|h', '|h%[%1%. ' .. abbrreviation .. '%]|h'), ...)
+                return am(frame, text:gsub('|h%[(%d+)%. ' .. name .. '.-%]|h', '|h%[%1%. ' .. abbreviation .. '%]|h'), ...)
             end
         end
     end
@@ -668,15 +668,25 @@ end
 
 local function GetButtonType(btn)
     local name = btn:GetName()
-    if name then
-        for _, index in ipairs(ButtonType) do
-            if _G[name .. index.value] then
-                return index.type
-            end
-        end
-        return "Buff"
+    while not name do
+        btn = btn:GetParent()
+        name = btn:GetName()
     end
-    return "Action"
+
+    if name == "LossOfControlFrame" or string.find(name, "ThreatPlatesFrame") then
+        return nil
+    end
+
+    if name == "ZoneAbilityFrame" or name == "ExtraActionFrameButton1" then
+        return "Action"
+    end
+
+    for _, index in ipairs(ButtonType) do
+        if _G[name .. index.value] then
+            return index.type
+        end
+    end
+    return "Buff"
 end
 
 local function GetFormattedTime(t)
@@ -697,7 +707,7 @@ end
 
 function Timer.Start(cd, start, duration, enable, forceShowDrawEdge, modRate)
     cd.button = cd.button or cd:GetParent()
-    if cd.button and (cd.button:GetName() ~= "LossOfControlFrame") then
+    if cd.button then
         cd.type = cd.type or GetButtonType(cd.button)
         if cd.type then
             if start > 0 and duration > (iCCDB[cd.type].min or 0) and iCCDB[cd.type].config then
