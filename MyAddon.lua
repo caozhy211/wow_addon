@@ -912,33 +912,33 @@ local events = CreateFrame("Frame", "SoulShardEventFrame")
 events:RegisterEvent("ADDON_LOADED")
 events:RegisterEvent("UNIT_POWER_UPDATE")
 
-local function errorPrint(err)
+local function ErrorPrint(err)
     print("|cffFF0000" .. err)
 end
 
-local function playerSpecialization()
+local function PlayerSpecialization()
     local spec = GetSpecialization()
     return spec and GetSpecializationInfo(spec) or nil
 end
 
-local function maxPower()
+local function MaxPower()
     return UnitPowerMax("player", SPELL_POWER_SOUL_SHARDS)
 end
 
-local function drawMainFrame()
+local function DrawMainFrame()
     if soulShardFrame:GetHeight() == 0 then
-        local numPower = maxPower()
+        local numPower = MaxPower()
         local height = 36
         local width = height * numPower
         soulShardFrame:SetHeight(height)
         soulShardFrame:SetWidth(width)
-        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 180)
+        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 185)
     end
 
     soulShardFrame:Show()
 end
 
-local function update()
+local function ShardUpdate()
     local available = UnitPower("player", SPELL_POWER_SOUL_SHARDS)
     for i, shard in ipairs(shards) do
         local alpha = tonumber(i) > available and 0.15 or 1.0
@@ -950,8 +950,8 @@ local function getIcon()
     return "Interface\\ICONS\\INV_Misc_Gem_Amethyst_02"
 end
 
-local function shardTexture()
-    local size = soulShardFrame:GetWidth() / maxPower()
+local function ShardTexture()
+    local size = soulShardFrame:GetWidth() / MaxPower()
     local shard = soulShardFrame:CreateTexture(nil, "ARTWORK")
     shard:SetTexture(getIcon())
     shard:SetWidth(size)
@@ -959,10 +959,10 @@ local function shardTexture()
     return shard
 end
 
-local function drawShards()
+local function DrawShards()
     if next(shards) == nil then
-        for i = 0, maxPower() - 1, 1 do
-            local shard = shardTexture()
+        for i = 0, MaxPower() - 1, 1 do
+            local shard = ShardTexture()
             shard:SetPoint("LEFT", shard:GetWidth() * i, 0)
             shards[i + 1] = shard
         end
@@ -972,29 +972,29 @@ local function drawShards()
             shard:SetTexture(icon)
         end
     end
-    update()
+    ShardUpdate()
 end
 
-local function load()
-    local spec = playerSpecialization()
+local function SoulShardLoad()
+    local spec = PlayerSpecialization()
     if spec == AFFLICTION or spec == DESTRUCTION or spec == DEMONOLOGY then
-        drawMainFrame()
-        drawShards()
+        DrawMainFrame()
+        DrawShards()
     else
         soulShardFrame:Hide()
     end
 end
 
-local function eventHandler(self, event, unit, powerType, ...)
+local function EventHandler(self, event, unit, powerType, ...)
     if event == "UNIT_POWER_UPDATE" and unit == "player" then
-        update()
+        ShardUpdate()
     elseif event == "PLAYER_TALENT_UPDATE" or event == "ACTIVE_TALENT_GROUP_CHANGED" then
-        load()
+        SoulShardLoad()
     elseif event == "ADDON_LOADED" and unit == "MyAddon" then
         if (soulShardFrame) then
-            load()
+            SoulShardLoad()
         else
-            errorPrint("加载灵魂碎片失败！")
+            ErrorPrint("加载灵魂碎片失败！")
         end
         events:UnregisterEvent("ADDON_LOADED")
         events:RegisterEvent("PLAYER_TALENT_UPDATE")
@@ -1002,7 +1002,7 @@ local function eventHandler(self, event, unit, powerType, ...)
     end
 end
 
-events:SetScript("OnEvent", eventHandler)
+events:SetScript("OnEvent", EventHandler)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 显示fps和延迟
 local fpsLag = CreateFrame("Frame", "FpsLagFrame", UIParent)
