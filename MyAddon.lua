@@ -290,18 +290,20 @@ moveZoneAbilityFrame:SetScript("OnEvent", MoveZoneAndExtraButton)
 hooksecurefunc("ExtraActionBar_Update", MoveZoneAndExtraButton)
 
 -- 移动特殊能量条
-PlayerPowerBarAlt:SetMovable(true)
-PlayerPowerBarAlt:SetUserPlaced(true)
-PlayerPowerBarAlt:ClearAllPoints()
-PlayerPowerBarAlt:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 330)
-PlayerPowerBarAlt.SetPoint = function()
-end
+local movePowerBarAltFrame = CreateFrame("frame")
+movePowerBarAltFrame:RegisterEvent("PLAYER_LOGIN")
+movePowerBarAltFrame:SetScript("OnEvent", function()
+    PlayerPowerBarAlt:SetMovable(true)
+    PlayerPowerBarAlt:SetUserPlaced(true)
+    PlayerPowerBarAlt:ClearAllPoints()
+    PlayerPowerBarAlt:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 285)
+    PlayerPowerBarAlt.SetPoint = function()
+    end
+end)
 -- 特殊能量条始终显示数值
 hooksecurefunc("UnitPowerBarAlt_OnUpdate", function(self)
-    UnitPowerBarAltStatus_UpdateText(self.statusFrame)
-    --if self.displayedValue and self.statusFrame:IsShown then
-    --    TextStatusBar_UpdateTextStringWithValues(self.statusFrame, self.statusFrame.text, floor(self.displayedValue), self.minPower, self.maxPower)
-    --end
+    local statusFrame = self.statusFrame
+    TextStatusBar_UpdateTextStringWithValues(statusFrame, statusFrame.text, floor(self.displayedValue), self.minPower, self.maxPower)
 end)
 
 -- 移动载具控制列
