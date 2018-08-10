@@ -537,39 +537,39 @@ chat:SetWidth(300) -- 主框体宽度
 chat:SetHeight(23) -- 主框体高度
 chat:SetPoint("BOTTOMRIGHT", chatFrame, "TOPRIGHT", ChatBarOffsetX + 25, ChatBarOffsetY + 2)
 
-function ChannelSay_OnClick()
+local function ChannelSay_OnClick()
     ChatFrame_OpenChat("/s " .. inputBox:GetText(), chatFrame)
 end
 
-function ChannelYell_OnClick()
+local function ChannelYell_OnClick()
     ChatFrame_OpenChat("/y " .. inputBox:GetText(), chatFrame)
 end
 
-function ChannelParty_OnClick()
+local function ChannelParty_OnClick()
     ChatFrame_OpenChat("/p " .. inputBox:GetText(), chatFrame)
 end
 
-function ChannelGuild_OnClick()
+local function ChannelGuild_OnClick()
     ChatFrame_OpenChat("/g " .. inputBox:GetText(), chatFrame)
 end
 
-function ChannelRaid_OnClick()
+local function ChannelRaid_OnClick()
     ChatFrame_OpenChat("/raid " .. inputBox:GetText(), chatFrame)
 end
 
-function ChannelBG_OnClick()
+local function ChannelBG_OnClick()
     ChatFrame_OpenChat("/bg " .. inputBox:GetText(), chatFrame)
 end
 
-function Channel01_OnClick()
+local function Channel01_OnClick()
     ChatFrame_OpenChat("/1 " .. inputBox:GetText(), chatFrame)
 end
 
-function Channel04_OnClick()
+local function Channel04_OnClick()
     ChatFrame_OpenChat("/4 " .. inputBox:GetText(), chatFrame)
 end
 
-function ChannelTeam_OnClick(self, button)
+local function ChannelTeam_OnClick(self, button)
     if button == "RightButton" then
         local _, channelName, _ = GetChannelName("組隊頻道")
         if channelName == nil then
@@ -587,8 +587,56 @@ function ChannelTeam_OnClick(self, button)
     end
 end
 
-function Roll_OnClick()
+local function Roll_OnClick()
     RandomRoll(1, 100)
+end
+
+local function Mem_OnClick()
+    local totalMem = 0
+    local addonInfo = {}
+    local count = 0
+
+    for i = 1, GetNumAddOns() do
+        if not addonInfo[i] and IsAddOnLoaded(i) then
+            local name, _ = GetAddOnInfo(i)
+            addonInfo[i] = { name = name, memory = GetAddOnMemoryUsage(i) }
+            totalMem = totalMem + addonInfo[i].memory
+            count = count + 1
+        end
+    end
+
+    -- 根据内存降序排序
+    table.sort(addonInfo, function(element1, element2)
+        if element1 == nil then
+            return false
+        end
+        if element2 == nil then
+            return true
+        end
+
+        local mem1 = element1.memory
+        local mem2 = element2.memory
+        if mem1 ~= mem2 then
+            return mem1 > mem2
+        end
+    end)
+
+    if totalMem < 1000 then
+        totalMem = format("%d KB", totalMem)
+    else
+        totalMem = format("%.2f MB", totalMem / 1000)
+    end
+    print("Total (" .. count .. "): " .. totalMem)
+    print("----------------------------------------")
+    for index, info in pairs(addonInfo) do
+        local memory = info.memory
+        if memory < 1000 then
+            memory = format("%d KB", memory)
+        else
+            memory = format("%.2f MB", memory / 1000)
+        end
+        print(info.name .. ": " .. memory)
+    end
 end
 
 local ChannelButtons = {
@@ -602,13 +650,14 @@ local ChannelButtons = {
     { name = "chn04", text = "尋", color = { 0.25, 0.66, 0.70 }, callback = Channel04_OnClick },
     { name = "team", text = "組", color = { 0.70, 1.00, 0.55 }, callback = ChannelTeam_OnClick },
     { name = "roll", text = "骰", color = { 1.00, 1.00, 0.00 }, callback = Roll_OnClick },
+    { name = "mem", text = "内", color = { 0.66, 1.00, 1.00 }, callback = Mem_OnClick },
 }
 
-function CreateChannelButton(data, index)
+local function CreateChannelButton(data, index)
     local frame = CreateFrame("Button", "frameName", chat)
     frame:SetWidth(23) -- 按钮宽度
     frame:SetHeight(23) -- 按钮高度
-    frame:SetPoint("LEFT", chat, "LEFT", 10 + (index - 1) * 30, 0) -- 锚点
+    frame:SetPoint("LEFT", chat, "LEFT", -20 + (index - 1) * 30, 0) -- 锚点
     frame:RegisterForClicks("AnyUp")
     frame:SetScript("OnClick", data.callback)
     frameText = frame:CreateFontString(data.name .. "Text", "OVERLAY")
