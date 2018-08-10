@@ -273,7 +273,7 @@ local function TwoButtonLayout()
     end
 end
 
-local function MoveZoneAndExtra()
+local function MoveZoneAndExtraButton()
     if GetZoneAbilitySpellInfo() and HasExtraActionBar() then
         TwoButtonLayout()
     elseif GetZoneAbilitySpellInfo() then
@@ -285,10 +285,9 @@ end
 
 local moveZoneAbilityFrame = CreateFrame("frame")
 moveZoneAbilityFrame:RegisterEvent("SPELLS_CHANGED")
-moveZoneAbilityFrame:SetScript("OnEvent", MoveZoneAndExtra)
-moveZoneAbilityFrame:UnregisterEvent("SPELLS_CHANGED")
+moveZoneAbilityFrame:SetScript("OnEvent", MoveZoneAndExtraButton)
 
-hooksecurefunc("ExtraActionBar_Update", MoveZoneAndExtra)
+hooksecurefunc("ExtraActionBar_Update", MoveZoneAndExtraButton)
 
 -- 移动特殊能量条
 PlayerPowerBarAlt:SetMovable(true)
