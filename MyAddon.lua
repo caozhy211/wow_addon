@@ -257,25 +257,17 @@ ZoneAbilityFrame.SpellButton.Style:Hide()
 ExtraActionButton1.style:Hide()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 移动区域技能键和额外快捷键
-local function OneButtonLayout()
-    ZoneAbilityFrame:ClearAllPoints()
-    ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 218)
-    ZoneAbilityFrame.SetPoint = function()
-    end
-
-    ExtraActionBarFrame:ClearAllPoints()
-    ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 218)
-    ExtraActionBarFrame.SetPoint = function()
+local function OneButtonLayout(frame)
+    frame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 218)
+    frame.SetPoint = function()
     end
 end
 
 local function TwoButtonLayout()
-    ZoneAbilityFrame:ClearAllPoints()
     ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -60, 218)
     ZoneAbilityFrame.SetPoint = function()
     end
 
-    ExtraActionBarFrame:ClearAllPoints()
     ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 60, 218)
     ExtraActionBarFrame.SetPoint = function()
     end
@@ -284,21 +276,19 @@ end
 local function MoveZoneAndExtra()
     if GetZoneAbilitySpellInfo() and HasExtraActionBar() then
         TwoButtonLayout()
-    else
-        OneButtonLayout()
+    elseif GetZoneAbilitySpellInfo() then
+        OneButtonLayout(ZoneAbilityFrame)
+    elseif HasExtraActionBar() then
+        OneButtonLayout(ExtraActionBarFrame)
     end
 end
 
 local moveZoneAbilityFrame = CreateFrame("frame")
 moveZoneAbilityFrame:RegisterEvent("SPELLS_CHANGED")
-moveZoneAbilityFrame:SetScript("OnEvent", function()
-    MoveZoneAndExtra()
-end)
+moveZoneAbilityFrame:SetScript("OnEvent", MoveZoneAndExtra)
 moveZoneAbilityFrame:UnregisterEvent("SPELLS_CHANGED")
 
-hooksecurefunc("ExtraActionBar_Update", function()
-    MoveZoneAndExtra()
-end)
+hooksecurefunc("ExtraActionBar_Update", MoveZoneAndExtra)
 
 -- 移动特殊能量条
 PlayerPowerBarAlt:SetMovable(true)
