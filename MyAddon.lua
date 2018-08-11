@@ -496,21 +496,21 @@ local function ProcessFrame(frame)
     if frames[frame] then
         return
     end
-    frame:SetClampRectInsets(-37, 30, 60, -117) -- 离左、右、上、下边界的距离，+往左和下、-往右和上
-    --  frame:SetMaxResize(UIParent:GetWidth(), UIParent:GetHeight())
-    frame:SetMaxResize(470, 183)
-    frame:SetMinResize(470, 183)
-    --  QuickJoinToastButton:SetPoint('BOTTOMLEFT', ChatFrame1, 'TOPRIGHT', 2, 2)
-    --  QuickJoinToastButton:SetPoint('TOPRIGHT', ChatFrame1, 'TOPRIGHT', 35, 32)
+    frame:SetClampRectInsets(-35, 58, 58, -117) -- 离左、右、上、下边界的距离，+往左和下、-往右和上
+    --frame:SetMaxResize(UIParent:GetWidth(), UIParent:GetHeight())
+    frame:SetMaxResize(476, 181)
+    frame:SetMinResize(476, 181)
+
     local name = frame:GetName()
     _G[name .. "EditBoxLeft"]:Hide()
     _G[name .. "EditBoxMid"]:Hide()
     _G[name .. "EditBoxRight"]:Hide()
     local editbox = _G[name .. "EditBox"]
     editbox:ClearAllPoints()
-    editbox:SetPoint('BOTTOMLEFT', ChatFrame1, 'TOPLEFT', 0, 30)
-    editbox:SetPoint('BOTTOMRIGHT', ChatFrame1, 'TOPRIGHT', 7, 30)
+    editbox:SetPoint("BOTTOMLEFT", ChatFrame1, "TOPLEFT", -3, 31)
+    editbox:SetPoint("BOTTOMRIGHT", ChatFrame1, "TOPRIGHT", 5, 31)
     editbox:SetAltArrowKeyMode(false)
+
     frames[frame] = true
 end
 
