@@ -258,17 +258,17 @@ ExtraActionButton1.style:Hide()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 移动区域技能键和额外快捷键
 local function OneButtonLayout(frame)
-    frame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 218)
+    frame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 215)
     frame.SetPoint = function()
     end
 end
 
 local function TwoButtonLayout()
-    ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -60, 218)
+    ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -60, 215)
     ZoneAbilityFrame.SetPoint = function()
     end
 
-    ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 60, 218)
+    ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 60, 215)
     ExtraActionBarFrame.SetPoint = function()
     end
 end
@@ -296,14 +296,17 @@ movePowerBarAltFrame:SetScript("OnEvent", function()
     PlayerPowerBarAlt:SetMovable(true)
     PlayerPowerBarAlt:SetUserPlaced(true)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 285)
+    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "BOTTOM", 0, 320)
     PlayerPowerBarAlt.SetPoint = function()
     end
 end)
--- 特殊能量条始终显示数值
-hooksecurefunc("UnitPowerBarAlt_OnUpdate", function(self)
-    local statusFrame = self.statusFrame
-    TextStatusBar_UpdateTextStringWithValues(statusFrame, statusFrame.text, floor(self.displayedValue), self.minPower, self.maxPower)
+hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
+    if self.enabled then
+        self:Show();
+        UnitPowerBarAltStatus_UpdateText(self);
+    else
+        self:Hide();
+    end
 end)
 
 -- 移动载具控制列
@@ -930,11 +933,11 @@ end
 local function DrawMainFrame()
     if soulShardFrame:GetHeight() == 0 then
         local numPower = MaxPower()
-        local height = 36
+        local height = 34
         local width = height * numPower
         soulShardFrame:SetHeight(height)
         soulShardFrame:SetWidth(width)
-        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 185)
+        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 186)
     end
 
     soulShardFrame:Show()
