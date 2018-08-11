@@ -256,38 +256,18 @@ ZoneAbilityFrame.SpellButton.Style:Hide()
 -- 隐藏额外快捷键边框
 ExtraActionButton1.style:Hide()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动区域技能键和额外快捷键
-local function OneButtonLayout(frame)
-    frame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 215)
-    frame.SetPoint = function()
-    end
+-- 移动区域技能键
+ZoneAbilityFrame:ClearAllPoints()
+ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -45, 215)
+ZoneAbilityFrame.SetPoint = function()
 end
 
-local function TwoButtonLayout()
-    ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -60, 215)
-    ZoneAbilityFrame.SetPoint = function()
-    end
-
-    ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 60, 215)
-    ExtraActionBarFrame.SetPoint = function()
-    end
+-- 移动额外快捷键
+ExtraActionBarFrame:ClearAllPoints()
+ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 45, 215)
+ExtraActionBarFrame.SetPoint = function()
 end
 
-local function MoveZoneAndExtraButton()
-    if GetZoneAbilitySpellInfo() and HasExtraActionBar() then
-        TwoButtonLayout()
-    elseif GetZoneAbilitySpellInfo() then
-        OneButtonLayout(ZoneAbilityFrame)
-    elseif HasExtraActionBar() then
-        OneButtonLayout(ExtraActionBarFrame)
-    end
-end
-
-local moveZoneAbilityFrame = CreateFrame("frame")
-moveZoneAbilityFrame:RegisterEvent("SPELLS_CHANGED")
-moveZoneAbilityFrame:SetScript("OnEvent", MoveZoneAndExtraButton)
-
-hooksecurefunc("ExtraActionBar_Update", MoveZoneAndExtraButton)
 
 -- 移动特殊能量条
 local movePowerBarAltFrame = CreateFrame("frame")
@@ -311,7 +291,7 @@ end)
 
 -- 移动载具控制列
 --PossessBarFrame:ClearAllPoints()
---PossessBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -12, 106) 
+--PossessBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -12, 106)
 --PossessBarFrame.SetPoint = function() end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 移动失去控制框架
