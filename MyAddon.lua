@@ -630,6 +630,7 @@ local function Mem_OnClick()
     else
         totalMem = format("%.2f MB", totalMem / 1000)
     end
+    print("----------------------------------------")
     print("Total (" .. count .. "): " .. totalMem)
     print("----------------------------------------")
     for index, info in pairs(addonInfo) do
@@ -641,6 +642,11 @@ local function Mem_OnClick()
         end
         print(info.name .. ": " .. memory)
     end
+    print("----------------------------------------")
+end
+
+local function Clear_OnClick()
+    SELECTED_CHAT_FRAME:Clear()
 end
 
 local ChannelButtons = {
@@ -655,13 +661,14 @@ local ChannelButtons = {
     { name = "team", text = "組", color = { 0.70, 1.00, 0.55 }, callback = ChannelTeam_OnClick },
     { name = "roll", text = "骰", color = { 1.00, 1.00, 0.00 }, callback = Roll_OnClick },
     { name = "mem", text = "内", color = { 0.66, 1.00, 1.00 }, callback = Mem_OnClick },
+    { name = "clear", text = "清", color = { 1.00, 0.75, 0.80 }, callback = Clear_OnClick },
 }
 
 local function CreateChannelButton(data, index)
     local frame = CreateFrame("Button", "frameName", chat)
     frame:SetWidth(23) -- 按钮宽度
     frame:SetHeight(23) -- 按钮高度
-    frame:SetPoint("LEFT", chat, "LEFT", -20 + (index - 1) * 30, 0) -- 锚点
+    frame:SetPoint("LEFT", chat, "LEFT", -17 + (index - 1) * 27, 0) -- 锚点
     frame:RegisterForClicks("AnyUp")
     frame:SetScript("OnClick", data.callback)
     frameText = frame:CreateFontString(data.name .. "Text", "OVERLAY")
