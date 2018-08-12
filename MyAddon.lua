@@ -293,6 +293,13 @@ end)
 --PossessBarFrame:ClearAllPoints()
 --PossessBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -12, 106)
 --PossessBarFrame.SetPoint = function() end
+
+-- 解决上载具后宠物栏有时候不隐藏的问题
+hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
+    if (CanExitVehicle() and ActionBarController_GetCurrentActionBarState() == LE_ACTIONBAR_STATE_MAIN) then
+        PetActionBarFrame:Hide()
+    end
+end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 移动失去控制框架
 LossOfControlFrame:ClearAllPoints()
