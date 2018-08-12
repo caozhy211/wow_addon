@@ -785,7 +785,7 @@ end
 
 function Timer.Start(cd, start, duration, enable, forceShowDrawEdge, modRate)
     cd.button = cd.button or cd:GetParent()
-    if cd.button then
+    if cd.button and cd.button:GetSize() >= 15 then
         cd.type = cd.type or GetButtonType(cd.button)
         if cd.type then
             if start > 0 and duration > (iCCDB[cd.type].min or 0) and iCCDB[cd.type].config then
