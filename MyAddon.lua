@@ -144,8 +144,6 @@ local bars = {
     "MultiBarBottomRight",
     "MultiBarRight",
     "MultiBarLeft",
-    --"BonusActionBarFrame",
-    --"ShapeshiftBarFrame",
     "PossessBarFrame",
 }
 
@@ -289,11 +287,6 @@ hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     end
 end)
 
--- 移动载具控制列
---PossessBarFrame:ClearAllPoints()
---PossessBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -12, 106)
---PossessBarFrame.SetPoint = function() end
-
 -- 解决上载具后宠物栏有时候不隐藏的问题
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     if (CanExitVehicle() and ActionBarController_GetCurrentActionBarState() == LE_ACTIONBAR_STATE_MAIN) then
@@ -377,16 +370,6 @@ hooksecurefunc("UpdateContainerFrameAnchors", function()
         freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
     end
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动背包栏和系统菜单
---MicroButtonAndBagsBar.MicroBagBar:Hide()
---MicroButtonAndBagsBar.MicroBagBar:Hide()
---MainMenuBarBackpackButton:ClearAllPoints()
---MainMenuBarBackpackButton:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -450, 0)
---MainMenuBarBackpackButton.SetPoint = function() end
---CharacterMicroButton:ClearAllPoints()
---CharacterMicroButton:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0)
---CharacterMicroButton.SetPoint = function() end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 网格
 SLASH_EA1 = "/al"
@@ -484,7 +467,6 @@ local function ProcessFrame(frame)
         return
     end
     frame:SetClampRectInsets(-35, 58, 58, -117) -- 离左、右、上、下边界的距离，+往左和下、-往右和上
-    --frame:SetMaxResize(UIParent:GetWidth(), UIParent:GetHeight())
     frame:SetMaxResize(476, 181)
     frame:SetMinResize(476, 181)
 
