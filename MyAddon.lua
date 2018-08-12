@@ -254,18 +254,17 @@ ZoneAbilityFrame.SpellButton.Style:Hide()
 -- 隐藏额外快捷键边框
 ExtraActionButton1.style:Hide()
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动区域技能键
-ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", -45, 215)
-ZoneAbilityFrame.SetPoint = function()
-end
-
 -- 移动额外快捷键
 ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 45, 215)
+ExtraActionBarFrame:SetPoint("CENTER", UIParent, "CENTER", 0, -210)
 ExtraActionBarFrame.SetPoint = function()
 end
 
+-- 移动区域技能键
+ZoneAbilityFrame:ClearAllPoints()
+ZoneAbilityFrame:SetPoint("CENTER", UIParent, "CENTER", 0, -270)
+ZoneAbilityFrame.SetPoint = function()
+end
 
 -- 移动特殊能量条
 local movePowerBarAltFrame = CreateFrame("frame")
@@ -274,7 +273,7 @@ movePowerBarAltFrame:SetScript("OnEvent", function()
     PlayerPowerBarAlt:SetMovable(true)
     PlayerPowerBarAlt:SetUserPlaced(true)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "BOTTOM", 0, 320)
+    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "CENTER", 0, -120)
     PlayerPowerBarAlt.SetPoint = function()
     end
 end)
@@ -903,11 +902,11 @@ end
 local function DrawMainFrame()
     if soulShardFrame:GetHeight() == 0 then
         local numPower = MaxPower()
-        local height = 34
+        local height = 36
         local width = height * numPower
         soulShardFrame:SetHeight(height)
         soulShardFrame:SetWidth(width)
-        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 186)
+        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 195)
     end
 
     soulShardFrame:Show()
