@@ -294,12 +294,6 @@ hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     end
 end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动失去控制框架
-LossOfControlFrame:ClearAllPoints()
-LossOfControlFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 390)
-LossOfControlFrame.SetPoint = function()
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 移动背包
 hooksecurefunc("UpdateContainerFrameAnchors", function()
     -- 修改这两个值移动
