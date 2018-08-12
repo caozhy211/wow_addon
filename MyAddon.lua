@@ -724,7 +724,7 @@ local iCCDB = {
     Action = { config = true, min = 2, size = 20 },
     Pet = { config = true, min = 3, size = 18 },
     Item = { config = true, min = 3, size = 20 },
-    Buff = { config = true, max = 7200, scale = 0.5 },
+    Aura = { config = true, max = 7200, scale = 0.5 },
 }
 
 local function Timer_OnUpdate(self, elapsed)
@@ -764,7 +764,7 @@ local function GetButtonType(btn)
             return index.type
         end
     end
-    return "Buff"
+    return "Aura"
 end
 
 local function GetFormattedTime(t)
@@ -814,10 +814,10 @@ function Timer.Create(cd)
     timer:SetScript("OnHide", Timer_Hide)
 
     local text = timer:CreateFontString(nil, "OVERLAY")
-    if cd.type == "Buff" then
-        text:SetPoint("CENTER", timer, "CENTER", 0, 0)
+    if cd.type == "Aura" then
+        text:SetPoint("TOPRIGHT", timer, "TOPRIGHT", 1, 1)
     else
-        text:SetPoint("CENTER", timer, "CENTER", 0, 1)
+        text:SetPoint("CENTER", timer, "CENTER", 0, 0)
     end
     timer.text = text
 
