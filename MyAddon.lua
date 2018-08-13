@@ -399,7 +399,19 @@ SlashCmdList["EA"] = function()
     end
 end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 隐藏小地图放大缩小按钮，滚轮放大缩小地图
+-- 方形小地图
+MinimapBorderTop:Hide()
+MinimapBorder:Hide()
+MiniMapWorldMapButton:Hide()
+Minimap:SetMaskTexture([=[Interface\ChatFrame\ChatFrameBackground]=])
+Minimap:SetBackdrop({ bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=], insets = { top = -1, left = -1, bottom = -1, right = -1 } })    --边框粗细
+local color = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
+Minimap:SetBackdropColor(color.r, color.g, color.b, 1)
+function GetMinimapShape()
+    return "SQUARE"
+end
+
+-- 滚轮缩放
 MinimapZoomIn:Hide()
 MinimapZoomOut:Hide()
 Minimap:EnableMouseWheel(true)
