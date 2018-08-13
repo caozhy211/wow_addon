@@ -16,6 +16,8 @@ SetCVar("floatingCombatTextCombatState", 1) -- 进入/离开战斗提示
 SetCVar("taintLog", 1) -- 开启插件污染日志
 SetCVar("rawMouseEnable", 1) -- 解决鼠标右键乱晃问题
 SetCVar("ffxDeath", 0) -- 关闭死亡黑白效果
+SetCVar("lockActionBars", 0) -- 快捷列不锁定，设置中有但有时候会重置成锁定
+SetCVar("enableFloatingCombatText", 1) -- 启用自己的战斗文字卷动，设置中有但有时候会重置成不启用
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 缩写重置命令
 SlashCmdList['RELOAD'] = function()
