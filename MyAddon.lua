@@ -18,6 +18,10 @@ SetCVar("rawMouseEnable", 1) -- 解决鼠标右键乱晃问题
 SetCVar("ffxDeath", 0) -- 关闭死亡黑白效果
 SetCVar("lockActionBars", 0) -- 快捷列不锁定，设置中有但有时候会重置成锁定
 SetCVar("enableFloatingCombatText", 1) -- 启用自己的战斗文字卷动，设置中有但有时候会重置成不启用
+SetCVar("Sound_SFXVolume", 0.8) -- 音效音量
+SetCVar("Sound_MusicVolume", 0.8) -- 音乐音量
+SetCVar("Sound_AmbienceVolume", 1) -- 环境音量
+SetCVar("Sound_DialogVolume", 1) -- 对话音量
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 缩写重置命令
 SlashCmdList['RELOAD'] = function()
@@ -187,34 +191,12 @@ else
     rightClickFrame:RegisterEvent("PLAYER_LOGIN")
 end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 设置团队框架的最大值和最小值
+-- 设置团队框体的最大值和最小值
 local n = "CompactUnitFrameProfilesGeneralOptionsFrame"
 local h, w = _G[n .. "HeightSlider"], _G[n .. "WidthSlider"]
 
 h:SetMinMaxValues(22, 33)
 w:SetMinMaxValues(70, 114)
-
--- 设置团队框架默认位置
-hooksecurefunc("CompactRaidFrameManager_UpdateContainerBounds", function()
-    local manager = CompactRaidFrameManager
-
-    manager.containerResizeFrame:SetMaxResize(manager.containerResizeFrame:GetWidth(), 390)
-
-    if (manager.dynamicContainerPosition) then
-        --Should be below the TargetFrameSpellBar at its lowest height..
-        local top = GetScreenHeight()
-        --Should be just above the FriendsFrameMicroButton.
-        local bottom = 360
-
-        local managerTop = manager:GetTop()
-
-        manager.containerResizeFrame:ClearAllPoints()
-        manager.containerResizeFrame:SetPoint("TOPLEFT", manager, "TOPRIGHT", 0, top - managerTop)
-        manager.containerResizeFrame:SetHeight(min(390, top - bottom))
-
-        CompactRaidFrameManager_ResizeFrame_UpdateContainerSize(manager)
-    end
-end)
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 技能栏隐藏宏名字
 local actionBar = { "MultiBarBottomLeft", "MultiBarBottomRight", "Action", "MultiBarLeft", "MultiBarRight" }
@@ -269,16 +251,15 @@ ZoneAbilityFrame.SetPoint = function()
 end
 
 -- 移动特殊能量条
-local movePowerBarAltFrame = CreateFrame("frame")
-movePowerBarAltFrame:RegisterEvent("PLAYER_LOGIN")
-movePowerBarAltFrame:SetScript("OnEvent", function()
+local moveFrame = CreateFrame("Frame")
+moveFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+moveFrame:SetScript("OnEvent", function(event, ...)
     PlayerPowerBarAlt:SetMovable(true)
     PlayerPowerBarAlt:SetUserPlaced(true)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "CENTER", 0, -120)
-    PlayerPowerBarAlt.SetPoint = function()
-    end
+    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "CENTER", 0, 420)
 end)
+-- 特殊能量条始终显示数值
 hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     if self.enabled then
         self:Show();
@@ -288,12 +269,62 @@ hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     end
 end)
 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 调整增益减益框体
+BUFF_HORIZ_SPACING = -18
+BUFF_ROW_SPACING = 5
+
+local function TimeAbbrev(seconds)
+    local tempTime;
+    if (seconds >= 86400) then
+        tempTime = ceil(seconds / 86400);
+        return "%dd", tempTime;
+    end
+    if (seconds >= 3600) then
+        tempTime = ceil(seconds / 3600);
+        return "%dh", tempTime;
+    end
+    if (seconds >= 60) then
+        tempTime = ceil(seconds / 60);
+        return "%dm", tempTime;
+    end
+    return "%ds", seconds;
+end
+
+hooksecurefunc("AuraButton_OnUpdate", function(self)
+    self.duration:ClearAllPoints()
+    self.duration:SetPoint("TOPRIGHT", self, "TOPRIGHT", 15, 0)
+end)
+
+hooksecurefunc("AuraButton_UpdateDuration", function(auraButton, timeLeft)
+    local duration = auraButton.duration
+    if duration:IsShown() then
+        duration:SetFormattedText(TimeAbbrev(timeLeft))
+        if timeLeft < 5 then
+            duration:SetVertexColor(1, 0.12, 0.12)
+        else
+            duration:SetVertexColor(1, 0.82, 0)
+        end
+    end
+end)
+-- 隐藏暂时性附魔框体
+TemporaryEnchantFrame:Hide()
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 解决上载具后宠物栏有时候不隐藏的问题
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     if (CanExitVehicle() and ActionBarController_GetCurrentActionBarState() == LE_ACTIONBAR_STATE_MAIN) then
         PetActionBarFrame:Hide()
     end
 end)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 移动对话头框体
+if LoadAddOn("Blizzard_TalkingHeadUI") then
+    TalkingHeadFrame.ignorePositionFrameManager = true
+    TalkingHeadFrame:ClearAllPoints()
+    TalkingHeadFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0)
+    TalkingHeadFrame.SetPoint = function()
+    end
+end
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- 移动背包
 hooksecurefunc("UpdateContainerFrameAnchors", function()
@@ -473,9 +504,9 @@ local function ProcessFrame(frame)
     if frames[frame] then
         return
     end
-    frame:SetClampRectInsets(-35, 58, 58, -117) -- 离左、右、上、下边界的距离，+往左和下、-往右和上
-    frame:SetMaxResize(476, 181)
-    frame:SetMinResize(476, 181)
+    frame:SetClampRectInsets(-35, 58, 58, -120) -- 离左、右、上、下边界的距离，+往左和下、-往右和上
+    frame:SetMaxResize(476, 178)
+    frame:SetMinResize(476, 178)
 
     local name = frame:GetName()
     _G[name .. "EditBoxLeft"]:Hide()
@@ -483,8 +514,8 @@ local function ProcessFrame(frame)
     _G[name .. "EditBoxRight"]:Hide()
     local editbox = _G[name .. "EditBox"]
     editbox:ClearAllPoints()
-    editbox:SetPoint("BOTTOMLEFT", ChatFrame1, "TOPLEFT", -3, 31)
-    editbox:SetPoint("BOTTOMRIGHT", ChatFrame1, "TOPRIGHT", 5, 31)
+    editbox:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", -42, -1)
+    editbox:SetPoint("TOPRIGHT", ChatFrame1, "BOTTOMRIGHT", 5, -1)
     editbox:SetAltArrowKeyMode(false)
 
     frames[frame] = true
@@ -508,10 +539,10 @@ end
 -- 位置瞄点
 local ChatBarOffsetX = 0 -- 相对于默认位置的X坐标
 local ChatBarOffsetY = 0 -- 相对于默认位置的Y坐标
-local chatFrame = SELECTED_DOCK_FRAME -- 聊天框架
+local chatFrame = SELECTED_DOCK_FRAME -- 聊天框体
 local inputBox = chatFrame.editBox
 
--- 主框架初始化
+-- 主框体初始化
 local chat = CreateFrame("Frame", "chat", UIParent)
 chat:SetWidth(300) -- 主框体宽度
 chat:SetHeight(23) -- 主框体高度
@@ -829,7 +860,7 @@ function Timer.Create(cd)
 
     local text = timer:CreateFontString(nil, "OVERLAY")
     if cd.type == "Aura" then
-        text:SetPoint("TOPRIGHT", timer, "TOPRIGHT", 1, 1)
+        text:SetPoint("TOPRIGHT", timer, "TOPRIGHT", 2, 1)
     else
         text:SetPoint("CENTER", timer, "CENTER", 0, 0)
     end
@@ -1059,6 +1090,13 @@ local function HookFormatNumber()
                 return math.floor(number)
             end
         end
+
+        if Skada:GetWindows()[1] ~= nil then
+            Skada:GetWindows()[1].bargroup:ClearAllPoints()
+            Skada:GetWindows()[1].bargroup:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0)
+            Skada:GetWindows()[1].db.barwidth = 535
+            Skada:GetWindows()[1].db.background.height = 72
+        end
     end
 
     if ShadowUF then
@@ -1092,4 +1130,16 @@ end
 Event("PLAYER_LOGIN", function()
     HookFormatNumber()
 end)
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- 分离移动Immersion框体
+if LoadAddOn("Immersion") then
+    ImmersionFrame.TalkBox:ClearAllPoints()
+    ImmersionFrame.TalkBox:SetPoint("BOTTOM", UIParent, "CENTER", 0, -190)
+    ImmersionFrame.TalkBox.SetPoint = function()
+    end
+
+    ImmersionFrame.TalkBox.Elements:ClearAllPoints()
+    ImmersionFrame.TalkBox.Elements:SetPoint("BOTTOMLEFT", ImmersionFrame.TalkBox, "BOTTOMRIGHT", 0, 0)
+end
+
 --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
