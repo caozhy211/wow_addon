@@ -603,6 +603,9 @@ local function Roll_OnClick()
 end
 
 local function Mem_OnClick()
+    UpdateAddOnMemoryUsage()
+    collectgarbage("collect")
+
     local totalMem = 0
     local addonInfo = {}
     local count = 0
