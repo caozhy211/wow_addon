@@ -1,137 +1,308 @@
--- CVar
--- 全部重置：/console cvar_default
--- 设置CVar值：/run SetCVar("scriptErrors", 1)或/console scriptErrors 1
--- 查看框体名称：/fstack
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 查看当前CVar值：/dump GetCVar("scriptErrors")
--- 查看当前CVar默认值：/dump GetCVarDefault("scriptErrors")
--- 单项恢复默认：/run SetCVar("scriptErrors",GetCVarDefault("scriptErrors"))
-SetCVar("scriptErrors", 1) -- 显示LUA错误
-SetCVar("alwaysCompareItems", 1) -- 总是对比装备
-SetCVar("cameraDistanceMaxZoomFactor", 2.6) -- 最大视距
-SetCVar("floatingCombatTextFloatMode", 3) -- 浮动战斗信息弧型显示
-SetCVar("floatingCombatTextCombatHealing", 0) -- 关闭浮动战斗对目标治疗信息
-SetCVar("floatingCombatTextReactives", 0) -- 关闭浮动战斗信息法术警示
-SetCVar("floatingCombatTextCombatState", 1) -- 进入/离开战斗提示
-SetCVar("taintLog", 1) -- 开启插件污染日志
-SetCVar("rawMouseEnable", 1) -- 解决鼠标右键乱晃问题
-SetCVar("ffxDeath", 0) -- 关闭死亡黑白效果
-SetCVar("lockActionBars", 0) -- 快捷列不锁定，设置中有但有时候会重置成锁定
-SetCVar("enableFloatingCombatText", 1) -- 启用自己的战斗文字卷动，设置中有但有时候会重置成不启用
+-- CVar值全部重置：/console cvar_default
+-- 設置CVar值：/run SetCVar("scriptErrors", 1)或/console scriptErrors 1
+-- 查看CVar值：/dump GetCVar("scriptErrors")
+-- 查看CVar默認值：/dump GetCVarDefault("scriptErrors")
+-- 恢復CVar默認值：/run SetCVar("scriptErrors", GetCVarDefault("scriptErrors"))
+SetCVar("scriptErrors", 1) -- 顯示LUA錯誤
+SetCVar("alwaysCompareItems", 1) -- 總是對比裝備
+SetCVar("cameraDistanceMaxZoomFactor", 2.6) -- 最大視距
+SetCVar("floatingCombatTextFloatMode", 3) -- 戰鬥文字捲動顯示方式爲弧型
+SetCVar("floatingCombatTextCombatHealing", 0) -- 隱藏目標戰鬥文字捲動的治療數字
+SetCVar("floatingCombatTextReactives", 0) -- 隱藏戰鬥文字捲動的法術警示
+SetCVar("floatingCombatTextCombatState", 1) -- 啟用進入/離開戰鬥提示
+SetCVar("taintLog", 1) -- 啟用插件汙染日誌
+SetCVar("rawMouseEnable", 1) -- 啟用魔獸世界滑鼠，防止視角晃動過大
+SetCVar("ffxDeath", 0) -- 關閉死亡效果
+SetCVar("lockActionBars", 0) -- 不鎖定快捷列
+SetCVar("enableFloatingCombatText", 1) -- 啟用自己的戰鬥文字捲動
 SetCVar("Sound_SFXVolume", 0.8) -- 音效音量
-SetCVar("Sound_MusicVolume", 0.8) -- 音乐音量
-SetCVar("Sound_AmbienceVolume", 1) -- 环境音量
-SetCVar("Sound_DialogVolume", 1) -- 对话音量
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 缩写重置命令
-SlashCmdList['RELOAD'] = function()
+SetCVar("Sound_MusicVolume", 0.8) -- 音樂音量
+SetCVar("Sound_AmbienceVolume", 1) -- 環境音量
+SetCVar("Sound_DialogVolume", 1) -- 對話音量
+------------------------------------------------------------------------------------------------------------------ 00.00
+-- 隱藏製造者
+ITEM_CREATED_BY = ""
+--------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+-- 團隊框架滑塊值
+CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(22, 33)
+CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(70, 114)
+--------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+-- 隱藏拾取框
+LootFrame:SetAlpha(0)
+--------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+-- 隱藏主快捷列兩邊的材質
+MainMenuBarArtFrame.LeftEndCap:Hide()
+MainMenuBarArtFrame.RightEndCap:Hide()
+-- 隱藏載具快捷列兩邊的材質
+OverrideActionBarEndCapL:Hide()
+OverrideActionBarEndCapR:Hide()
+--------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+-- 聊天框
+for i = 1, NUM_CHAT_WINDOWS do
+    local chatFrame = _G["ChatFrame" .. i]
+    -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
+    chatFrame:SetClampRectInsets(-35, 38, 38, -117)
+    -- 設置聊天框的最小尺寸和最大尺寸
+    chatFrame:SetMinResize(476, 181)
+    chatFrame:SetMaxResize(476, 181)
+
+    -- 隱藏輸入框的邊框
+    _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
+    _G["ChatFrame" .. i .. "EditBoxMid"]:Hide()
+    _G["ChatFrame" .. i .. "EditBoxRight"]:Hide()
+    -- 設置輸入框位置
+    local editBox = chatFrame.editBox
+    editBox:ClearAllPoints()
+    editBox:SetPoint("BottomLeft", ChatFrame1, "TopLeft", 155, -2)
+    editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, -2)
+
+    editBox:SetAltArrowKeyMode(false)
+end
+--------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_LOGIN")
+f:RegisterEvent("MERCHANT_SHOW")
+f:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_LOGIN" then
+        if Skada then
+            -- 使用中文單位簡化數字
+            Skada.FormatNumber = function(self, number)
+                if number then
+                    if number >= 1e8 then
+                        return ("%02.2f億"):format(number / 1e8)
+                    end
+                    if number >= 1e4 then
+                        return ("%02.2f萬"):format(number / 1e4)
+                    end
+                    return math.floor(number)
+                end
+            end
+
+            -- 設置Skada框架大小和位置
+            if Skada:GetWindows()[1] ~= nil then
+                Skada:GetWindows()[1].bargroup:ClearAllPoints()
+                Skada:GetWindows()[1].bargroup:SetPoint("BottomLeft", UIParent, "BottomLeft", 0, 0)
+                Skada:GetWindows()[1].db.barwidth = 535
+                Skada:GetWindows()[1].db.background.height = 90
+            end
+        end
+        ------------------------------------------------------------------------------------------------- +01.58 = 01.58
+        if ShadowUF then
+            -- 使用中文單位簡化數字
+            ShadowUF.FormatLargeNumber = function(self, number)
+                if number < 1e4 then
+                    return number
+                end
+                if number < 1e6 then
+                    return ("%02.1f萬"):format(number / 1e4)
+                end
+                if number < 1e8 then
+                    return ("%d萬"):format(number / 1e4)
+                end
+                return ("%02.2f億"):format(number / 1e8)
+            end
+        end
+        ------------------------------------------------------------------------------------------------- +00.77 = 02.35
+        -- 設置特殊能量條位置
+        PlayerPowerBarAlt:SetMovable(true)
+        PlayerPowerBarAlt:SetUserPlaced(true)
+        PlayerPowerBarAlt:ClearAllPoints()
+        PlayerPowerBarAlt:SetPoint("Center", UIParent, "Center", 0, 420)
+        ------------------------------------------------------------------------------------------------- +00.27 = 02.62
+        local bars = {
+            "MainMenuBarArtFrame",
+            "MultiBarBottomLeft",
+            "MultiBarBottomRight",
+            "MultiBarRight",
+            "MultiBarLeft",
+            "PossessBarFrame",
+            "Action",
+        }
+
+        for i = 1, #bars do
+            -- 隱藏快捷列巨集名稱
+            if _G[bars[i] .. "Button1Name"] ~= nil then
+                for j = 1, 12 do
+                    _G[bars[i] .. "Button" .. j .. "Name"]:SetAlpha(0)
+                end
+            end
+            -- 快捷列右鍵自我施法
+            local bar = _G[bars[i]]
+            if bar ~= nil then
+                bar:SetAttribute("unit2", "player")
+            end
+        end
+        ------------------------------------------------------------------------------------------------- +00.96 = 03.58
+    else
+        -- 自動出售灰色物品
+        local totalPrice = 0
+        for myBags = 0, 4 do
+            for bagSlots = 1, GetContainerNumSlots(myBags) do
+                local CurrentItemLink = GetContainerItemLink(myBags, bagSlots)
+                if CurrentItemLink then
+                    local _, _, itemRarity, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(CurrentItemLink)
+                    local _, itemCount = GetContainerItemInfo(myBags, bagSlots)
+                    if itemRarity == 0 and itemSellPrice ~= 0 then
+                        totalPrice = totalPrice + (itemSellPrice * itemCount)
+                        UseContainerItem(myBags, bagSlots)
+                    end
+                end
+            end
+        end
+        if totalPrice ~= 0 then
+            DEFAULT_CHAT_FRAME:AddMessage("出售物品获得: +" .. GetCoinTextureString(totalPrice), 255, 255, 255)
+        end
+        ------------------------------------------------------------------------------------------------- +01.23 = 04.81
+        -- 自動修理
+        if (CanMerchantRepair()) then
+            local repairAllCost, canRepair = GetRepairAllCost()
+            if (canRepair and repairAllCost > 0) then
+                -- 使用公會修理
+                local guildRepairedItems = false
+                if (IsInGuild() and CanGuildBankRepair()) then
+                    -- 檢查公會是否有足夠的錢
+                    local amount = GetGuildBankWithdrawMoney()
+                    local guildBankMoney = GetGuildBankMoney()
+                    amount = amount == -1 and guildBankMoney or min(amount, guildBankMoney)
+                    if (amount >= repairAllCost) then
+                        RepairAllItems(true)
+                        guildRepairedItems = true
+                        DEFAULT_CHAT_FRAME:AddMessage("装备已使用公修修理", 255, 255, 255)
+                    end
+                end
+
+                -- 使用自己的錢修理
+                if (repairAllCost <= GetMoney() and not guildRepairedItems) then
+                    RepairAllItems(false)
+                    DEFAULT_CHAT_FRAME:AddMessage("修理装备花费: -" .. GetCoinTextureString(repairAllCost), 255, 255, 255)
+                end
+            end
+        end
+        ------------------------------------------------------------------------------------------------- +01.03 = 05.84
+    end
+    ----------------------------------------------------------------------------------------------------- +00.07 = 05.91
+end)
+--------------------------------------------------------------------------------------------------------- +00.26 = 06.17
+-- 設置Immersion框架位置
+if LoadAddOn("Immersion") then
+    ImmersionFrame.TalkBox:ClearAllPoints()
+    ImmersionFrame.TalkBox:SetPoint("Bottom", UIParent, "Center", 0, -190)
+    ImmersionFrame.TalkBox.SetPoint = function()
+    end
+
+    ImmersionFrame.TalkBox.Elements:ClearAllPoints()
+    ImmersionFrame.TalkBox.Elements:SetPoint("BottomLeft", ImmersionFrame.TalkBox, "BottomRight", 0, 0)
+end
+--------------------------------------------------------------------------------------------------------- +00.19 = 06.36
+-- 設置對話框架位置
+if LoadAddOn("Blizzard_TalkingHeadUI") then
+    TalkingHeadFrame.ignorePositionFrameManager = true
+    TalkingHeadFrame:ClearAllPoints()
+    TalkingHeadFrame:SetPoint("TopLeft", UIParent, "TopLeft", 0, 0)
+    TalkingHeadFrame.SetPoint = function()
+    end
+end
+--------------------------------------------------------------------------------------------------------- +00.24 = 06.61
+-- 隱藏自己的戰鬥文字捲動的治療數字
+if LoadAddOn("Blizzard_CombatText") then
+    COMBAT_TEXT_TYPE_INFO["HEAL"] = nil
+    COMBAT_TEXT_TYPE_INFO["HEAL_ABSORB"] = nil
+    COMBAT_TEXT_TYPE_INFO["HEAL_CRIT"] = nil
+    COMBAT_TEXT_TYPE_INFO["HEAL_CRIT_ABSORB"] = nil
+    COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL"] = nil
+    COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL_ABSORB"] = nil
+    COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL_CRIT"] = nil
+    COMBAT_TEXT_TYPE_INFO["ABSORB_ADDED"] = nil
+end
+--------------------------------------------------------------------------------------------------------- +00.38 = 06.99
+-- 簡化重置命令
+SlashCmdList["RELOAD"] = function()
     ReloadUI()
 end
-SLASH_RELOAD1 = '/rl'
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 不显示由谁制造
-ITEM_CREATED_BY = ""
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 自动填写delete
-hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(s)
-    s.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
+SLASH_RELOAD1 = "/rl"
+--------------------------------------------------------------------------------------------------------- +00.26 = 07.25
+-- 自動填寫DELETE
+hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
+    self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- shift设置焦点
-local modifier = "shift" -- shift, alt or ctrl 
-local mouseButton = "1" -- 1 = left, 2 = right, 3 = middle, 4 and 5 = thumb buttons if there are any 
+--------------------------------------------------------------------------------------------------------- +00.40 = 07.65
+MinimapBorderTop:Hide() -- 隱藏地點邊框
+MinimapBorder:Hide() -- 隱藏地圖邊框
+MiniMapWorldMapButton:Hide() -- 隱藏世界地圖按鈕
+MinimapZoomIn:Hide() -- 隱藏放大按鈕
+MinimapZoomOut:Hide() -- 隱藏縮小按鈕
 
-local function SetFocusHotkey(frame)
-    frame:SetAttribute(modifier .. "-type" .. mouseButton, "focus")
-end
+-- 方形小地圖
+Minimap:SetMaskTexture("Interface\\ChatFrame\\ChatFrameBackground")
+Minimap:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+                      insets = { top = -1, left = -1, bottom = -1, right = -1 } })
+Minimap:SetBackdropColor(0.53, 0.53, 0.93, 1)
 
-local function CreateFrame_Hook(type, name, parent, template)
-    if template == "SecureUnitButtonTemplate" then
-        SetFocusHotkey(_G[name])
+-- 滾輪縮放小地圖
+Minimap:EnableMouseWheel(true)
+Minimap:SetScript("OnMouseWheel", function(self, value)
+    if value > 0 then
+        MinimapZoomIn:Click()
+    else
+        MinimapZoomOut:Click()
     end
-end
+end)
+--------------------------------------------------------------------------------------------------------- +00.38 = 08.03
+-- 大地圖顯示坐標
+WorldMapFrame.playerPos = WorldMapFrame.BorderFrame:CreateFontString(nil, "Artwork")
+WorldMapFrame.playerPos:SetFont(GameFontNormal:GetFont(), 12, "ThinOutline")
+WorldMapFrame.playerPos:SetJustifyH("Right")
+WorldMapFrame.playerPos:SetPoint("Right", WorldMapFrameCloseButton, "Left", -40, 0)
+WorldMapFrame.playerPos:SetTextColor(1, 0.82, 0.1)
+WorldMapFrame.mousePos = WorldMapFrame.BorderFrame:CreateFontString(nil, "Artwork")
+WorldMapFrame.mousePos:SetFont(GameFontNormal:GetFont(), 12, "ThinOutline")
+WorldMapFrame.mousePos:SetJustifyH("Right")
+WorldMapFrame.mousePos:SetPoint("Right", WorldMapFrameCloseButton, "Left", -160, 0)
 
-hooksecurefunc("CreateFrame", CreateFrame_Hook)
-
--- Keybinding override so that models can be shift/alt/ctrl+clicked 
-local focusFrame = CreateFrame("CheckButton", "FocuserButton", UIParent, "SecureActionButtonTemplate")
-focusFrame:SetAttribute("type1", "macro")
-focusFrame:SetAttribute("macrotext", "/focus mouseover")
-SetOverrideBindingClick(FocuserButton, true, modifier .. "-BUTTON" .. mouseButton, "FocuserButton")
-
--- Set the keybindings on the default unit frames since we won't get any CreateFrame notification about them 
-local duf = {
-    PlayerFrame,
-    PetFrame,
-    PartyMemberFrame1,
-    PartyMemberFrame2,
-    PartyMemberFrame3,
-    PartyMemberFrame4,
-    PartyMemberFrame1PetFrame,
-    PartyMemberFrame2PetFrame,
-    PartyMemberFrame3PetFrame,
-    PartyMemberFrame4PetFrame,
-    TargetFrame,
-    TargetofTargetFrame,
-}
-
-for i, frame in pairs(duf) do
-    SetFocusHotkey(frame)
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 自动出售垃圾和修理装备
-local function OnEvent(self, event)
-    -- Auto Sell Grey Items
-    totalPrice = 0
-    for myBags = 0, 4 do
-        for bagSlots = 1, GetContainerNumSlots(myBags) do
-            CurrentItemLink = GetContainerItemLink(myBags, bagSlots)
-            if CurrentItemLink then
-                _, _, itemRarity, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(CurrentItemLink)
-                _, itemCount = GetContainerItemInfo(myBags, bagSlots)
-                if itemRarity == 0 and itemSellPrice ~= 0 then
-                    totalPrice = totalPrice + (itemSellPrice * itemCount)
-                    UseContainerItem(myBags, bagSlots)
-                end
-            end
+WorldMapFrame:HookScript("OnUpdate", function(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if (self.elapsed < 0.2) then
+        return
+    end
+    self.elapsed = 0
+    -- 玩家坐標
+    local position = C_Map.GetPlayerMapPosition(MapUtil.GetDisplayableMapForPlayer(), "player")
+    if (position) then
+        self.playerPos:SetText(format("玩家: %.1f, %.1f", position.x * 100, position.y * 100))
+    else
+        self.playerPos:SetText("")
+    end
+    -- 滑鼠坐標
+    local mapInfo = C_Map.GetMapInfo(self:GetMapID())
+    if (mapInfo and mapInfo.mapType == 3) then
+        local x, y = self.ScrollContainer:GetNormalizedCursorPosition()
+        if (x and y and x > 0 and x < 1 and y > 0 and y < 1) then
+            self.mousePos:SetText(format("滑鼠: %.1f, %.1f", x * 100, y * 100))
+        else
+            self.mousePos:SetText("")
         end
+    else
+        self.mousePos:SetText("")
     end
-    if totalPrice ~= 0 then
-        DEFAULT_CHAT_FRAME:AddMessage("出售物品获得: +" .. GetCoinTextureString(totalPrice), 255, 255, 255)
-    end
-    -- Auto Repair
-    if (CanMerchantRepair()) then
-        repairAllCost, canRepair = GetRepairAllCost()
-        -- If merchant can repair and there is something to repair
-        if (canRepair and repairAllCost > 0) then
-            -- Use Guild Bank
-            guildRepairedItems = false
-            if (IsInGuild() and CanGuildBankRepair()) then
-                -- Checks if guild has enough money
-                local amount = GetGuildBankWithdrawMoney()
-                local guildBankMoney = GetGuildBankMoney()
-                amount = amount == -1 and guildBankMoney or min(amount, guildBankMoney)
-                if (amount >= repairAllCost) then
-                    RepairAllItems(true)
-                    guildRepairedItems = true
-                    DEFAULT_CHAT_FRAME:AddMessage("装备已使用公修修理", 255, 255, 255)
-                end
-            end
-
-            -- Use own funds
-            if (repairAllCost <= GetMoney() and not guildRepairedItems) then
-                RepairAllItems(false)
-                DEFAULT_CHAT_FRAME:AddMessage("修理装备花费: -" .. GetCoinTextureString(repairAllCost), 255, 255, 255)
-            end
-        end
-    end
+end)
+--------------------------------------------------------------------------------------------------------- +01.76 = 09.79
+-- 隱藏區域技能鍵材質
+ZoneAbilityFrame.SpellButton.Style:Hide()
+-- 設置區域技能鍵位置
+ZoneAbilityFrame:ClearAllPoints()
+ZoneAbilityFrame:SetPoint("Center", UIParent, "Center", 0, -270)
+ZoneAbilityFrame.SetPoint = function()
 end
-
-local sellAndRepair = CreateFrame("Frame")
-sellAndRepair:SetScript("OnEvent", OnEvent)
-sellAndRepair:RegisterEvent("MERCHANT_SHOW")
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 超出距离技能变红
+--------------------------------------------------------------------------------------------------------- +00.19 = 09.98
+-- 隱藏額外快捷鍵材質
+ExtraActionButton1.style:Hide()
+-- 設置額外快捷鍵位置
+ExtraActionBarFrame:ClearAllPoints()
+ExtraActionBarFrame:SetPoint("Center", UIParent, "Center", 0, -210)
+ExtraActionBarFrame.SetPoint = function()
+end
+--------------------------------------------------------------------------------------------------------- +00.19 = 10.17
+-- 技能范圍外時快捷列按鈕著色
 hooksecurefunc("ActionButton_OnUpdate", function(self, elapsed)
     if (self.rangeTimer == TOOLTIP_UPDATE_TIME) then
         local valid = IsActionInRange(self.action)
@@ -142,195 +313,27 @@ hooksecurefunc("ActionButton_OnUpdate", function(self, elapsed)
         end
     end
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 右键自我施法
-local bars = {
-    "MainMenuBarArtFrame",
-    "MultiBarBottomLeft",
-    "MultiBarBottomRight",
-    "MultiBarRight",
-    "MultiBarLeft",
-    "PossessBarFrame",
-}
-
-local rightClickFrame = CreateFrame("frame", "RightClickSelfCast", UIParent)
-rightClickFrame:SetScript("OnEvent", function(self, event, ...)
-    self[event](self, ...)
-end)
-
-function rightClickFrame:PLAYER_REGEN_ENABLED()
-    self:PLAYER_LOGIN()
-    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-    self.PLAYER_REGEN_ENABLED = nil
-end
-
-function rightClickFrame:PLAYER_LOGIN()
-
-    -- if we load/reload in combat don't try to set secure attributes or we get action_blocked errors
-    if InCombatLockdown() or UnitAffectingCombat("player") then
-        self:RegisterEvent("PLAYER_REGEN_ENABLED")
-        return
-    end
-
-    -- Blizzard bars
-    for i, v in ipairs(bars) do
-        local bar = _G[v]
-        if bar ~= nil then
-            bar:SetAttribute("unit2", "player")
-        end
-    end
-
-    self:UnregisterEvent("PLAYER_LOGIN")
-    self.PLAYER_LOGIN = nil
-
-end
-
-if IsLoggedIn() then
-    rightClickFrame:PLAYER_LOGIN()
-else
-    rightClickFrame:RegisterEvent("PLAYER_LOGIN")
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 设置团队框体的最大值和最小值
-local n = "CompactUnitFrameProfilesGeneralOptionsFrame"
-local h, w = _G[n .. "HeightSlider"], _G[n .. "WidthSlider"]
-
-h:SetMinMaxValues(22, 33)
-w:SetMinMaxValues(70, 114)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 技能栏隐藏宏名字
-local actionBar = { "MultiBarBottomLeft", "MultiBarBottomRight", "Action", "MultiBarLeft", "MultiBarRight" }
-
-for b = 1, #actionBar do
-    for i = 1, 12 do
-        _G[actionBar[b] .. "Button" .. i .. "Name"]:SetAlpha(0)
-    end
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 隐藏拾取框
-LootFrame:SetAlpha(0)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 隐藏技能栏狮鹫
-MainMenuBarArtFrame.LeftEndCap:Hide()
-MainMenuBarArtFrame.RightEndCap:Hide()
-
--- 隐藏载具动作条两边
-OverrideActionBarEndCapL:Hide()
-OverrideActionBarEndCapR:Hide()
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 隐藏浮动战斗信息自己的治疗
-if LoadAddOn("Blizzard_CombatText") then
-    COMBAT_TEXT_TYPE_INFO["HEAL"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["HEAL_ABSORB"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["HEAL_CRIT"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["HEAL_CRIT_ABSORB"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL_ABSORB"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL_CRIT"] = { var = nil, show = nil }
-    COMBAT_TEXT_TYPE_INFO["ABSORB_ADDED"] = { var = nil, show = nil }
-    hooksecurefunc("CombatText_UpdateDisplayedMessages", function()
-    end)
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 隐藏区域技能键边框
-ZoneAbilityFrame.SpellButton.Style:Hide()
-
--- 隐藏额外快捷键边框
-ExtraActionButton1.style:Hide()
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动额外快捷键
-ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("CENTER", UIParent, "CENTER", 0, -210)
-ExtraActionBarFrame.SetPoint = function()
-end
-
--- 移动区域技能键
-ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("CENTER", UIParent, "CENTER", 0, -270)
-ZoneAbilityFrame.SetPoint = function()
-end
-
--- 移动特殊能量条
-local moveFrame = CreateFrame("Frame")
-moveFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-moveFrame:SetScript("OnEvent", function(event, ...)
-    PlayerPowerBarAlt:SetMovable(true)
-    PlayerPowerBarAlt:SetUserPlaced(true)
-    PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "CENTER", 0, 420)
-end)
--- 特殊能量条始终显示数值
+--------------------------------------------------------------------------------------------------------- +00.72 = 10.89
+-- 特殊能量條始終顯示數值
 hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     if self.enabled then
         self:Show();
         UnitPowerBarAltStatus_UpdateText(self);
-    else
-        self:Hide();
     end
 end)
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 调整增益减益框体
-BUFF_HORIZ_SPACING = -18
-BUFF_ROW_SPACING = 5
-
-local function TimeAbbrev(seconds)
-    local tempTime;
-    if (seconds >= 86400) then
-        tempTime = ceil(seconds / 86400);
-        return "%dd", tempTime;
-    end
-    if (seconds >= 3600) then
-        tempTime = ceil(seconds / 3600);
-        return "%dh", tempTime;
-    end
-    if (seconds >= 60) then
-        tempTime = ceil(seconds / 60);
-        return "%dm", tempTime;
-    end
-    return "%ds", seconds;
-end
-
-hooksecurefunc("AuraButton_OnUpdate", function(self)
-    self.duration:ClearAllPoints()
-    self.duration:SetPoint("TOPRIGHT", self, "TOPRIGHT", 15, 0)
-end)
-
-hooksecurefunc("AuraButton_UpdateDuration", function(auraButton, timeLeft)
-    local duration = auraButton.duration
-    if duration:IsShown() then
-        duration:SetFormattedText(TimeAbbrev(timeLeft))
-        if timeLeft < 5 then
-            duration:SetVertexColor(1, 0.12, 0.12)
-        else
-            duration:SetVertexColor(1, 0.82, 0)
-        end
-    end
-end)
--- 隐藏暂时性附魔框体
-TemporaryEnchantFrame:Hide()
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 解决上载具后宠物栏有时候不隐藏的问题
+--------------------------------------------------------------------------------------------------------- +00.43 = 11.32
+-- 上載具後隱藏寵物快捷列
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     if (CanExitVehicle() and ActionBarController_GetCurrentActionBarState() == LE_ACTIONBAR_STATE_MAIN) then
         PetActionBarFrame:Hide()
     end
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动对话头框体
-if LoadAddOn("Blizzard_TalkingHeadUI") then
-    TalkingHeadFrame.ignorePositionFrameManager = true
-    TalkingHeadFrame:ClearAllPoints()
-    TalkingHeadFrame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 0, 0)
-    TalkingHeadFrame.SetPoint = function()
-    end
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 移动背包
+--------------------------------------------------------------------------------------------------------- +00.50 = 11.82
+-- 移動背包
 hooksecurefunc("UpdateContainerFrameAnchors", function()
-    -- 修改这两个值移动
-    local moveOffsetX = 0 -- 正数向左移动，负数向右移动
-    local moveOffsetY = 60 -- 正数向上移动， 负数向下移动
+    -- 修改這兩個值移動
+    local moveOffsetX = 0 -- 正數向左移動，負數向右移動
+    local moveOffsetY = 60 -- 正數向上移動， 負數向下移動
 
     local frame, xOffset, yOffset, screenHeight, freeScreenHeight, leftMostPoint, column
     local screenWidth = GetScreenWidth()
@@ -342,18 +345,18 @@ hooksecurefunc("UpdateContainerFrameAnchors", function()
 
     while (containerScale > CONTAINER_SCALE) do
         screenHeight = GetScreenHeight() / containerScale
-        -- Adjust the start anchor for bags depending on the multibars
+        -- 根據快捷列調整背包的起始錨點
         xOffset = (CONTAINER_OFFSET_X + moveOffsetX) / containerScale
         yOffset = (CONTAINER_OFFSET_Y + moveOffsetY) / containerScale
-        -- freeScreenHeight determines when to start a new column of bags
+        -- freeScreenHeight決定什麼時候開始新的一列
         freeScreenHeight = screenHeight - yOffset
         leftMostPoint = screenWidth - xOffset
         column = 1
         local frameHeight
-        for index, frameName in ipairs(ContainerFrame1.bags) do
-            frameHeight = _G[frameName]:GetHeight()
+        for index = 1, #ContainerFrame1.bags do
+            frameHeight = _G[ContainerFrame1.bags[index]]:GetHeight()
             if (freeScreenHeight < frameHeight) then
-                -- Start a new column
+                -- 開始新的一列
                 column = column + 1
                 leftMostPoint = screenWidth - (column * CONTAINER_WIDTH * containerScale) - xOffset
                 freeScreenHeight = screenHeight - yOffset
@@ -372,370 +375,116 @@ hooksecurefunc("UpdateContainerFrameAnchors", function()
     end
 
     screenHeight = GetScreenHeight() / containerScale
-    -- Adjust the start anchor for bags depending on the multibars
+    -- 根據快捷列調整背包的起始錨點
     xOffset = (CONTAINER_OFFSET_X + moveOffsetX) / containerScale
     yOffset = (CONTAINER_OFFSET_Y + moveOffsetY) / containerScale
-    -- freeScreenHeight determines when to start a new column of bags
+    -- freeScreenHeight決定什麼時候開始新的一列
     freeScreenHeight = screenHeight - yOffset
     column = 0
-    for index, frameName in ipairs(ContainerFrame1.bags) do
-        frame = _G[frameName]
+    for index = 1, #ContainerFrame1.bags do
+        frame = _G[ContainerFrame1.bags[index]]
         frame:SetScale(containerScale)
         if (index == 1) then
-            -- First bag
-            frame:SetPoint("BOTTOMRIGHT", frame:GetParent(), "BOTTOMRIGHT", -xOffset, yOffset)
+            -- 第一個背包
+            frame:SetPoint("BottomRight", frame:GetParent(), "BottomRight", -xOffset, yOffset)
         elseif (freeScreenHeight < frame:GetHeight()) then
-            -- Start a new column
+            -- 開始新的一列
             column = column + 1
             freeScreenHeight = screenHeight - yOffset
-            frame:SetPoint("BOTTOMRIGHT", frame:GetParent(), "BOTTOMRIGHT", -(column * CONTAINER_WIDTH) - xOffset, yOffset)
+            frame:SetPoint(
+                    "BottomRight", frame:GetParent(), "BottomRight", -(column * CONTAINER_WIDTH) - xOffset, yOffset)
         else
-            -- Anchor to the previous bag
-            frame:SetPoint("BOTTOMRIGHT", ContainerFrame1.bags[index - 1], "TOPRIGHT", 0, CONTAINER_SPACING)
+            -- 以上一個背包作爲錨點
+            frame:SetPoint("BottomRight", ContainerFrame1.bags[index - 1], "TopRight", 0, CONTAINER_SPACING)
         end
         freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
     end
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 网格
-SLASH_EA1 = "/al"
-local alignFrame
-SlashCmdList["EA"] = function()
-    if alignFrame then
-        alignFrame:Hide()
-        alignFrame = nil
-    else
-        alignFrame = CreateFrame('Frame', nil, UIParent)
-        alignFrame:SetAllPoints(UIParent)
-        local width = GetScreenWidth() / 64
-        local height = GetScreenHeight() / 36
-        for i = 0, 64 do
-            local t = alignFrame:CreateTexture(nil, 'BACKGROUND')
-            if i == 32 then
-                t:SetColorTexture(1, 0, 0, 0.5)
-            else
-                t:SetColorTexture(0, 0, 0, 0.5)
-            end
-            t:SetPoint('TOPLEFT', alignFrame, 'TOPLEFT', i * width - 1, 0)
-            t:SetPoint('BOTTOMRIGHT', alignFrame, 'BOTTOMLEFT', i * width + 1, 0)
-        end
-        for i = 0, 36 do
-            local t = alignFrame:CreateTexture(nil, 'BACKGROUND')
-            if i == 18 then
-                t:SetColorTexture(1, 0, 0, 0.5)
-            else
-                t:SetColorTexture(0, 0, 0, 0.5)
-            end
-            t:SetPoint('TOPLEFT', alignFrame, 'TOPLEFT', 0, -i * height + 1)
-            t:SetPoint('BOTTOMRIGHT', alignFrame, 'TOPRIGHT', 0, -i * height - 1)
-        end
-    end
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 方形小地图
-MinimapBorderTop:Hide()
-MinimapBorder:Hide()
-MiniMapWorldMapButton:Hide()
-Minimap:SetMaskTexture([=[Interface\ChatFrame\ChatFrameBackground]=])
-Minimap:SetBackdrop({ bgFile = [=[Interface\ChatFrame\ChatFrameBackground]=], insets = { top = -1, left = -1, bottom = -1, right = -1 } })    --边框粗细
-local color = RAID_CLASS_COLORS[select(2, UnitClass("player"))]
-Minimap:SetBackdropColor(color.r, color.g, color.b, 1)
-function GetMinimapShape()
-    return "SQUARE"
-end
+--------------------------------------------------------------------------------------------------------- +02.18 = 14.20
+-- 快速設置專注目標
+-- 覆蓋按鍵綁定以使模型支持Shift/Alt/Ctrl+點擊
+local focus = CreateFrame(
+        "CheckButton", "FocuserFrame", UIParent, "SecureActionButtonTemplate")
+focus:SetAttribute("type1", "macro")
+focus:SetAttribute("macrotext", "/focus mouseover")
+-- key參數可以是shift/alt/ctrl-button1/2/3/4/5
+SetOverrideBindingClick(FocuserFrame, true, "shift-button1", "FocuserFrame")
 
--- 滚轮缩放
-MinimapZoomIn:Hide()
-MinimapZoomOut:Hide()
-Minimap:EnableMouseWheel(true)
-
-Minimap:SetScript("OnMouseWheel", function(self, y)
-    if y > 0 then
-        MinimapZoomIn:Click()
-    else
-        MinimapZoomOut:Click()
+hooksecurefunc("CreateFrame", function(type, name, parent, template)
+    if template == "SecureUnitButtonTemplate" then
+        -- key參數可以是shift/alt/ctrl-type1/2/3/4/5
+        _G[name]:SetAttribute("shift-type1", "focus")
     end
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 大地图显示坐标
-WorldMapFrame.playerPos = WorldMapFrame.BorderFrame:CreateFontString(nil, 'ARTWORK')
-WorldMapFrame.playerPos:SetFont(GameFontNormal:GetFont(), 12, 'THINOUTLINE')
-WorldMapFrame.playerPos:SetJustifyH('RIGHT')
-WorldMapFrame.playerPos:SetPoint('RIGHT', WorldMapFrameCloseButton, 'LEFT', -40, 0)
-WorldMapFrame.playerPos:SetTextColor(1, 0.82, 0.1)
-WorldMapFrame.mousePos = WorldMapFrame.BorderFrame:CreateFontString(nil, 'ARTWORK')
-WorldMapFrame.mousePos:SetFont(GameFontNormal:GetFont(), 12, 'THINOUTLINE')
-WorldMapFrame.mousePos:SetJustifyH('RIGHT')
-WorldMapFrame.mousePos:SetPoint('RIGHT', WorldMapFrameCloseButton, 'LEFT', -160, 0)
 
-WorldMapFrame:HookScript("OnUpdate", function(self, elapsed)
+-- 在默認單位框架上設置按鍵綁定，因爲我們不會獲得有關它們創建框架的通知
+local defaultUnitFrames = {
+    PlayerFrame,
+    PetFrame,
+    PartyMemberFrame1,
+    PartyMemberFrame2,
+    PartyMemberFrame3,
+    PartyMemberFrame4,
+    PartyMemberFrame1PetFrame,
+    PartyMemberFrame2PetFrame,
+    PartyMemberFrame3PetFrame,
+    PartyMemberFrame4PetFrame,
+    TargetFrame,
+    TargetofTargetFrame,
+}
+
+for i = 1, #defaultUnitFrames do
+    -- key參數可以是shift/alt/ctrl-type1/2/3/4/5
+    defaultUnitFrames[i]:SetAttribute("shift-type1", "focus")
+end
+--------------------------------------------------------------------------------------------------------- +00.72 = 14.92
+-- 顯示FPS和延遲
+local info = CreateFrame("Frame", "InfoFrame", UIParent)
+info:SetWidth(120)
+info:SetHeight(30)
+info:SetPoint("BottomRight", UIParent, "BottomRight", -180, 40)
+
+local infoText = info:CreateFontString(nil, "Overlay")
+infoText:SetFont("Fonts\\ARHei.ttf", 14)
+infoText:SetPoint("Right", info, "Right", 0, 5)
+
+function infoText:SetColor(latency)
+    if latency < 100 then
+        return "|cff00ff00" .. latency .. "|r"
+    elseif latency < 200 then
+        return "|cffffff00" .. latency .. "|r"
+    end
+    return "|cffff0000" .. latency .. "|r"
+end
+
+info:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
-    if (self.elapsed < 0.2) then
+    if self.elapsed < 1 then
         return
     end
     self.elapsed = 0
-    --玩家坐标
-    local position = C_Map.GetPlayerMapPosition(MapUtil.GetDisplayableMapForPlayer(), "player")
-    if (position) then
-        self.playerPos:SetText(format("玩家: %.1f, %.1f", position.x * 100, position.y * 100))
-    else
-        self.playerPos:SetText("")
-    end
-    --鼠标坐标
-    local mapInfo = C_Map.GetMapInfo(self:GetMapID())
-    if (mapInfo and mapInfo.mapType == 3) then
-        local x, y = self.ScrollContainer:GetNormalizedCursorPosition()
-        if (x and y and x > 0 and x < 1 and y > 0 and y < 1) then
-            self.mousePos:SetText(format("當前: %.1f, %.1f", x * 100, y * 100))
-        else
-            self.mousePos:SetText("")
-        end
-    else
-        self.mousePos:SetText("")
-    end
+
+    local fps = format("%.0f", GetFramerate())
+    local latencyHome = infoText:SetColor(select(3, GetNetStats()))
+    local latencyWorld = infoText:SetColor(select(4, GetNetStats()))
+
+    infoText:SetText(" " .. fps .. " | " .. latencyHome .. " | " .. latencyWorld .. " ")
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 聊天框
--- Table to keep track of frames you already saw:
-local frames = {}
-
--- Function to handle customzing a chat frame:
-local function ProcessFrame(frame)
-    if frames[frame] then
-        return
-    end
-    frame:SetClampRectInsets(-35, 58, 58, -120) -- 离左、右、上、下边界的距离，+往左和下、-往右和上
-    frame:SetMaxResize(476, 178)
-    frame:SetMinResize(476, 178)
-
-    local name = frame:GetName()
-    _G[name .. "EditBoxLeft"]:Hide()
-    _G[name .. "EditBoxMid"]:Hide()
-    _G[name .. "EditBoxRight"]:Hide()
-    local editbox = _G[name .. "EditBox"]
-    editbox:ClearAllPoints()
-    editbox:SetPoint("TOPLEFT", ChatFrame1, "BOTTOMLEFT", -42, -1)
-    editbox:SetPoint("TOPRIGHT", ChatFrame1, "BOTTOMRIGHT", 5, -1)
-    editbox:SetAltArrowKeyMode(false)
-
-    frames[frame] = true
-end
-
--- Get all of the permanent chat windows and customize them:
-for i = 1, NUM_CHAT_WINDOWS do
-    ProcessFrame(_G["ChatFrame" .. i])
-end
-
--- Set up a dirty hook to catch temporary windows and customize them when they are created:
-local old_OpenTemporaryWindow = FCF_OpenTemporaryWindow
-
-FCF_OpenTemporaryWindow = function(...)
-    local frame = old_OpenTemporaryWindow(...)
-    ProcessFrame(frame)
-    return frame
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 频道选择条
--- 位置瞄点
-local ChatBarOffsetX = 0 -- 相对于默认位置的X坐标
-local ChatBarOffsetY = 0 -- 相对于默认位置的Y坐标
-local chatFrame = SELECTED_DOCK_FRAME -- 聊天框体
-local inputBox = chatFrame.editBox
-
--- 主框体初始化
-local chat = CreateFrame("Frame", "chat", UIParent)
-chat:SetWidth(300) -- 主框体宽度
-chat:SetHeight(23) -- 主框体高度
-chat:SetPoint("BOTTOMRIGHT", chatFrame, "TOPRIGHT", ChatBarOffsetX + 25, ChatBarOffsetY + 2)
-
-local function ChannelSay_OnClick()
-    ChatFrame_OpenChat("/s " .. inputBox:GetText(), chatFrame)
-end
-
-local function ChannelYell_OnClick()
-    ChatFrame_OpenChat("/y " .. inputBox:GetText(), chatFrame)
-end
-
-local function ChannelParty_OnClick()
-    ChatFrame_OpenChat("/p " .. inputBox:GetText(), chatFrame)
-end
-
-local function ChannelGuild_OnClick()
-    ChatFrame_OpenChat("/g " .. inputBox:GetText(), chatFrame)
-end
-
-local function ChannelRaid_OnClick()
-    ChatFrame_OpenChat("/raid " .. inputBox:GetText(), chatFrame)
-end
-
-local function ChannelBG_OnClick()
-    ChatFrame_OpenChat("/bg " .. inputBox:GetText(), chatFrame)
-end
-
-local function Channel01_OnClick()
-    ChatFrame_OpenChat("/1 " .. inputBox:GetText(), chatFrame)
-end
-
-local function Channel04_OnClick()
-    ChatFrame_OpenChat("/4 " .. inputBox:GetText(), chatFrame)
-end
-
-local function ChannelTeam_OnClick(self, button)
-    if button == "RightButton" then
-        local _, channelName, _ = GetChannelName("組隊頻道")
-        if channelName == nil then
-            JoinPermanentChannel("組隊頻道", nil, 1, 1)
-            ChatFrame_RemoveMessageGroup(chatFrame, "CHANNEL")
-            ChatFrame_AddChannel(chatFrame, "組隊頻道")
-            print("|cff00d200已加入組隊頻道|r")
-        else
-            LeaveChannelByName("組隊頻道")
-            print("|cffd20000已离开組隊頻道|r")
-        end
-    else
-        local channel, _, _ = GetChannelName("組隊頻道")
-        ChatFrame_OpenChat("/" .. channel .. " " .. inputBox:GetText(), chatFrame)
-    end
-end
-
-local function Roll_OnClick()
-    RandomRoll(1, 100)
-end
-
-local function Mem_OnClick()
-    UpdateAddOnMemoryUsage()
-    collectgarbage("collect")
-
-    local totalMem = 0
-    local addonInfo = {}
-    local count = 0
-
-    for i = 1, GetNumAddOns() do
-        if not addonInfo[i] and IsAddOnLoaded(i) then
-            local name, _ = GetAddOnInfo(i)
-            addonInfo[i] = { name = name, memory = GetAddOnMemoryUsage(i) }
-            totalMem = totalMem + addonInfo[i].memory
-            count = count + 1
-        end
-    end
-
-    -- 根据内存降序排序
-    table.sort(addonInfo, function(element1, element2)
-        if element1 == nil then
-            return false
-        end
-        if element2 == nil then
-            return true
-        end
-
-        local mem1 = element1.memory
-        local mem2 = element2.memory
-        if mem1 ~= mem2 then
-            return mem1 > mem2
-        end
-    end)
-
-    if totalMem < 1000 then
-        totalMem = format("%d KB", totalMem)
-    else
-        totalMem = format("%.2f MB", totalMem / 1000)
-    end
-    print("----------------------------------------")
-    print("Total (" .. count .. "): " .. totalMem)
-    print("----------------------------------------")
-    for index, info in pairs(addonInfo) do
-        local memory = info.memory
-        if memory < 1000 then
-            memory = format("%d KB", memory)
-        else
-            memory = format("%.2f MB", memory / 1000)
-        end
-        print(info.name .. ": " .. memory)
-    end
-    print("----------------------------------------")
-end
-
-local function Clear_OnClick()
-    SELECTED_CHAT_FRAME:Clear()
-end
-
-local ChannelButtons = {
-    { name = "say", text = "說", color = { 1.00, 1.00, 1.00 }, callback = ChannelSay_OnClick },
-    { name = "yell", text = "喊", color = { 1.00, 0.25, 0.25 }, callback = ChannelYell_OnClick },
-    { name = "party", text = "隊", color = { 0.66, 0.66, 1.00 }, callback = ChannelParty_OnClick },
-    { name = "guild", text = "會", color = { 0.25, 1.00, 0.25 }, callback = ChannelGuild_OnClick },
-    { name = "raid", text = "團", color = { 1.00, 0.50, 0.00 }, callback = ChannelRaid_OnClick },
-    { name = "LFT", text = "副", color = { 1.00, 0.50, 0.00 }, callback = ChannelBG_OnClick },
-    { name = "chn01", text = "綜", color = { 0.82, 0.70, 0.55 }, callback = Channel01_OnClick },
-    { name = "chn04", text = "尋", color = { 0.25, 0.66, 0.70 }, callback = Channel04_OnClick },
-    { name = "team", text = "組", color = { 0.70, 1.00, 0.55 }, callback = ChannelTeam_OnClick },
-    { name = "roll", text = "骰", color = { 1.00, 1.00, 0.00 }, callback = Roll_OnClick },
-    { name = "mem", text = "内", color = { 0.66, 1.00, 1.00 }, callback = Mem_OnClick },
-    { name = "clear", text = "清", color = { 1.00, 0.75, 0.80 }, callback = Clear_OnClick },
-}
-
-local function CreateChannelButton(data, index)
-    local frame = CreateFrame("Button", "frameName", chat)
-    frame:SetWidth(23) -- 按钮宽度
-    frame:SetHeight(23) -- 按钮高度
-    frame:SetPoint("LEFT", chat, "LEFT", -17 + (index - 1) * 27, 0) -- 锚点
-    frame:RegisterForClicks("AnyUp")
-    frame:SetScript("OnClick", data.callback)
-    frameText = frame:CreateFontString(data.name .. "Text", "OVERLAY")
-    frameText:SetFont("fonts\\ARHei.ttf", 16, "OUTLINE") -- 字体设置
-    frameText:SetJustifyH("CENTER")
-    frameText:SetWidth(25)
-    frameText:SetHeight(25)
-    frameText:SetText(data.text) -- 显示的文字
-    frameText:SetPoint("CENTER", 0, 0)
-    frameText:SetTextColor(data.color[1], data.color[2], data.color[3]) -- 文字按钮的颜色
-end
-
-for i = 1, #ChannelButtons do
-    -- 对非战斗记录聊天框的信息进行处理
-    local button = ChannelButtons[i]
-    CreateChannelButton(button, i)
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 聊天频道缩写
-local matchTBL = {
+--------------------------------------------------------------------------------------------------------- +01.62 = 16.54
+local matchTable = {
     ["綜合"] = "綜合",
     ["交易"] = "交易",
+    ["本地防務"] = "防務",
     ["尋求組隊"] = "尋組",
     ["組隊頻道"] = "組隊",
-    ["本地防務"] = "防務",
 }
 
-local function AbbreviatedChannelName(name, abbreviation)
-    for i = 1, NUM_CHAT_WINDOWS do
-        if (i ~= 2) then
-            local f = _G["ChatFrame" .. i]
-            local am = f.AddMessage
-            f.AddMessage = function(frame, text, ...)
-                return am(frame, text:gsub('|h%[(%d+)%. ' .. name .. '.-%]|h', '|h%[%1%. ' .. abbreviation .. '%]|h'), ...)
-            end
-        end
-    end
-end
-
-for k, v in pairs(matchTBL) do
-    AbbreviatedChannelName(k, v)
-end
-
-local function ShortName(name)
-    for k, v in pairs(matchTBL) do
-        if name:find(k) then
-            return v
-        end
-    end
-end
-
+-- 簡化輸入框的頻道名稱
 hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     local type = editBox:GetAttribute("chatType")
     if not type then
         return
     end
-    local info = ChatTypeInfo[type]
     local header = _G[editBox:GetName() .. "Header"]
     local headerSuffix = _G[editBox:GetName() .. "HeaderSuffix"]
     if not header then
@@ -748,401 +497,267 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
             if instanceID > 0 then
                 channelName = channelName .. " " .. instanceID
             end
-            info = ChatTypeInfo["CHANNEL" .. channel]
             editBox:SetAttribute("channelTarget", channel)
-            header:SetFormattedText(CHAT_CHANNEL_SEND, channel, ShortName(channelName))
+
+            for key, value in pairs(matchTable) do
+                if channelName:find(key) then
+                    channelName = value
+                end
+            end
+
+            header:SetFormattedText(CHAT_CHANNEL_SEND, channel, channelName)
         end
     end
     editBox:SetTextInsets(15 + header:GetWidth() + (headerSuffix:IsShown() and headerSuffix:GetWidth() or 0), 13, 0, 0)
 end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 冷却计时
-local Timer = {}
-local timers = {}
-local font = GameTooltipTextLeft1:GetFont()
-local minFontsize = 10
-
-local ButtonType = {
-    { value = "AutoCastable", type = "Pet" },
-    { value = "HotKey", type = "Action" },
-    { value = "Stock", type = "Item" },
-}
-
-local iCCDB = {
-    Action = { config = true, min = 2, size = 20 },
-    Pet = { config = true, min = 3, size = 18 },
-    Item = { config = true, min = 3, size = 20 },
-    Aura = { config = true, max = 7200, scale = 0.5 },
-}
-
-local function Timer_OnUpdate(self, elapsed)
-    if not self.cd:IsVisible() then
-        self:Hide()
-    else
-        if self.nextUpdate <= 0 then
-            Timer.Update(self)
-        else
-            self.nextUpdate = self.nextUpdate - elapsed
-        end
-    end
-end
-
-local function Timer_Hide(self)
-    self.nextUpdate = 0
-    self.cd:SetAlpha(1)
-end
-
-local function GetButtonType(btn)
-    local name = btn:GetName()
-    while not name do
-        btn = btn:GetParent()
-        name = btn:GetName()
-    end
-
-    if name == "LossOfControlFrame" or string.find(name, "ThreatPlatesFrame") then
-        return nil
-    end
-
-    if name == "ZoneAbilityFrame" or name == "ExtraActionButton1" then
-        return "Action"
-    end
-
-    for _, index in ipairs(ButtonType) do
-        if _G[name .. index.value] then
-            return index.type
-        end
-    end
-    return "Aura"
-end
-
-local function GetFormattedTime(t)
-    if t < 5 then
-        return floor(t), 1.2, 1, 0.12, 0.12, 0.2
-    elseif t < 60 then
-        return floor(t), 1, 1, 0.82, 0, t - floor(t)
-    elseif t < 600 then
-        return ceil(t / 60) .. "m", 0.85, 0.8, 0.6, 0, t - floor(t)
-    elseif t < 3600 then
-        return ceil(t / 60) .. "m", 0.85, 0.8, 0.6, 0, t % 60
-    elseif t < 86400 then
-        return ceil(t / 3600) .. "h", 0.7, 0.6, 0.4, 0, t % 3600
-    else
-        return ceil(t) .. "d", 0.6, 0.4, 0.4, 0.4, t % 86400
-    end
-end
-
-function Timer.Start(cd, start, duration, enable, forceShowDrawEdge, modRate)
-    cd.button = cd.button or cd:GetParent()
-    if cd.button and cd.button:GetSize() >= 15 then
-        cd.type = cd.type or GetButtonType(cd.button)
-        if cd.type then
-            if start > 0 and duration > (iCCDB[cd.type].min or 0) and iCCDB[cd.type].config then
-                local timer = timers[cd] or Timer.Create(cd)
-                if timer then
-                    timer.start = start
-                    timer.duration = duration
-                    timer.nextUpdate = 0
-                    timer:Show()
-                end
-            elseif timers[cd] then
-                timers[cd]:Hide()
+--------------------------------------------------------------------------------------------------------- +02.39 = 18.93
+-- 簡化聊天框頻道名稱
+for name, abbrev in pairs(matchTable) do
+    for i = 1, NUM_CHAT_WINDOWS do
+        if i ~= 2 then
+            local chatFrame = _G["ChatFrame" .. i]
+            local am = chatFrame.AddMessage
+            chatFrame.AddMessage = function(frame, text, ...)
+                return am(frame, text:gsub("|h%[(%d+)%. " .. name .. ".-%]|h", "|h%[%1%. " .. abbrev .. "%]|h"), ...)
             end
         end
     end
 end
+--------------------------------------------------------------------------------------------------------- +07.69 = 26.62
+-- 靈魂裂片
+local ss = CreateFrame("Frame", "SoulShard", UIParent)
+ss:SetClampedToScreen(true)
+ss:RegisterEvent("PLAYER_LOGIN")
+ss:RegisterEvent("UNIT_POWER_UPDATE")
 
-function Timer.Create(cd)
-    local timer = CreateFrame("Frame", nil, cd.button)
-    timer:SetAllPoints(cd)
-    timer.cd = cd
-    timer.type = cd.type
-    timer.button = cd.button
-    timer:Hide()
-    timer:SetScript("OnUpdate", Timer_OnUpdate)
-    timer:SetScript("OnHide", Timer_Hide)
+ss.shards = {}
 
-    local text = timer:CreateFontString(nil, "OVERLAY")
-    if cd.type == "Aura" then
-        text:SetPoint("TOPRIGHT", timer, "TOPRIGHT", 2, 1)
-    else
-        text:SetPoint("CENTER", timer, "CENTER", 0, 0)
-    end
-    timer.text = text
-
-    timers[cd] = timer
-    return timer
-end
-
-function Timer.Update(timer)
-    local time = timer.start + timer.duration - GetTime()
-    local max = iCCDB[timer.type].max
-    if max then
-        if time > max and max > 0 then
-            if timer.text:IsVisible() then
-                timer.text:Hide()
-            end
-            timer.cd:SetAlpha(1)
-            return
-        else
-            if not timer.text:IsVisible() then
-                timer.text:Show()
-            end
-            timer.cd:SetAlpha(0)
-        end
-    end
-
-    if timer.text:IsVisible() then
-        local text, scale, r, g, b, nextUpdate = GetFormattedTime(time)
-        local size = iCCDB[timer.type].size or floor((iCCDB[timer.type].scale * timer.button:GetSize()) + 0.5)
-        timer.text:SetFont(font, size, "OUTLINE")
-        timer.text:SetText(size < minFontsize and "" or text)
-        timer.text:SetTextColor(r, g, b)
-        timer:SetScale(scale)
-        timer.nextUpdate = nextUpdate
-    end
-
-    if time < 0.2 then
-        timer:Hide()
-        timer.cd:SetAlpha(1)
+function ss:Update()
+    -- 7：靈魂裂片
+    local available = UnitPower("player", 7)
+    for i = 1, #ss.shards do
+        local alpha = i > available and 0.15 or 1
+        ss.shards[i]:SetAlpha(alpha)
     end
 end
 
-local iCC = CreateFrame("Frame")
-iCC:Hide()
-iCC:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-iCC:SetScript("OnEvent", function()
-    for cooldown, timer in pairs(timers) do
-        Timer.Update(timer)
-    end
-end)
-hooksecurefunc(getmetatable(CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")).__index, "SetCooldown", Timer.Start)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 灵魂碎片
-local AFFLICTION = 265
-local DEMONOLOGY = 266
-local DESTRUCTION = 267
-
-local SPELL_POWER_SOUL_SHARDS = 7
-
-local shards = {}
-
-local soulShardFrame = CreateFrame("Frame", "SoulShard", UIParent)
-soulShardFrame:SetClampedToScreen(true)
-
-local events = CreateFrame("Frame", "SoulShardEventFrame")
-events:RegisterEvent("ADDON_LOADED")
-events:RegisterEvent("UNIT_POWER_UPDATE")
-
-local function ErrorPrint(err)
-    print("|cffFF0000" .. err)
-end
-
-local function PlayerSpecialization()
-    local spec = GetSpecialization()
-    return spec and GetSpecializationInfo(spec) or nil
-end
-
-local function MaxPower()
-    return UnitPowerMax("player", SPELL_POWER_SOUL_SHARDS)
-end
-
-local function DrawMainFrame()
-    if soulShardFrame:GetHeight() == 0 then
-        local numPower = MaxPower()
-        local height = 36
-        local width = height * numPower
-        soulShardFrame:SetHeight(height)
-        soulShardFrame:SetWidth(width)
-        soulShardFrame:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 195)
-    end
-
-    soulShardFrame:Show()
-end
-
-local function ShardUpdate()
-    local available = UnitPower("player", SPELL_POWER_SOUL_SHARDS)
-    for i, shard in ipairs(shards) do
-        local alpha = tonumber(i) > available and 0.15 or 1.0
-        shard:SetAlpha(alpha)
-    end
-end
-
-local function getIcon()
-    return "Interface\\ICONS\\INV_Misc_Gem_Amethyst_02"
-end
-
-local function ShardTexture()
-    local size = soulShardFrame:GetWidth() / MaxPower()
-    local shard = soulShardFrame:CreateTexture(nil, "ARTWORK")
-    shard:SetTexture(getIcon())
-    shard:SetWidth(size)
-    shard:SetHeight(size)
-    return shard
-end
-
-local function DrawShards()
-    if next(shards) == nil then
-        for i = 0, MaxPower() - 1, 1 do
-            local shard = ShardTexture()
-            shard:SetPoint("LEFT", shard:GetWidth() * i, 0)
-            shards[i + 1] = shard
-        end
-    else
-        local icon = getIcon()
-        for i, shard in ipairs(shards) do
-            shard:SetTexture(icon)
-        end
-    end
-    ShardUpdate()
-end
-
-local function SoulShardLoad()
-    local spec = PlayerSpecialization()
-    if spec == AFFLICTION or spec == DESTRUCTION or spec == DEMONOLOGY then
-        DrawMainFrame()
-        DrawShards()
-    else
-        soulShardFrame:Hide()
-    end
-end
-
-local function EventHandler(self, event, unit, powerType, ...)
+ss:SetScript("OnEvent", function(self, event, unit, ...)
     if event == "UNIT_POWER_UPDATE" and unit == "player" then
-        ShardUpdate()
-    elseif event == "PLAYER_TALENT_UPDATE" or event == "ACTIVE_TALENT_GROUP_CHANGED" then
-        SoulShardLoad()
-    elseif event == "ADDON_LOADED" and unit == "MyAddon" then
-        if (soulShardFrame) then
-            SoulShardLoad()
+        ss:Update()
+    elseif event == "PLAYER_LOGIN" then
+        local spec = GetSpecialization()
+        spec = spec and GetSpecializationInfo(spec) or nil
+        -- 265:痛苦，266：惡魔，267：毀滅
+        if spec == 265 or spec == 266 or spec == 267 then
+            -- 7：靈魂裂片
+            local numPower = UnitPowerMax("player", 7)
+            local size = 36
+
+            if ss:GetHeight() == 0 then
+                ss:SetHeight(size)
+                ss:SetWidth(size * numPower)
+                ss:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 195)
+            end
+            ss:Show()
+
+            if next(ss.shards) == nil then
+                for i = 1, numPower do
+                    local shard = ss:CreateTexture(nil, "Artwork")
+                    shard:SetTexture("Interface\\ICONS\\INV_Misc_Gem_Amethyst_02")
+                    shard:SetWidth(size)
+                    shard:SetHeight(size)
+                    shard:SetPoint("Left", size * (i - 1), 0)
+                    ss.shards[i] = shard
+                end
+            end
+            ss:Update()
         else
-            ErrorPrint("加载灵魂碎片失败！")
+            ss:Hide()
         end
-        events:UnregisterEvent("ADDON_LOADED")
-        events:RegisterEvent("PLAYER_TALENT_UPDATE")
-        events:RegisterEvent("ACTIVE_TALENT_GROUP_CHANGED")
+    end
+end)
+--------------------------------------------------------------------------------------------------------- +03.10 = 29.72
+-- 冷卻時間
+local timers = {}
+
+local function GetTimeText(seconds)
+    if seconds < 5 then
+        return floor(seconds), 1, 0, 0, 0.2
+    elseif seconds < 100 then
+        return floor(seconds), 1, 1, 0, seconds - floor(seconds)
+    elseif seconds < 3600 then
+        local text = ceil(seconds / 60) .. "m"
+        local nextUpdate
+        if seconds < 120 then
+            nextUpdate = seconds - 100
+        else
+            nextUpdate = seconds % 60
+        end
+        return text, 1, 1, 1, nextUpdate
+    elseif seconds < 86400 then
+        return ceil(seconds / 3600) .. "h", 1, 1, 1, seconds % 3600
+    end
+    return ceil(seconds / 86400) .. "d", 1, 1, 1, seconds % 86400
+end
+
+local function CreateTimer(cd)
+    local parent = cd:GetParent()
+    local size = parent:GetSize()
+    if size >= 20 then
+        local frame = parent
+        local name = frame:GetName()
+        while not name do
+            frame = frame:GetParent()
+            name = frame:GetName()
+        end
+
+        if not name:find("ThreatPlatesFrame") and not name:find("LossOfControlFrame") then
+            local type = name:find("SUF") and "Aura" or "Action"
+            local timer = CreateFrame("Frame", nil, parent)
+            timer:SetAllPoints(parent)
+
+            timer.cd = cd
+            timer.nextUpdate = 0
+
+            timer.text = timer:CreateFontString(nil, "Overlay")
+            local fontSize = floor(0.5 * size)
+            if fontSize > 15 then
+                fontSize = 15
+            end
+            timer.text:SetFont("Fonts\\ARHei.ttf", fontSize, "Outline")
+            if type == "Aura" then
+                timer.text:SetPoint("TopRight", timer, "TopRight", 0, 0)
+            else
+                timer.text:SetPoint("Center", timer, "Center", 0, 0)
+            end
+            timers[cd] = timer
+
+            timer:SetScript("OnUpdate", function(self, elapsed)
+                if not self.cd:IsShown() then
+                    self:Hide()
+                end
+
+                self.elapsed = (self.elapsed or 0) + elapsed
+                if self.elapsed < self.nextUpdate then
+                    return
+                end
+                self.elapsed = 0
+
+                local remain = self.start + self.duration - GetTime()
+                if remain > 864000 then
+                    if self.text:IsShown() then
+                        self.nextUpdate = remain % 864000
+                        self.text:Hide()
+                    end
+                else
+                    if not self.text:IsShown() then
+                        self.text:Show()
+                    end
+                end
+
+                if self.text:IsShown() then
+                    local text, r, g, b, nextUpdate = GetTimeText(remain)
+                    self.text:SetText(text)
+                    self.text:SetTextColor(r, g, b)
+                    self.nextUpdate = nextUpdate
+                end
+
+                if remain < 0.2 then
+                    self:Hide()
+                end
+            end)
+
+            timer:SetScript("OnHide", function(self)
+                self.nextUpdate = 0
+            end)
+
+            timer:SetScript("OnShow", function(self)
+                self.nextUpdate = 0
+            end)
+
+            return timer
+        end
     end
 end
 
-events:SetScript("OnEvent", EventHandler)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 显示fps和延迟
-local fpsLag = CreateFrame("Frame", "FpsLagFrame", UIParent)
-fpsLag:SetWidth(120)
-fpsLag:SetHeight(30)
-fpsLag:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMRIGHT", -180, 40)
-
-fpsLag.text = fpsLag:CreateFontString(nil, "OVERLAY")
-fpsLag.text:SetFont("Fonts\\ARIALN.TTF", 14)
-fpsLag.text:SetPoint("RIGHT", fpsLag, "RIGHT", 0, 5)
-
-local updateInterval = 1
-local timeSinceLastUpdate = 0
-
-fpsLag:SetScript("OnUpdate", function(self, elapsed)
-    if timeSinceLastUpdate > 0 then
-        timeSinceLastUpdate = timeSinceLastUpdate - elapsed
+local metatable = getmetatable(
+        CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")).__index
+hooksecurefunc(metatable, "SetCooldown", function(cd, start, duration)
+    -- 2：最小時間，公共冷卻時間不顯示
+    if duration > 2 then
+        local timer = timers[cd] or CreateTimer(cd)
+        if timer then
+            timer.start = start
+            timer.duration = duration
+            timer:Show()
+        end
+    end
+end)
+--------------------------------------------------------------------------------------------------------- +06.07 = 35.79
+-- 對齊網格
+local align = CreateFrame("Frame", "AlignFrame", UIParent)
+align:SetAllPoints(UIParent)
+align.width = GetScreenWidth() / 64
+align.height = GetScreenHeight() / 36
+align:Hide()
+SlashCmdList["ALIGN"] = function()
+    if align:IsShown() then
+        align:Hide()
     else
-        timeSinceLastUpdate = updateInterval
-        local fps = ceil(GetFramerate())
-        local lagHome = GetColorText(select(3, GetNetStats()))
-        local lagWorld = GetColorText(select(4, GetNetStats()))
-
-        fpsLag.text:SetText(" " .. fps .. " | " .. lagHome .. " | " .. lagWorld .. " ")
-    end
-end)
-
-function GetColorText(lag)
-    if lag < 100 then
-        return "|cff008000" .. lag .. "|r"
-    elseif lag < 200 then
-        return "|cffffff00" .. lag .. "|r"
-    end
-    return "|cffff0000" .. lag .. "|r"
-end
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 修改skada和suf单位
-local function Event(event, handler)
-    if _G.event == nil then
-        _G.event = CreateFrame("Frame")
-        _G.event.handler = {}
-        _G.event.OnEvent = function(frame, event, ...)
-            for key, handler in pairs(_G.event.handler[event]) do
-                handler(...)
+        -- 豎線
+        for i = 0, 64 do
+            local texture = align:CreateTexture(nil, "Background")
+            if i == 32 then
+                texture:SetColorTexture(1, 0, 0, 0.5)
+            else
+                texture:SetColorTexture(0, 0, 0, 0.5)
             end
+            texture:SetPoint(
+                    "TopLeft", align, "TopLeft", i * align.width - 1, 0)
+            texture:SetPoint(
+                    "BottomRight", align, "BottomLeft", i * align.width + 1, 0)
         end
-        _G.event:SetScript("OnEvent", _G.event.OnEvent)
-    end
-    if _G.event.handler[event] == nil then
-        _G.event.handler[event] = {}
-        _G.event:RegisterEvent(event)
-    end
-    table.insert(_G.event.handler[event], handler)
-end
-
-local function HookFormatNumber()
-    if Skada then
-        Skada.FormatNumber = function(self, number)
-            if number then
-                if number >= 1e8 then
-                    return ("%02.2f億"):format(number / 1e8)
-                end
-                if number >= 1e4 then
-                    return ("%02.2f萬"):format(number / 1e4)
-                end
-                return math.floor(number)
+        -- 橫線
+        for i = 0, 36 do
+            local texture = align:CreateTexture(nil, "Background")
+            if i == 18 then
+                texture:SetColorTexture(1, 0, 0, 0.5)
+            else
+                texture:SetColorTexture(0, 0, 0, 0.5)
             end
+            texture:SetPoint(
+                    "TopLeft", align, "TopLeft", 0, -(i * align.height - 1))
+            texture:SetPoint(
+                    "BottomRight", align, "TopRight", 0, -(i * align.height + 1))
         end
-
-        if Skada:GetWindows()[1] ~= nil then
-            Skada:GetWindows()[1].bargroup:ClearAllPoints()
-            Skada:GetWindows()[1].bargroup:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", 0, 0)
-            Skada:GetWindows()[1].db.barwidth = 535
-            Skada:GetWindows()[1].db.background.height = 72
-        end
-    end
-
-    if ShadowUF then
-        ShadowUF.FormatLargeNumber = function(self, number)
-            if number < 1e4 then
-                return number
-            end
-            if number < 1e6 then
-                return ("%02.1f萬"):format(number / 1e4)
-            end
-            if number < 1e8 then
-                return ("%d萬"):format(number / 1e4)
-            end
-            return ("%02.2f億"):format(number / 1e8)
-        end
-        ShadowUF.SmartFormatNumber = function(self, number)
-            if number < 1e4 then
-                return number
-            end
-            if number < 1e6 then
-                return ("%02.1f萬"):format(number / 1e4)
-            end
-            if number < 1e8 then
-                return ("%d萬"):format(number / 1e4)
-            end
-            return ("%02.2f億"):format(number / 1e8)
-        end
+        align:Show()
     end
 end
-
-Event("PLAYER_LOGIN", function()
-    HookFormatNumber()
-end)
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
--- 分离移动Immersion框体
-if LoadAddOn("Immersion") then
-    ImmersionFrame.TalkBox:ClearAllPoints()
-    ImmersionFrame.TalkBox:SetPoint("BOTTOM", UIParent, "CENTER", 0, -190)
-    ImmersionFrame.TalkBox.SetPoint = function()
-    end
-
-    ImmersionFrame.TalkBox.Elements:ClearAllPoints()
-    ImmersionFrame.TalkBox.Elements:SetPoint("BOTTOMLEFT", ImmersionFrame.TalkBox, "BOTTOMRIGHT", 0, 0)
+SLASH_ALIGN1 = "/al"
+--------------------------------------------------------------------------------------------------------- +01.85 = 37.64
+-- 簡化ROLL點命令
+SlashCmdList["ROLL"] = function()
+    RandomRoll(1, 100)
 end
-
---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SLASH_ROLL1 = "/rr"
+--------------------------------------------------------------------------------------------------------- +00.44 = 38.08
+-- 聊天框清屏
+SlashCmdList["CLEAR"] = function()
+    SELECTED_CHAT_FRAME:Clear()
+end
+SLASH_CLEAR1 = "/cl"
+--------------------------------------------------------------------------------------------------------- +00.26 = 38.34
+-- 加入/離開組隊頻道
+SlashCmdList["ZUDUI"] = function()
+    local _, channelName, _ = GetChannelName("組隊頻道")
+    if channelName == nil then
+        JoinPermanentChannel("組隊頻道", nil, 1, 1)
+        ChatFrame_AddChannel(SELECTED_CHAT_FRAME, "組隊頻道")
+        print("|cff00d200已加入組隊頻道|r")
+    else
+        LeaveChannelByName("組隊頻道")
+        print("|cffd20000已离开組隊頻道|r")
+    end
+end
+SLASH_ZUDUI1 = "/zd"
+--------------------------------------------------------------------------------------------------------- +00.97 = 39.31
