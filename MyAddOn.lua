@@ -15,28 +15,28 @@ SetCVar("rawMouseEnable", 1) -- 啟用魔獸世界滑鼠，防止視角晃動過
 SetCVar("ffxDeath", 0) -- 關閉死亡效果
 SetCVar("lockActionBars", 0) -- 不鎖定快捷列
 SetCVar("enableFloatingCombatText", 1) -- 啟用自己的戰鬥文字捲動
-SetCVar("Sound_SFXVolume", 0.8) -- 音效音量
-SetCVar("Sound_MusicVolume", 0.8) -- 音樂音量
+SetCVar("Sound_SFXVolume", 0.7) -- 音效音量
+SetCVar("Sound_MusicVolume", 0.5) -- 音樂音量
 SetCVar("Sound_AmbienceVolume", 1) -- 環境音量
 SetCVar("Sound_DialogVolume", 1) -- 對話音量
------------------------------------------------------------------------------------------------------------------- 00.00
+------------------------------------------------------------------------------------------------------------------------
 -- 隱藏製造者
 ITEM_CREATED_BY = ""
---------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+------------------------------------------------------------------------------------------------------------------------
 -- 團隊框架滑塊值
 CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(22, 33)
 CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(70, 114)
---------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+------------------------------------------------------------------------------------------------------------------------
 -- 隱藏拾取框
 LootFrame:SetAlpha(0)
---------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+------------------------------------------------------------------------------------------------------------------------
 -- 隱藏主快捷列兩邊的材質
 MainMenuBarArtFrame.LeftEndCap:Hide()
 MainMenuBarArtFrame.RightEndCap:Hide()
 -- 隱藏載具快捷列兩邊的材質
 OverrideActionBarEndCapL:Hide()
 OverrideActionBarEndCapR:Hide()
---------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+------------------------------------------------------------------------------------------------------------------------
 -- 聊天框
 for i = 1, NUM_CHAT_WINDOWS do
     local chatFrame = _G["ChatFrame" .. i]
@@ -58,7 +58,7 @@ for i = 1, NUM_CHAT_WINDOWS do
 
     editBox:SetAltArrowKeyMode(false)
 end
---------------------------------------------------------------------------------------------------------- +00.00 = 00.00
+------------------------------------------------------------------------------------------------------------------------
 local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 f:RegisterEvent("MERCHANT_SHOW")
@@ -77,7 +77,6 @@ f:SetScript("OnEvent", function(self, event)
                     return math.floor(number)
                 end
             end
-
             -- 設置Skada框架大小和位置
             if Skada:GetWindows()[1] ~= nil then
                 Skada:GetWindows()[1].bargroup:ClearAllPoints()
@@ -86,7 +85,7 @@ f:SetScript("OnEvent", function(self, event)
                 Skada:GetWindows()[1].db.background.height = 90
             end
         end
-        ------------------------------------------------------------------------------------------------- +01.58 = 01.58
+        ----------------------------------------------------------------------------------------------------------------
         if ShadowUF then
             -- 使用中文單位簡化數字
             ShadowUF.FormatLargeNumber = function(self, number)
@@ -102,37 +101,12 @@ f:SetScript("OnEvent", function(self, event)
                 return ("%02.2f億"):format(number / 1e8)
             end
         end
-        ------------------------------------------------------------------------------------------------- +00.77 = 02.35
+        ----------------------------------------------------------------------------------------------------------------
         -- 設置特殊能量條位置
         PlayerPowerBarAlt:SetMovable(true)
         PlayerPowerBarAlt:SetUserPlaced(true)
         PlayerPowerBarAlt:ClearAllPoints()
         PlayerPowerBarAlt:SetPoint("Center", UIParent, "Center", 0, 420)
-        ------------------------------------------------------------------------------------------------- +00.27 = 02.62
-        local bars = {
-            "MainMenuBarArtFrame",
-            "MultiBarBottomLeft",
-            "MultiBarBottomRight",
-            "MultiBarRight",
-            "MultiBarLeft",
-            "PossessBarFrame",
-            "Action",
-        }
-
-        for i = 1, #bars do
-            -- 隱藏快捷列巨集名稱
-            if _G[bars[i] .. "Button1Name"] ~= nil then
-                for j = 1, 12 do
-                    _G[bars[i] .. "Button" .. j .. "Name"]:SetAlpha(0)
-                end
-            end
-            -- 快捷列右鍵自我施法
-            local bar = _G[bars[i]]
-            if bar ~= nil then
-                bar:SetAttribute("unit2", "player")
-            end
-        end
-        ------------------------------------------------------------------------------------------------- +00.96 = 03.58
     else
         -- 自動出售灰色物品
         local totalPrice = 0
@@ -152,7 +126,7 @@ f:SetScript("OnEvent", function(self, event)
         if totalPrice ~= 0 then
             DEFAULT_CHAT_FRAME:AddMessage("出售物品获得: +" .. GetCoinTextureString(totalPrice), 255, 255, 255)
         end
-        ------------------------------------------------------------------------------------------------- +01.23 = 04.81
+        ----------------------------------------------------------------------------------------------------------------
         -- 自動修理
         if (CanMerchantRepair()) then
             local repairAllCost, canRepair = GetRepairAllCost()
@@ -178,22 +152,33 @@ f:SetScript("OnEvent", function(self, event)
                 end
             end
         end
-        ------------------------------------------------------------------------------------------------- +01.03 = 05.84
     end
-    ----------------------------------------------------------------------------------------------------- +00.07 = 05.91
 end)
---------------------------------------------------------------------------------------------------------- +00.26 = 06.17
--- 設置Immersion框架位置
-if LoadAddOn("Immersion") then
-    ImmersionFrame.TalkBox:ClearAllPoints()
-    ImmersionFrame.TalkBox:SetPoint("Bottom", UIParent, "Center", 0, -190)
-    ImmersionFrame.TalkBox.SetPoint = function()
-    end
+------------------------------------------------------------------------------------------------------------------------
+local bars = {
+    "MainMenuBarArtFrame",
+    "MultiBarBottomLeft",
+    "MultiBarBottomRight",
+    "MultiBarRight",
+    "MultiBarLeft",
+    "PossessBarFrame",
+    "Action",
+}
 
-    ImmersionFrame.TalkBox.Elements:ClearAllPoints()
-    ImmersionFrame.TalkBox.Elements:SetPoint("BottomLeft", ImmersionFrame.TalkBox, "BottomRight", 0, 0)
+for i = 1, #bars do
+    -- 隱藏快捷列巨集名稱
+    if _G[bars[i] .. "Button1Name"] ~= nil then
+        for j = 1, 12 do
+            _G[bars[i] .. "Button" .. j .. "Name"]:SetAlpha(0)
+        end
+    end
+    -- 快捷列右鍵自我施法
+    local bar = _G[bars[i]]
+    if bar ~= nil then
+        bar:SetAttribute("unit2", "player")
+    end
 end
---------------------------------------------------------------------------------------------------------- +00.19 = 06.36
+------------------------------------------------------------------------------------------------------------------------
 -- 設置對話框架位置
 if LoadAddOn("Blizzard_TalkingHeadUI") then
     TalkingHeadFrame.ignorePositionFrameManager = true
@@ -202,7 +187,7 @@ if LoadAddOn("Blizzard_TalkingHeadUI") then
     TalkingHeadFrame.SetPoint = function()
     end
 end
---------------------------------------------------------------------------------------------------------- +00.24 = 06.61
+------------------------------------------------------------------------------------------------------------------------
 -- 隱藏自己的戰鬥文字捲動的治療數字
 if LoadAddOn("Blizzard_CombatText") then
     COMBAT_TEXT_TYPE_INFO["HEAL"] = nil
@@ -214,18 +199,18 @@ if LoadAddOn("Blizzard_CombatText") then
     COMBAT_TEXT_TYPE_INFO["PERIODIC_HEAL_CRIT"] = nil
     COMBAT_TEXT_TYPE_INFO["ABSORB_ADDED"] = nil
 end
---------------------------------------------------------------------------------------------------------- +00.38 = 06.99
+------------------------------------------------------------------------------------------------------------------------
 -- 簡化重置命令
 SlashCmdList["RELOAD"] = function()
     ReloadUI()
 end
 SLASH_RELOAD1 = "/rl"
---------------------------------------------------------------------------------------------------------- +00.26 = 07.25
+------------------------------------------------------------------------------------------------------------------------
 -- 自動填寫DELETE
 hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
     self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
 end)
---------------------------------------------------------------------------------------------------------- +00.40 = 07.65
+------------------------------------------------------------------------------------------------------------------------
 MinimapBorderTop:Hide() -- 隱藏地點邊框
 MinimapBorder:Hide() -- 隱藏地圖邊框
 MiniMapWorldMapButton:Hide() -- 隱藏世界地圖按鈕
@@ -247,7 +232,7 @@ Minimap:SetScript("OnMouseWheel", function(self, value)
         MinimapZoomOut:Click()
     end
 end)
---------------------------------------------------------------------------------------------------------- +00.38 = 08.03
+------------------------------------------------------------------------------------------------------------------------
 -- 大地圖顯示坐標
 WorldMapFrame.playerPos = WorldMapFrame.BorderFrame:CreateFontString(nil, "Artwork")
 WorldMapFrame.playerPos:SetFont(GameFontNormal:GetFont(), 12, "ThinOutline")
@@ -285,23 +270,23 @@ WorldMapFrame:HookScript("OnUpdate", function(self, elapsed)
         self.mousePos:SetText("")
     end
 end)
---------------------------------------------------------------------------------------------------------- +01.76 = 09.79
+------------------------------------------------------------------------------------------------------------------------
 -- 隱藏區域技能鍵材質
 ZoneAbilityFrame.SpellButton.Style:Hide()
 -- 設置區域技能鍵位置
 ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("Center", UIParent, "Center", 0, -270)
+ZoneAbilityFrame:SetPoint("Center", UIParent, "Center", 50, -270)
 ZoneAbilityFrame.SetPoint = function()
 end
---------------------------------------------------------------------------------------------------------- +00.19 = 09.98
+------------------------------------------------------------------------------------------------------------------------
 -- 隱藏額外快捷鍵材質
 ExtraActionButton1.style:Hide()
 -- 設置額外快捷鍵位置
 ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("Center", UIParent, "Center", 0, -210)
+ExtraActionBarFrame:SetPoint("Center", UIParent, "Center", -50, -270)
 ExtraActionBarFrame.SetPoint = function()
 end
---------------------------------------------------------------------------------------------------------- +00.19 = 10.17
+------------------------------------------------------------------------------------------------------------------------
 -- 技能范圍外時快捷列按鈕著色
 hooksecurefunc("ActionButton_OnUpdate", function(self, elapsed)
     if (self.rangeTimer == TOOLTIP_UPDATE_TIME) then
@@ -313,22 +298,21 @@ hooksecurefunc("ActionButton_OnUpdate", function(self, elapsed)
         end
     end
 end)
---------------------------------------------------------------------------------------------------------- +00.72 = 10.89
+------------------------------------------------------------------------------------------------------------------------
 -- 特殊能量條始終顯示數值
 hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     if self.enabled then
-        self:Show();
-        UnitPowerBarAltStatus_UpdateText(self);
+        self:Show()
+        UnitPowerBarAltStatus_UpdateText(self)
     end
 end)
---------------------------------------------------------------------------------------------------------- +00.43 = 11.32
--- 上載具後隱藏寵物快捷列
+------------------------------------------------------------------------------------------------------------------------
+-- 設置離開載具按鈕位置
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
-    if (CanExitVehicle() and ActionBarController_GetCurrentActionBarState() == LE_ACTIONBAR_STATE_MAIN) then
-        PetActionBarFrame:Hide()
-    end
+    MainMenuBarVehicleLeaveButton:ClearAllPoints()
+    MainMenuBarVehicleLeaveButton:SetPoint("Left", MultiBarBottomLeftButton12, "Right", 6, 0)
 end)
---------------------------------------------------------------------------------------------------------- +00.50 = 11.82
+------------------------------------------------------------------------------------------------------------------------
 -- 移動背包
 hooksecurefunc("UpdateContainerFrameAnchors", function()
     -- 修改這兩個值移動
@@ -400,7 +384,7 @@ hooksecurefunc("UpdateContainerFrameAnchors", function()
         freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
     end
 end)
---------------------------------------------------------------------------------------------------------- +02.18 = 14.20
+------------------------------------------------------------------------------------------------------------------------
 -- 快速設置專注目標
 -- 覆蓋按鍵綁定以使模型支持Shift/Alt/Ctrl+點擊
 local focus = CreateFrame(
@@ -417,7 +401,7 @@ hooksecurefunc("CreateFrame", function(type, name, parent, template)
     end
 end)
 
--- 在默認單位框架上設置按鍵綁定，因爲我們不會獲得有關它們創建框架的通知
+-- 在默認單位框架上設置按鍵綁定，因爲不會獲得有關它們創建框架的通知
 local defaultUnitFrames = {
     PlayerFrame,
     PetFrame,
@@ -437,7 +421,7 @@ for i = 1, #defaultUnitFrames do
     -- key參數可以是shift/alt/ctrl-type1/2/3/4/5
     defaultUnitFrames[i]:SetAttribute("shift-type1", "focus")
 end
---------------------------------------------------------------------------------------------------------- +00.72 = 14.92
+------------------------------------------------------------------------------------------------------------------------
 -- 顯示FPS和延遲
 local info = CreateFrame("Frame", "InfoFrame", UIParent)
 info:SetWidth(120)
@@ -470,7 +454,7 @@ info:SetScript("OnUpdate", function(self, elapsed)
 
     infoText:SetText(" " .. fps .. " | " .. latencyHome .. " | " .. latencyWorld .. " ")
 end)
---------------------------------------------------------------------------------------------------------- +01.62 = 16.54
+------------------------------------------------------------------------------------------------------------------------
 local matchTable = {
     ["綜合"] = "綜合",
     ["交易"] = "交易",
@@ -510,7 +494,7 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     end
     editBox:SetTextInsets(15 + header:GetWidth() + (headerSuffix:IsShown() and headerSuffix:GetWidth() or 0), 13, 0, 0)
 end)
---------------------------------------------------------------------------------------------------------- +02.39 = 18.93
+------------------------------------------------------------------------------------------------------------------------
 -- 簡化聊天框頻道名稱
 for name, abbrev in pairs(matchTable) do
     for i = 1, NUM_CHAT_WINDOWS do
@@ -523,7 +507,7 @@ for name, abbrev in pairs(matchTable) do
         end
     end
 end
---------------------------------------------------------------------------------------------------------- +07.69 = 26.62
+------------------------------------------------------------------------------------------------------------------------
 -- 靈魂裂片
 local ss = CreateFrame("Frame", "SoulShard", UIParent)
 ss:SetClampedToScreen(true)
@@ -576,7 +560,7 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
         end
     end
 end)
---------------------------------------------------------------------------------------------------------- +03.10 = 29.72
+------------------------------------------------------------------------------------------------------------------------
 -- 冷卻時間
 local timers = {}
 
@@ -693,7 +677,7 @@ hooksecurefunc(metatable, "SetCooldown", function(cd, start, duration)
         end
     end
 end)
---------------------------------------------------------------------------------------------------------- +06.07 = 35.79
+------------------------------------------------------------------------------------------------------------------------
 -- 對齊網格
 local align = CreateFrame("Frame", "AlignFrame", UIParent)
 align:SetAllPoints(UIParent)
@@ -734,19 +718,19 @@ SlashCmdList["ALIGN"] = function()
     end
 end
 SLASH_ALIGN1 = "/al"
---------------------------------------------------------------------------------------------------------- +01.85 = 37.64
+------------------------------------------------------------------------------------------------------------------------
 -- 簡化ROLL點命令
 SlashCmdList["ROLL"] = function()
     RandomRoll(1, 100)
 end
 SLASH_ROLL1 = "/rr"
---------------------------------------------------------------------------------------------------------- +00.44 = 38.08
+------------------------------------------------------------------------------------------------------------------------
 -- 聊天框清屏
 SlashCmdList["CLEAR"] = function()
     SELECTED_CHAT_FRAME:Clear()
 end
 SLASH_CLEAR1 = "/cl"
---------------------------------------------------------------------------------------------------------- +00.26 = 38.34
+------------------------------------------------------------------------------------------------------------------------
 -- 加入/離開組隊頻道
 SlashCmdList["ZUDUI"] = function()
     local _, channelName, _ = GetChannelName("組隊頻道")
@@ -760,4 +744,201 @@ SlashCmdList["ZUDUI"] = function()
     end
 end
 SLASH_ZUDUI1 = "/zd"
---------------------------------------------------------------------------------------------------------- +00.97 = 39.31
+------------------------------------------------------------------------------------------------------------------------
+-- 隱藏快捷列背景
+MainMenuBarArtFrameBackground:Hide()
+------------------------------------------------------------------------------------------------------------------------
+-- 設置失去控制框架位置
+LossOfControlFrame:ClearAllPoints()
+LossOfControlFrame:SetPoint("Center", UIParent, "Center", 0, -180)
+------------------------------------------------------------------------------------------------------------------------
+-- 拍賣物品自動定價
+local UNDERCUT = 0.97; -- 壓價3%
+local PRICEBY = "VENDOR"; -- 拍賣行沒有該物品時的定價方式，QUALITY：按品質定價，VENDOR：按商店售價定價
+
+-- 基於物品品質定價，10000 = 1金
+local POOR_PRICE = 100000;
+local COMMON_PRICE = 200000;
+local UNCOMMON_PRICE = 3000000;
+local RARE_PRICE = 5000000;
+local EPIC_PRICE = 10000000;
+
+-- 基於商店售價定價，商店售價 * 物品品質係數
+local POOR_MULTIPLIER = 20;
+local COMMON_MULTIPLIER = 30;
+local UNCOMMON_MULTIPLIER = 40;
+local RARE_MULTIPLIER = 50;
+local EPIC_MULTIPLIER = 60;
+
+local auction = CreateFrame("Frame")
+auction:RegisterEvent("AUCTION_HOUSE_SHOW")
+auction:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
+
+local selectedItem -- 拍賣物品
+local selectedItemVendorPrice -- 商店售價
+local selectedItemQuality -- 品質
+local currentPage = 0 -- 當前頁數
+local myBuyoutPrice, myStartPrice -- 我的直購價，我的起始價
+local myName = UnitName("player")
+
+auction:SetScript("OnEvent", function(self, event)
+    if event == "AUCTION_HOUSE_SHOW" then
+        AuctionFrame.tip = AuctionFrame:CreateFontString(nil, "Artwork")
+        AuctionFrame.tip:SetFont("Fonts\\ARHei.ttf", 14, "ThinOutline")
+        AuctionFrame.tip:SetJustifyH("Left")
+        AuctionFrame.tip:SetPoint("Top", AuctionsCreateAuctionButton, "Bottom", 200, -7)
+        AuctionFrame.tip:SetTextColor(1, 1, 0)
+
+        AuctionsItemButton:HookScript("OnEvent", function(self, event)
+            -- 放置物品拍賣
+            if event == "NEW_AUCTION_UPDATE" then
+                AuctionFrame.tip:SetText("")
+                self:SetScript("OnUpdate", nil)
+                myBuyoutPrice = nil
+                myStartPrice = nil
+                currentPage = 0
+                selectedItem = nil
+                -- 獲取拍賣物品信息
+                selectedItem, _, _, _, _, _, _, _, _, _ = GetAuctionSellItemInfo()
+                local canQuery = CanSendAuctionQuery()
+
+                -- 根據物品名稱在拍賣行查找
+                if canQuery and selectedItem then
+                    ResetCursor()
+                    QueryAuctionItems(selectedItem)
+                end
+            end
+        end)
+        -- 拍賣行列表更新或排序
+    elseif event == "AUCTION_ITEM_LIST_UPDATE" then
+        -- 拍賣物品欄有物品
+        if (selectedItem ~= nil) then
+            local batch, totalAuctions = GetNumAuctionItems("list")
+
+            -- 拍賣行沒有該物品
+            if totalAuctions == 0 then
+
+                -- 獲取物品品質和商店售價
+                _, _, selectedItemQuality, _, _, _, _, _, _, _, selectedItemVendorPrice = GetItemInfo(selectedItem)
+
+                if PRICEBY == "QUALITY" then
+                    if selectedItemQuality == 0 then
+                        myBuyoutPrice = POOR_PRICE
+                    end
+                    if selectedItemQuality == 1 then
+                        myBuyoutPrice = COMMON_PRICE
+                    end
+                    if selectedItemQuality == 2 then
+                        myBuyoutPrice = UNCOMMON_PRICE
+                    end
+                    if selectedItemQuality == 3 then
+                        myBuyoutPrice = RARE_PRICE
+                    end
+                    if selectedItemQuality == 4 then
+                        myBuyoutPrice = EPIC_PRICE
+                    end
+                    AuctionFrame.tip:SetText("拍賣行沒有該物品，按物品品質定價！")
+                elseif PRICEBY == "VENDOR" then
+                    if selectedItemQuality == 0 then
+                        myBuyoutPrice = selectedItemVendorPrice * POOR_MULTIPLIER
+                    end
+                    if selectedItemQuality == 1 then
+                        myBuyoutPrice = selectedItemVendorPrice * COMMON_MULTIPLIER
+                    end
+                    if selectedItemQuality == 2 then
+                        myBuyoutPrice = selectedItemVendorPrice * UNCOMMON_MULTIPLIER
+                    end
+                    if selectedItemQuality == 3 then
+                        myBuyoutPrice = selectedItemVendorPrice * RARE_MULTIPLIER
+                    end
+                    if selectedItemQuality == 4 then
+                        myBuyoutPrice = selectedItemVendorPrice * EPIC_MULTIPLIER
+                    end
+                    AuctionFrame.tip:SetText("拍賣行沒有該物品，按商店售價定價！")
+                end
+
+                myStartPrice = myBuyoutPrice
+            end
+
+            local totalPageCount = floor(totalAuctions / 50)
+
+            -- 掃描當前頁
+            for i = 1, batch do
+                local postedItem, _, count, _, _, _, _, minBid, _,
+                buyoutPrice, _, _, _, owner = GetAuctionItemInfo("list", i)
+
+                -- 拍賣行列表中的物品與拍賣物品相匹配
+                if postedItem == selectedItem and owner ~= myName and buyoutPrice ~= nil then
+
+                    if myBuyoutPrice == nil and myStartPrice == nil then
+                        myBuyoutPrice = (buyoutPrice / count) * UNDERCUT
+                        myStartPrice = (minBid / count) * UNDERCUT
+
+                    elseif myBuyoutPrice > (buyoutPrice / count) then
+                        myBuyoutPrice = (buyoutPrice / count) * UNDERCUT
+                        myStartPrice = (minBid / count) * UNDERCUT
+                    end
+
+                end
+            end
+
+            if currentPage < totalPageCount then
+                -- 下一頁
+                self:SetScript("OnUpdate", function(self, elapsed)
+                    self.elapsed = (self.elapsed or 0) + elapsed
+                    if self.elapsed < 0.2 then
+                        return
+                    end
+                    self.elapsed = 0
+
+                    selectedItem = GetAuctionSellItemInfo()
+                    local canQuery = CanSendAuctionQuery()
+
+                    -- 檢查拍賣行的下一頁
+                    if canQuery then
+                        currentPage = currentPage + 1
+                        QueryAuctionItems(selectedItem, nil, nil, currentPage)
+                        self:SetScript("OnUpdate", nil)
+                    end
+                end)
+                -- 已掃描所有頁面
+            else
+                self:SetScript("OnUpdate", nil)
+                local stackSize = AuctionsStackSizeEntry:GetNumber()
+
+                if myStartPrice ~= nil then
+                    -- 物品堆疊
+                    if stackSize > 1 then
+
+                        -- 每一個價格
+                        if UIDropDownMenu_GetSelectedValue(PriceDropDown) == 1 then
+                            MoneyInputFrame_SetCopper(StartPrice, myStartPrice)
+                            MoneyInputFrame_SetCopper(BuyoutPrice, myBuyoutPrice)
+                            -- 每一疊價格
+                        else
+                            MoneyInputFrame_SetCopper(StartPrice, myStartPrice * stackSize)
+                            MoneyInputFrame_SetCopper(BuyoutPrice, myBuyoutPrice * stackSize)
+                        end
+                        -- 沒有堆疊
+                    else
+                        MoneyInputFrame_SetCopper(StartPrice, myStartPrice)
+                        MoneyInputFrame_SetCopper(BuyoutPrice, myBuyoutPrice)
+                    end
+
+                    -- 設置有效時限爲48小時
+                    if UIDropDownMenu_GetSelectedValue(DurationDropDown) ~= 3 then
+                        UIDropDownMenu_SetSelectedValue(DurationDropDown, 3)
+                        -- 防止有時候顯示爲自訂
+                        DurationDropDownText:SetText("48小時")
+                    end
+                end
+
+                myBuyoutPrice = nil
+                myStartPrice = nil
+                currentPage = 0
+                selectedItem = nil
+                stackSize = nil
+            end
+        end
+    end
+end)
