@@ -617,6 +617,7 @@ local function CreateTimer(cd)
             timers[cd] = timer
 
             timer:SetScript("OnUpdate", function(self, elapsed)
+                -- cd未顯示時，隱藏timer，例如總是顯示快捷列時，移動冷卻中的技能到另一個按鈕時，原按鈕位置應該不再顯示計時
                 if not self.cd:IsShown() then
                     self:Hide()
                 end
@@ -628,6 +629,7 @@ local function CreateTimer(cd)
                 self.elapsed = 0
 
                 local remain = self.start + self.duration - GetTime()
+                -- 大於最大顯示時間時，隱藏文字顯示
                 if remain > 864000 then
                     if self.text:IsShown() then
                         self.nextUpdate = remain % 864000
@@ -651,10 +653,7 @@ local function CreateTimer(cd)
                 end
             end)
 
-            timer:SetScript("OnHide", function(self)
-                self.nextUpdate = 0
-            end)
-
+            -- 顯示timer時立即更新
             timer:SetScript("OnShow", function(self)
                 self.nextUpdate = 0
             end)
@@ -669,10 +668,17 @@ local metatable = getmetatable(
 hooksecurefunc(metatable, "SetCooldown", function(cd, start, duration)
     -- 2：最小時間，公共冷卻時間不顯示
     if duration > 2 then
+        -- 使用key作爲該cd內容的標記
+        local key = ("%s-%s"):format(floor(start * 1000), floor(duration * 1000))
         local timer = timers[cd] or CreateTimer(cd)
         if timer then
             timer.start = start
             timer.duration = duration
+            -- 當該cd的內容發生變化時立即更新，例如右鍵取消suf上一個光環時，下一個光環移到上一個的位置，需要立即更新計時
+            if timer.key ~= key then
+                timer.key = key
+                timer.nextUpdate = 0
+            end
             timer:Show()
         end
     end
