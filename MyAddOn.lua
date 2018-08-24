@@ -790,16 +790,16 @@ local myName = UnitName("player")
 
 auction:SetScript("OnEvent", function(self, event)
     if event == "AUCTION_HOUSE_SHOW" then
-        AuctionFrame.tip = AuctionFrame:CreateFontString(nil, "Artwork")
-        AuctionFrame.tip:SetFont("Fonts\\ARHei.ttf", 14, "ThinOutline")
-        AuctionFrame.tip:SetJustifyH("Left")
-        AuctionFrame.tip:SetPoint("Left", AuctionFrameMoneyFrame, "Right", 5, 0)
-        AuctionFrame.tip:SetTextColor(1, 1, 0)
+        AuctionFrameAuctions.tip = AuctionFrameAuctions:CreateFontString(nil, "Artwork")
+        AuctionFrameAuctions.tip:SetFont("Fonts\\ARHei.ttf", 14, "ThinOutline")
+        AuctionFrameAuctions.tip:SetJustifyH("Left")
+        AuctionFrameAuctions.tip:SetPoint("Left", AuctionFrameMoneyFrame, "Right", 5, 0)
+        AuctionFrameAuctions.tip:SetTextColor(1, 1, 0)
 
         AuctionsItemButton:HookScript("OnEvent", function(self, event)
             -- 放置物品拍賣
             if event == "NEW_AUCTION_UPDATE" then
-                AuctionFrame.tip:SetText("")
+                AuctionFrameAuctions.tip:SetText("")
                 self:SetScript("OnUpdate", nil)
                 myBuyoutPrice = nil
                 myStartPrice = nil
@@ -821,61 +821,18 @@ auction:SetScript("OnEvent", function(self, event)
         -- 拍賣物品欄有物品
         if (selectedItem ~= nil) then
             local batch, totalAuctions = GetNumAuctionItems("list")
-
-            -- 拍賣行沒有該物品
-            if totalAuctions == 0 then
-
-                -- 獲取物品品質和商店售價
-                _, _, selectedItemQuality, _, _, _, _, _, _, _, selectedItemVendorPrice = GetItemInfo(selectedItem)
-
-                if PRICEBY == "QUALITY" then
-                    if selectedItemQuality == 0 then
-                        myBuyoutPrice = POOR_PRICE
-                    end
-                    if selectedItemQuality == 1 then
-                        myBuyoutPrice = COMMON_PRICE
-                    end
-                    if selectedItemQuality == 2 then
-                        myBuyoutPrice = UNCOMMON_PRICE
-                    end
-                    if selectedItemQuality == 3 then
-                        myBuyoutPrice = RARE_PRICE
-                    end
-                    if selectedItemQuality == 4 then
-                        myBuyoutPrice = EPIC_PRICE
-                    end
-                    AuctionFrame.tip:SetText("拍賣行沒有該物品，按物品品質定價！")
-                elseif PRICEBY == "VENDOR" then
-                    if selectedItemQuality == 0 then
-                        myBuyoutPrice = selectedItemVendorPrice * POOR_MULTIPLIER
-                    end
-                    if selectedItemQuality == 1 then
-                        myBuyoutPrice = selectedItemVendorPrice * COMMON_MULTIPLIER
-                    end
-                    if selectedItemQuality == 2 then
-                        myBuyoutPrice = selectedItemVendorPrice * UNCOMMON_MULTIPLIER
-                    end
-                    if selectedItemQuality == 3 then
-                        myBuyoutPrice = selectedItemVendorPrice * RARE_MULTIPLIER
-                    end
-                    if selectedItemQuality == 4 then
-                        myBuyoutPrice = selectedItemVendorPrice * EPIC_MULTIPLIER
-                    end
-                    AuctionFrame.tip:SetText("拍賣行沒有該物品，按商店售價定價！")
-                end
-
-                myStartPrice = myBuyoutPrice
-            end
-
             local totalPageCount = floor(totalAuctions / 50)
+            local exactMatch = false
 
             -- 掃描當前頁
             for i = 1, batch do
                 local postedItem, _, count, _, _, _, _, minBid, _,
                 buyoutPrice, _, _, _, owner = GetAuctionItemInfo("list", i)
 
-                -- 拍賣行列表中的物品與拍賣物品相匹配，沒有直購價時buyoutPrice爲0
-                if postedItem == selectedItem and owner ~= myName and buyoutPrice ~= 0 then
+                -- 拍賣行列表中的物品與拍賣物品完全匹配，沒有直購價時buyoutPrice爲0
+                if postedItem == selectedItem and owner ~= myName and buyoutPrice > 0 then
+                    exactMatch = true
+
                     if myBuyoutPrice == nil and myStartPrice == nil then
                         myBuyoutPrice = (buyoutPrice / count) * UNDERCUT
                         myStartPrice = (minBid / count) * UNDERCUT
@@ -883,12 +840,11 @@ auction:SetScript("OnEvent", function(self, event)
                         myBuyoutPrice = (buyoutPrice / count) * UNDERCUT
                         myStartPrice = (minBid / count) * UNDERCUT
                     end
-
                 end
             end
 
             if currentPage < totalPageCount then
-                AuctionFrame.tip:SetText("掃描中... " .. currentPage .. " / " .. totalPageCount)
+                AuctionFrameAuctions.tip:SetText("掃描中... " .. currentPage .. " / " .. totalPageCount)
 
                 -- 下一頁
                 self:SetScript("OnUpdate", function(self, elapsed)
@@ -911,14 +867,58 @@ auction:SetScript("OnEvent", function(self, event)
 
                 -- 已掃描所有頁面
             else
-                if (totalAuctions > 0) then
-                    AuctionFrame.tip:SetText("定價完成")
+                if exactMatch then
+                    AuctionFrameAuctions.tip:SetText("定價完成")
+                else
+                    -- 拍賣行沒有該物品的直購價
+
+                    -- 獲取物品品質和商店售價
+                    _, _, selectedItemQuality, _, _, _, _, _, _, _, selectedItemVendorPrice = GetItemInfo(selectedItem)
+
+                    if PRICEBY == "QUALITY" then
+                        if selectedItemQuality == 0 then
+                            myBuyoutPrice = POOR_PRICE
+                        end
+                        if selectedItemQuality == 1 then
+                            myBuyoutPrice = COMMON_PRICE
+                        end
+                        if selectedItemQuality == 2 then
+                            myBuyoutPrice = UNCOMMON_PRICE
+                        end
+                        if selectedItemQuality == 3 then
+                            myBuyoutPrice = RARE_PRICE
+                        end
+                        if selectedItemQuality == 4 then
+                            myBuyoutPrice = EPIC_PRICE
+                        end
+                        AuctionFrameAuctions.tip:SetText("拍賣行沒有該物品的直購價，按物品品質定價")
+                    elseif PRICEBY == "VENDOR" then
+                        if selectedItemQuality == 0 then
+                            myBuyoutPrice = selectedItemVendorPrice * POOR_MULTIPLIER
+                        end
+                        if selectedItemQuality == 1 then
+                            myBuyoutPrice = selectedItemVendorPrice * COMMON_MULTIPLIER
+                        end
+                        if selectedItemQuality == 2 then
+                            myBuyoutPrice = selectedItemVendorPrice * UNCOMMON_MULTIPLIER
+                        end
+                        if selectedItemQuality == 3 then
+                            myBuyoutPrice = selectedItemVendorPrice * RARE_MULTIPLIER
+                        end
+                        if selectedItemQuality == 4 then
+                            myBuyoutPrice = selectedItemVendorPrice * EPIC_MULTIPLIER
+                        end
+                        AuctionFrameAuctions.tip:SetText("拍賣行沒有該物品的直購價，按商店售價定價")
+                    end
+
+                    myStartPrice = myBuyoutPrice
                 end
 
                 self:SetScript("OnUpdate", nil)
                 local stackSize = AuctionsStackSizeEntry:GetNumber()
 
                 if myStartPrice ~= nil then
+
                     -- 物品堆疊
                     if stackSize > 1 then
 
@@ -937,13 +937,15 @@ auction:SetScript("OnEvent", function(self, event)
                         MoneyInputFrame_SetCopper(BuyoutPrice, myBuyoutPrice)
                     end
 
-                    -- 設置有效時限爲48小時
-                    if UIDropDownMenu_GetSelectedValue(DurationDropDown) ~= 3 then
-                        UIDropDownMenu_SetSelectedValue(DurationDropDown, 3)
-                        -- 防止有時候顯示爲自訂
-                        DurationDropDownText:SetText("48小時")
-                    end
                 end
+
+                local startPrice = myStartPrice
+                local buyoutPrice = myBuyoutPrice
+                AuctionsStackSizeEntry:HookScript("OnTextChanged", function()
+                    local stacks = AuctionsStackSizeEntry:GetNumber()
+                    MoneyInputFrame_SetCopper(StartPrice, startPrice * stacks)
+                    MoneyInputFrame_SetCopper(BuyoutPrice, buyoutPrice * stacks)
+                end)
 
                 myBuyoutPrice = nil
                 myStartPrice = nil
@@ -954,3 +956,4 @@ auction:SetScript("OnEvent", function(self, event)
         end
     end
 end)
+
