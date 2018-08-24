@@ -19,6 +19,7 @@ SetCVar("Sound_SFXVolume", 0.7) -- 音效音量
 SetCVar("Sound_MusicVolume", 0.5) -- 音樂音量
 SetCVar("Sound_AmbienceVolume", 1) -- 環境音量
 SetCVar("Sound_DialogVolume", 1) -- 對話音量
+SetCVar("movieSubtitle", 1) -- 啟用動畫字幕
 ------------------------------------------------------------------------------------------------------------------------
 -- 隱藏製造者
 ITEM_CREATED_BY = ""
