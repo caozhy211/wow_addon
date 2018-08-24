@@ -792,7 +792,7 @@ auction:SetScript("OnEvent", function(self, event)
         AuctionFrame.tip = AuctionFrame:CreateFontString(nil, "Artwork")
         AuctionFrame.tip:SetFont("Fonts\\ARHei.ttf", 14, "ThinOutline")
         AuctionFrame.tip:SetJustifyH("Left")
-        AuctionFrame.tip:SetPoint("Top", AuctionsCreateAuctionButton, "Bottom", 200, -7)
+        AuctionFrame.tip:SetPoint("Left", AuctionFrameMoneyFrame, "Right", 5, 0)
         AuctionFrame.tip:SetTextColor(1, 1, 0)
 
         AuctionsItemButton:HookScript("OnEvent", function(self, event)
@@ -873,13 +873,11 @@ auction:SetScript("OnEvent", function(self, event)
                 local postedItem, _, count, _, _, _, _, minBid, _,
                 buyoutPrice, _, _, _, owner = GetAuctionItemInfo("list", i)
 
-                -- 拍賣行列表中的物品與拍賣物品相匹配
-                if postedItem == selectedItem and owner ~= myName and buyoutPrice ~= nil then
-
+                -- 拍賣行列表中的物品與拍賣物品相匹配，沒有直購價時buyoutPrice爲0
+                if postedItem == selectedItem and owner ~= myName and buyoutPrice ~= 0 then
                     if myBuyoutPrice == nil and myStartPrice == nil then
                         myBuyoutPrice = (buyoutPrice / count) * UNDERCUT
                         myStartPrice = (minBid / count) * UNDERCUT
-
                     elseif myBuyoutPrice > (buyoutPrice / count) then
                         myBuyoutPrice = (buyoutPrice / count) * UNDERCUT
                         myStartPrice = (minBid / count) * UNDERCUT
@@ -889,6 +887,8 @@ auction:SetScript("OnEvent", function(self, event)
             end
 
             if currentPage < totalPageCount then
+                AuctionFrame.tip:SetText("掃描中... " .. currentPage .. " / " .. totalPageCount)
+
                 -- 下一頁
                 self:SetScript("OnUpdate", function(self, elapsed)
                     self.elapsed = (self.elapsed or 0) + elapsed
@@ -907,8 +907,13 @@ auction:SetScript("OnEvent", function(self, event)
                         self:SetScript("OnUpdate", nil)
                     end
                 end)
+
                 -- 已掃描所有頁面
             else
+                if (totalAuctions > 0) then
+                    AuctionFrame.tip:SetText("定價完成")
+                end
+
                 self:SetScript("OnUpdate", nil)
                 local stackSize = AuctionsStackSizeEntry:GetNumber()
 
