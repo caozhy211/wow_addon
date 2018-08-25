@@ -44,8 +44,8 @@ for i = 1, NUM_CHAT_WINDOWS do
     -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
     chatFrame:SetClampRectInsets(-35, 38, 38, -117)
     -- 設置聊天框的最小尺寸和最大尺寸
-    chatFrame:SetMinResize(476, 181)
-    chatFrame:SetMaxResize(476, 181)
+    chatFrame:SetMinResize(481, 181)
+    chatFrame:SetMaxResize(481, 181)
 
     -- 隱藏輸入框的邊框
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
@@ -82,7 +82,7 @@ f:SetScript("OnEvent", function(self, event)
             if Skada:GetWindows()[1] ~= nil then
                 Skada:GetWindows()[1].bargroup:ClearAllPoints()
                 Skada:GetWindows()[1].bargroup:SetPoint("BottomLeft", UIParent, "BottomLeft", 0, 0)
-                Skada:GetWindows()[1].db.barwidth = 535
+                Skada:GetWindows()[1].db.barwidth = 540
                 Skada:GetWindows()[1].db.background.height = 90
             end
         end
@@ -184,7 +184,7 @@ end
 if LoadAddOn("Blizzard_TalkingHeadUI") then
     TalkingHeadFrame.ignorePositionFrameManager = true
     TalkingHeadFrame:ClearAllPoints()
-    TalkingHeadFrame:SetPoint("TopLeft", UIParent, "TopLeft", 0, 0)
+    TalkingHeadFrame:SetPoint("TopLeft", UIParent, "TopLeft", 10, 10)
     TalkingHeadFrame.SetPoint = function()
     end
 end
@@ -315,74 +315,11 @@ hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
 end)
 ------------------------------------------------------------------------------------------------------------------------
 -- 移動背包
-hooksecurefunc("UpdateContainerFrameAnchors", function()
-    -- 修改這兩個值移動
-    local moveOffsetX = 0 -- 正數向左移動，負數向右移動
-    local moveOffsetY = 60 -- 正數向上移動， 負數向下移動
-
-    local frame, xOffset, yOffset, screenHeight, freeScreenHeight, leftMostPoint, column
-    local screenWidth = GetScreenWidth()
-    local containerScale = 1
-    local leftLimit = 0
-    if (BankFrame:IsShown()) then
-        leftLimit = BankFrame:GetRight() - 25
-    end
-
-    while (containerScale > CONTAINER_SCALE) do
-        screenHeight = GetScreenHeight() / containerScale
-        -- 根據快捷列調整背包的起始錨點
-        xOffset = (CONTAINER_OFFSET_X + moveOffsetX) / containerScale
-        yOffset = (CONTAINER_OFFSET_Y + moveOffsetY) / containerScale
-        -- freeScreenHeight決定什麼時候開始新的一列
-        freeScreenHeight = screenHeight - yOffset
-        leftMostPoint = screenWidth - xOffset
-        column = 1
-        local frameHeight
-        for index = 1, #ContainerFrame1.bags do
-            frameHeight = _G[ContainerFrame1.bags[index]]:GetHeight()
-            if (freeScreenHeight < frameHeight) then
-                -- 開始新的一列
-                column = column + 1
-                leftMostPoint = screenWidth - (column * CONTAINER_WIDTH * containerScale) - xOffset
-                freeScreenHeight = screenHeight - yOffset
-            end
-            freeScreenHeight = freeScreenHeight - frameHeight - VISIBLE_CONTAINER_SPACING
-        end
-        if (leftMostPoint < leftLimit) then
-            containerScale = containerScale - 0.01
-        else
-            break
-        end
-    end
-
-    if (containerScale < CONTAINER_SCALE) then
-        containerScale = CONTAINER_SCALE
-    end
-
-    screenHeight = GetScreenHeight() / containerScale
-    -- 根據快捷列調整背包的起始錨點
-    xOffset = (CONTAINER_OFFSET_X + moveOffsetX) / containerScale
-    yOffset = (CONTAINER_OFFSET_Y + moveOffsetY) / containerScale
-    -- freeScreenHeight決定什麼時候開始新的一列
-    freeScreenHeight = screenHeight - yOffset
-    column = 0
-    for index = 1, #ContainerFrame1.bags do
-        frame = _G[ContainerFrame1.bags[index]]
-        frame:SetScale(containerScale)
-        if (index == 1) then
-            -- 第一個背包
-            frame:SetPoint("BottomRight", frame:GetParent(), "BottomRight", -xOffset, yOffset)
-        elseif (freeScreenHeight < frame:GetHeight()) then
-            -- 開始新的一列
-            column = column + 1
-            freeScreenHeight = screenHeight - yOffset
-            frame:SetPoint(
-                    "BottomRight", frame:GetParent(), "BottomRight", -(column * CONTAINER_WIDTH) - xOffset, yOffset)
-        else
-            -- 以上一個背包作爲錨點
-            frame:SetPoint("BottomRight", ContainerFrame1.bags[index - 1], "TopRight", 0, CONTAINER_SPACING)
-        end
-        freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
+hooksecurefunc("UIParent_ManageFramePositions", function()
+    if MainMenuBar:IsShown() then
+        UIPARENT_MANAGED_FRAME_POSITIONS["CONTAINER_OFFSET_Y"].yOffset = 70
+    else
+        UIPARENT_MANAGED_FRAME_POSITIONS["CONTAINER_OFFSET_Y"].yOffset = 115
     end
 end)
 ------------------------------------------------------------------------------------------------------------------------
