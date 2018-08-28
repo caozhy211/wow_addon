@@ -1,0 +1,8 @@
+local f = CreateFrame("Frame")
+f:RegisterEvent("PLAYER_LOGIN")
+f:SetScript("OnEvent", function()
+    PlayerPowerBarAlt:SetMovable(true)
+    PlayerPowerBarAlt:SetUserPlaced(true)
+    PlayerPowerBarAlt:ClearAllPoints()
+    PlayerPowerBarAlt:SetPoint("Center", UIParent, "Center", 0, 420)
+end)
