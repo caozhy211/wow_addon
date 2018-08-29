@@ -29,7 +29,7 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
             if ss:GetHeight() == 0 then
                 ss:SetHeight(size)
                 ss:SetWidth(size * numPower)
-                ss:SetPoint("BOTTOM", UIParent, "BOTTOM", 0, 195)
+                ss:SetPoint("Top", UIParent, "Bottom", 0, 240)
             end
             ss:Show()
 

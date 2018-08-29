@@ -21,15 +21,8 @@ SetCVar("Sound_AmbienceVolume", 1) -- 環境音量
 SetCVar("Sound_DialogVolume", 1) -- 對話音量
 SetCVar("movieSubtitle", 1) -- 啟用動畫字幕
 ------------------------------------------------------------------------------------------------------------------------
--- 隱藏製造者
-ITEM_CREATED_BY = ""
-------------------------------------------------------------------------------------------------------------------------
--- 團隊框架滑塊值
-CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(22, 33)
-CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(70, 114)
-------------------------------------------------------------------------------------------------------------------------
--- 隱藏拾取框
-LootFrame:SetAlpha(0)
+-- 隱藏快捷列背景
+MainMenuBarArtFrameBackground:Hide()
 ------------------------------------------------------------------------------------------------------------------------
 -- 隱藏主快捷列兩邊的材質
 MainMenuBarArtFrame.LeftEndCap:Hide()
@@ -37,6 +30,63 @@ MainMenuBarArtFrame.RightEndCap:Hide()
 -- 隱藏載具快捷列兩邊的材質
 OverrideActionBarEndCapL:Hide()
 OverrideActionBarEndCapR:Hide()
+------------------------------------------------------------------------------------------------------------------------
+-- 設置快捷列滑入滑出效果的距離和時間
+MainMenuBar.slideOut:GetAnimations():SetOffset(0, 0)
+OverrideActionBar.slideOut:GetAnimations():SetDuration(0)
+------------------------------------------------------------------------------------------------------------------------
+-- 技能范圍外時快捷列按鈕著色
+hooksecurefunc("ActionButton_OnUpdate", function(self, elapsed)
+    if (self.rangeTimer == TOOLTIP_UPDATE_TIME) then
+        local valid = IsActionInRange(self.action)
+        if (valid == false) then
+            self.icon:SetVertexColor(0.8, 0.1, 0.1)
+        else
+            ActionButton_UpdateUsable(self)
+        end
+    end
+end)
+------------------------------------------------------------------------------------------------------------------------
+-- 設置離開載具按鈕位置
+hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
+    MainMenuBarVehicleLeaveButton:ClearAllPoints()
+    MainMenuBarVehicleLeaveButton:SetPoint("Left", MultiBarBottomLeftButton12, "Right", 6, 0)
+end)
+------------------------------------------------------------------------------------------------------------------------
+-- 隱藏區域技能鍵材質
+ZoneAbilityFrame.SpellButton.Style:Hide()
+-- 設置區域技能鍵位置
+ZoneAbilityFrame:ClearAllPoints()
+ZoneAbilityFrame:SetPoint("Center", UIParent, "Center", 180, -150)
+ZoneAbilityFrame.SetPoint = function()
+end
+------------------------------------------------------------------------------------------------------------------------
+-- 隱藏額外快捷鍵材質
+ExtraActionButton1.style:Hide()
+-- 設置額外快捷鍵位置
+ExtraActionBarFrame:ClearAllPoints()
+ExtraActionBarFrame:SetPoint("Center", UIParent, "Center", -180, -150)
+ExtraActionBarFrame.SetPoint = function()
+end
+------------------------------------------------------------------------------------------------------------------------
+-- 特殊能量條始終顯示數值
+hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
+    if self.enabled then
+        self:Show()
+        UnitPowerBarAltStatus_UpdateText(self)
+    end
+end)
+------------------------------------------------------------------------------------------------------------------------
+-- 設置失去控制框架位置
+LossOfControlFrame:ClearAllPoints()
+LossOfControlFrame:SetPoint("Center", UIParent, "Bottom", 0, 174)
+------------------------------------------------------------------------------------------------------------------------
+-- 團隊框架滑塊值
+CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(22, 33)
+CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(70, 114)
+------------------------------------------------------------------------------------------------------------------------
+-- 隱藏拾取框
+LootFrame:SetAlpha(0)
 ------------------------------------------------------------------------------------------------------------------------
 -- 聊天框
 for i = 1, NUM_CHAT_WINDOWS do
@@ -60,29 +110,6 @@ for i = 1, NUM_CHAT_WINDOWS do
     editBox:SetAltArrowKeyMode(false)
 end
 ------------------------------------------------------------------------------------------------------------------------
--- 隱藏區域技能鍵材質
-ZoneAbilityFrame.SpellButton.Style:Hide()
--- 設置區域技能鍵位置
-ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("Center", UIParent, "Center", 50, -270)
-ZoneAbilityFrame.SetPoint = function()
-end
-------------------------------------------------------------------------------------------------------------------------
--- 隱藏額外快捷鍵材質
-ExtraActionButton1.style:Hide()
--- 設置額外快捷鍵位置
-ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("Center", UIParent, "Center", -50, -270)
-ExtraActionBarFrame.SetPoint = function()
-end
-------------------------------------------------------------------------------------------------------------------------
--- 隱藏快捷列背景
-MainMenuBarArtFrameBackground:Hide()
-------------------------------------------------------------------------------------------------------------------------
--- 設置失去控制框架位置
-LossOfControlFrame:ClearAllPoints()
-LossOfControlFrame:SetPoint("Center", UIParent, "Center", 0, -180)
-------------------------------------------------------------------------------------------------------------------------
 MinimapBorderTop:Hide() -- 隱藏地點邊框
 MinimapBorder:Hide() -- 隱藏地圖邊框
 MiniMapWorldMapButton:Hide() -- 隱藏世界地圖按鈕
@@ -102,18 +129,6 @@ Minimap:SetScript("OnMouseWheel", function(self, value)
         MinimapZoomIn:Click()
     else
         MinimapZoomOut:Click()
-    end
-end)
-------------------------------------------------------------------------------------------------------------------------
--- 技能范圍外時快捷列按鈕著色
-hooksecurefunc("ActionButton_OnUpdate", function(self, elapsed)
-    if (self.rangeTimer == TOOLTIP_UPDATE_TIME) then
-        local valid = IsActionInRange(self.action)
-        if (valid == false) then
-            self.icon:SetVertexColor(0.8, 0.1, 0.1)
-        else
-            ActionButton_UpdateUsable(self)
-        end
     end
 end)
 ------------------------------------------------------------------------------------------------------------------------
@@ -138,28 +153,10 @@ if LoadAddOn("Blizzard_TalkingHeadUI") then
     end
 end
 ------------------------------------------------------------------------------------------------------------------------
--- 設置離開載具按鈕位置
-hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
-    MainMenuBarVehicleLeaveButton:ClearAllPoints()
-    MainMenuBarVehicleLeaveButton:SetPoint("Left", MultiBarBottomLeftButton12, "Right", 6, 0)
-end)
-------------------------------------------------------------------------------------------------------------------------
--- 特殊能量條始終顯示數值
-hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
-    if self.enabled then
-        self:Show()
-        UnitPowerBarAltStatus_UpdateText(self)
-    end
-end)
-------------------------------------------------------------------------------------------------------------------------
 -- 自動填寫DELETE
 hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
     self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
 end)
-------------------------------------------------------------------------------------------------------------------------
--- 設置快捷列滑入滑出效果的距離和時間
-MainMenuBar.slideOut:GetAnimations():SetOffset(0, 0)
-OverrideActionBar.slideOut:GetAnimations():SetDuration(0)
 ------------------------------------------------------------------------------------------------------------------------
 -- 設置背包的位置
 -- 不調整背包垂直方向的移動，例如使用物品、上下載具的時候
