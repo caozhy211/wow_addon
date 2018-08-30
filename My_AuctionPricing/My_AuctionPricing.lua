@@ -1,5 +1,5 @@
 local UNDERCUT = 0.97; -- 壓價3%
-local PRICEBY = "VENDOR"; -- 拍賣行沒有該物品時的定價方式，QUALITY：按品質定價，VENDOR：按商店售價定價
+local PRICE_BY = "VENDOR"; -- 拍賣行沒有該物品時的定價方式，QUALITY：按品質定價，VENDOR：按商店售價定價
 
 -- 基於物品品質定價，10000 = 1金
 local POOR_PRICE = 100000;
@@ -15,16 +15,17 @@ local UNCOMMON_MULTIPLIER = 40;
 local RARE_MULTIPLIER = 50;
 local EPIC_MULTIPLIER = 60;
 
-local auction = CreateFrame("Frame")
-auction:RegisterEvent("AUCTION_HOUSE_SHOW")
-auction:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
-
 local selectedItem -- 拍賣物品
 local selectedItemVendorPrice -- 商店售價
 local selectedItemQuality -- 品質
 local currentPage = 0 -- 當前頁數
 local myBuyoutPrice, myStartPrice -- 我的直購價，我的起始價
+local exactMatch -- 是否匹配到有直購價的物品
 local myName = UnitName("player")
+
+local auction = CreateFrame("Frame")
+auction:RegisterEvent("AUCTION_HOUSE_SHOW")
+auction:RegisterEvent("AUCTION_ITEM_LIST_UPDATE")
 
 auction:SetScript("OnEvent", function(self, event)
     if event == "AUCTION_HOUSE_SHOW" then
@@ -43,6 +44,7 @@ auction:SetScript("OnEvent", function(self, event)
                 myStartPrice = nil
                 currentPage = 0
                 selectedItem = nil
+                exactMatch = false
                 -- 獲取拍賣物品信息
                 selectedItem, _, _, _, _, _, _, _, _, _ = GetAuctionSellItemInfo()
                 local canQuery = CanSendAuctionQuery()
@@ -60,14 +62,13 @@ auction:SetScript("OnEvent", function(self, event)
         if (selectedItem ~= nil) then
             local batch, totalAuctions = GetNumAuctionItems("list")
             local totalPageCount = floor(totalAuctions / 50)
-            local exactMatch = false
 
             -- 掃描當前頁
             for i = 1, batch do
                 local postedItem, _, count, _, _, _, _, minBid, _,
                 buyoutPrice, _, _, _, owner = GetAuctionItemInfo("list", i)
 
-                -- 拍賣行列表中的物品與拍賣物品完全匹配，沒有直購價時buyoutPrice爲0
+                -- 拍賣行列表中不是自己的物品與拍賣物品完全匹配且有直購價
                 if postedItem == selectedItem and owner ~= myName and buyoutPrice > 0 then
                     exactMatch = true
 
@@ -113,7 +114,7 @@ auction:SetScript("OnEvent", function(self, event)
                     -- 獲取物品品質和商店售價
                     _, _, selectedItemQuality, _, _, _, _, _, _, _, selectedItemVendorPrice = GetItemInfo(selectedItem)
 
-                    if PRICEBY == "QUALITY" then
+                    if PRICE_BY == "QUALITY" then
                         if selectedItemQuality == 0 then
                             myBuyoutPrice = POOR_PRICE
                         end
@@ -130,7 +131,7 @@ auction:SetScript("OnEvent", function(self, event)
                             myBuyoutPrice = EPIC_PRICE
                         end
                         AuctionFrameAuctions.tip:SetText("拍賣行沒有該物品的直購價，按物品品質定價")
-                    elseif PRICEBY == "VENDOR" then
+                    elseif PRICE_BY == "VENDOR" then
                         if selectedItemQuality == 0 then
                             myBuyoutPrice = selectedItemVendorPrice * POOR_MULTIPLIER
                         end
