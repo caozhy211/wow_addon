@@ -18,7 +18,7 @@ f:SetScript("OnEvent", function()
         if Skada:GetWindows()[1] ~= nil then
             Skada:GetWindows()[1].bargroup:ClearAllPoints()
             Skada:GetWindows()[1].bargroup:SetPoint("BottomLeft", UIParent, "BottomLeft", 0, 0)
-            Skada:GetWindows()[1].db.barwidth = 540
+            Skada:GetWindows()[1].db.barwidth = 520
             Skada:GetWindows()[1].db.background.height = 90
         end
     end

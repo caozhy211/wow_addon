@@ -77,9 +77,12 @@ hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     end
 end)
 ------------------------------------------------------------------------------------------------------------------------
+-- 隱藏失去控制框架的紅色邊框
+LossOfControlFrame.RedLineTop:Hide()
+LossOfControlFrame.RedLineBottom:Hide()
 -- 設置失去控制框架位置
 LossOfControlFrame:ClearAllPoints()
-LossOfControlFrame:SetPoint("Center", UIParent, "Bottom", 0, 174)
+LossOfControlFrame:SetPoint("Center", UIParent, "Center", 0, -285)
 ------------------------------------------------------------------------------------------------------------------------
 -- 團隊框架滑塊值
 CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(22, 33)
@@ -94,8 +97,8 @@ for i = 1, NUM_CHAT_WINDOWS do
     -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
     chatFrame:SetClampRectInsets(-35, 38, 38, -117)
     -- 設置聊天框的最小尺寸和最大尺寸
-    chatFrame:SetMinResize(481, 181)
-    chatFrame:SetMaxResize(481, 181)
+    chatFrame:SetMinResize(461, 181)
+    chatFrame:SetMaxResize(461, 181)
 
     -- 隱藏輸入框的邊框
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
@@ -105,7 +108,7 @@ for i = 1, NUM_CHAT_WINDOWS do
     local editBox = chatFrame.editBox
     editBox:ClearAllPoints()
     editBox:SetPoint("BottomLeft", ChatFrame1, "TopLeft", 155, -2)
-    editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, -2)
+    editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 25, -2)
 
     editBox:SetAltArrowKeyMode(false)
 end

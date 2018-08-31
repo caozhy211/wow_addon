@@ -8,7 +8,7 @@ ss.shards = {}
 -- 靈魂裂片碎塊文字
 ss.text = ss:CreateFontString("Slivers", "Overlay")
 ss.text:SetFont("Fonts\\ARHei.ttf", 24)
-ss.text:SetTextColor(1, 0, 0)
+ss.text:SetTextColor(1, 1, 0)
 
 -- 靈魂裂片大小
 local size = 36
@@ -43,7 +43,7 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
             if ss:GetHeight() == 0 then
                 ss:SetHeight(size)
                 ss:SetWidth(size * maxNumPower)
-                ss:SetPoint("Top", UIParent, "Bottom", 0, 240)
+                ss:SetPoint("Bottom", UIParent, "Bottom", 0, 189)
             end
             ss:Show()
 
