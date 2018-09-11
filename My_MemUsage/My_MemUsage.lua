@@ -43,7 +43,12 @@ local function formatNumber(number)
     return format("%.2f MB", number / 1000)
 end
 
-SlashCmdList["MEMUSAGE"] = function()
+local button = CreateFrame("Button", "ShowMemoryUsage", UIParent)
+button:SetWidth(25)
+button:SetHeight(25)
+button:SetPoint("Top", QuickJoinToastButton, "Bottom", 0, 0)
+button:RegisterForClicks("AnyUp")
+button:SetScript("OnClick", function()
     local nowInfo = addOnInfo
 
     -- 根据内存降序排序
@@ -75,6 +80,10 @@ SlashCmdList["MEMUSAGE"] = function()
     print("|cff8787ed-----------------------------------------------------------------|r")
     print("Total (" .. #nowInfo .. "): " .. formatNumber(totalMem))
     print("|cff8787ed-----------------------------------------------------------------|r")
-end
+end)
 
-SLASH_MEMUSAGE1 = "/mu"
+button.text = button:CreateFontString(nil, "Artwork")
+button.text:SetFont("Fonts\\ARHei.ttf", 16, "Outline")
+button.text:SetText("内")
+button.text:SetTextColor(1, 1, 0)
+button.text:SetPoint("Center", button, "Center", 0, 0)

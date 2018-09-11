@@ -46,7 +46,7 @@ local function CreateTimer(cd)
             end
             timer.text:SetFont("Fonts\\ARHei.ttf", fontSize, "Outline")
             if type == "Aura" then
-                timer.text:SetPoint("TopRight", timer, "TopRight", 0, 0)
+                timer.text:SetPoint("TopRight", timer, "TopRight", 3, 0)
             else
                 timer.text:SetPoint("Center", timer, "Center", 0, 0)
             end

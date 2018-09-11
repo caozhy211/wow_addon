@@ -12,11 +12,11 @@ hooksecurefunc("ContainerFrame_Update", function(self)
             if bindType == 2 or bindType == 3 then
                 if not button.bindString then
                     button.bindString = button:CreateFontString(nil, "Artwork")
-                    button.bindString:SetPoint("Center", button, "Center", 0, 0)
-                    button.bindString:SetFont("Fonts\\ARHei.ttf", 12, "Outline")
+                    button.bindString:SetPoint("BottomLeft", button, "BottomLeft", -2, 2)
+                    button.bindString:SetFont("Fonts\\ARHei.ttf", 9, "Outline")
                     button.bindString:SetTextColor(1, 0, 0)
                 end
-                button.bindString:SetText("BoE")
+                button.bindString:SetText("裝\n綁")
             elseif button.bindString then
                 button.bindString:SetText("")
             end

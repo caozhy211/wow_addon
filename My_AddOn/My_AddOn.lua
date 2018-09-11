@@ -19,7 +19,6 @@ SetCVar("Sound_SFXVolume", 0.7) -- 音效音量
 SetCVar("Sound_MusicVolume", 0.5) -- 音樂音量
 SetCVar("Sound_AmbienceVolume", 1) -- 環境音量
 SetCVar("Sound_DialogVolume", 1) -- 對話音量
-SetCVar("movieSubtitle", 1) -- 啟用動畫字幕
 ------------------------------------------------------------------------------------------------------------------------
 -- 隱藏製造者
 ITEM_CREATED_BY = nil
@@ -54,6 +53,13 @@ end)
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     MainMenuBarVehicleLeaveButton:ClearAllPoints()
     MainMenuBarVehicleLeaveButton:SetPoint("Left", MultiBarBottomLeftButton12, "Right", 6, 0)
+end)
+------------------------------------------------------------------------------------------------------------------------
+-- 設置寵物快捷列位置
+PetActionBarFrame:HookScript("OnUpdate", function(self)
+    if PETACTIONBAR_XPOS ~= 36 and self:GetLeft() ~= 594 then
+        self:SetPoint("TopLeft", MainMenuBar, "BottomLeft", 36, PETACTIONBAR_YPOS)
+    end
 end)
 ------------------------------------------------------------------------------------------------------------------------
 -- 隱藏區域技能鍵材質
@@ -164,9 +170,9 @@ hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
     self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
 end)
 ------------------------------------------------------------------------------------------------------------------------
--- 設置背包的位置
--- 不調整背包垂直方向的移動，例如使用物品、上下載具的時候
+-- 在使用物品、上下載具的時候不調整背包垂直方向的移動
 UIPARENT_MANAGED_FRAME_POSITIONS["CONTAINER_OFFSET_Y"] = nil
+-- 設置背包的位置
 hooksecurefunc("UpdateContainerFrameAnchors", function()
     -- 修改这两个值移动
     local moveOffsetX = 0 -- 正數向左移動，負數向右移動
