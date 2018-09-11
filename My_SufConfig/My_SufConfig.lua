@@ -17,36 +17,75 @@ f:SetScript("OnEvent", function(self, event)
         end
 
         -- 左鍵點擊光環加入黑名單
-        local table = ShadowUF.modules.auras
-        hooksecurefunc(table, "Update", function(self, frame)
-            local buttons = frame.auras.buffs.buttons
-            for _, button in pairs(buttons) do
-                button:RegisterForClicks("AnyUp")
-                button:SetScript("OnClick", function(self, mouse)
-                    if mouse == "LeftButton" then
-                        local value = UnitAura(self.unit, self.auraID, self.filter)
-                        local filter
-                        if self.filter == "buffs" or self.filter == "HELPFUL" then
-                            filter = "增益"
-                        else
-                            filter = "减益"
-                        end
-                        ShadowUF.db.profile.filters["blacklists"][filter][value] = true
+        local auras = ShadowUF.modules.auras
 
-                        for _, unitFrame in pairs(ShadowUF.Units.unitFrames) do
-                            if (UnitExists(unitFrame.unit) and unitFrame.visibility.auras) then
-                                table:UpdateFilter(unitFrame)
-                                unitFrame:FullUpdate()
-                            end
-                        end
-                    elseif InCombatLockdown() or self.filter == "TEMP" or (not UnitIsUnit(self.parent.unit, "player")
-                            and not UnitIsUnit(self.parent.unit, "vehicle")) then
-                        return
-                    elseif mouse == "RightButton" then
-                        CancelUnitBuff(self.parent.unit, self.auraID, self.filter)
-                    end
-                end)
+        local function reloadUnitAuras()
+            for _, frame in pairs(ShadowUF.Units.unitFrames) do
+                if (UnitExists(frame.unit) and frame.visibility.auras) then
+                    auras:UpdateFilter(frame)
+                    frame:FullUpdate()
+                end
             end
-        end)
+        end
+
+        auras.Update = function(self, frame)
+            local config = ShadowUF.db.profile.units[frame.unitType].auras
+            if frame.auras.anchor then
+                frame.auras.anchor.totalAuras = frame.auras.anchor.temporaryEnchants
+
+                auras.scan(frame.auras, frame.auras.anchor, frame.auras.primary, config[frame.auras.primary],
+                        config[frame.auras.primary], frame.auras[frame.auras.primary].filter)
+                auras.scan(frame.auras, frame.auras.anchor, frame.auras.secondary, config[frame.auras.secondary],
+                        config[frame.auras.primary], frame.auras[frame.auras.secondary].filter)
+            else
+                if config.buffs.enabled then
+                    frame.auras.buffs.totalAuras = frame.auras.buffs.temporaryEnchants
+                    auras.scan(frame.auras, frame.auras.buffs, "buffs", config.buffs, config.buffs,
+                            frame.auras.buffs.filter)
+                end
+
+                if config.debuffs.enabled then
+                    frame.auras.debuffs.totalAuras = 0
+                    auras.scan(frame.auras, frame.auras.debuffs, "debuffs", config.debuffs, config.debuffs,
+                            frame.auras.debuffs.filter)
+                end
+
+                if frame.auras.anchorAurasOn then
+                    auras.anchorGroupToGroup(frame, config[frame.auras.anchorAurasOn.type], frame.auras.anchorAurasOn,
+                            config[frame.auras.anchorAurasChild.type], frame.auras.anchorAurasChild)
+                end
+            end
+
+            if frame.auras.buffs then
+                local buttons = frame.auras.buffs.buttons
+                for _, button in pairs(buttons) do
+                    button:RegisterForClicks("AnyUp")
+                    button:SetScript("OnClick", function(self, mouse)
+                        if mouse == "LeftButton" then
+                            local value = UnitAura(self.unit, self.auraID, self.filter)
+                            ShadowUF.db.profile.filters["blacklists"]["增益"][value] = true
+                            reloadUnitAuras()
+                        elseif InCombatLockdown() or self.filter == "TEMP" or (not UnitIsUnit(self.parent.unit, "player")
+                                and not UnitIsUnit(self.parent.unit, "vehicle")) then
+                            return
+                        elseif mouse == "RightButton" then
+                            CancelUnitBuff(self.parent.unit, self.auraID, self.filter)
+                        end
+                    end)
+                end
+            end
+
+            if frame.auras.debuffs then
+                local buttons = frame.auras.debuffs.buttons
+                for _, button in pairs(buttons) do
+                    button:RegisterForClicks("LeftButtonUp")
+                    button:SetScript("OnClick", function(self, mouse)
+                        local value = UnitAura(self.unit, self.auraID, self.filter)
+                        ShadowUF.db.profile.filters["blacklists"]["減益"][value] = true
+                        reloadUnitAuras()
+                    end)
+                end
+            end
+        end
     end
 end)
