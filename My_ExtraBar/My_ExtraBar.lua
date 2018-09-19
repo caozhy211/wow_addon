@@ -6,12 +6,12 @@ bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 
 local maxNumButtons = 6
-local buttonSize = 30
-local buttonSpacing = 8
+local buttonSize = 33
+local buttonSpacing = 6
 
 bar:SetWidth(buttonSize * maxNumButtons + buttonSpacing * (maxNumButtons - 1))
 bar:SetHeight(buttonSize)
-bar:SetPoint("Bottom", 0, 210)
+bar:SetPoint("Bottom", 0, 215)
 
 local slots = {
     "HeadSlot", "NeckSlot", "ShoulderSlot", "BackSlot", "ChestSlot", "ShirtSlot", "TabardSlot", "WristSlot",
@@ -51,7 +51,7 @@ local function CreateButton(index)
 
     -- 位置
     if index == 1 then
-        button:SetPoint("TopLeft", bar)
+        button:SetPoint("TopLeft")
     else
         button:SetPoint("Left", items[index - 1], "Right", buttonSpacing, 0)
     end

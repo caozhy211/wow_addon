@@ -7,7 +7,7 @@ f:SetScript("OnEvent", function()
     PlayerPowerBarAlt:SetMovable(true)
     PlayerPowerBarAlt:SetUserPlaced(true)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("Center", UIParent, 0, -180)
+    PlayerPowerBarAlt:SetPoint("Bottom", UIParent, 255, 360)
 
     -- 移動追蹤框架
     ObjectiveTrackerFrame:SetMovable(true)
@@ -17,7 +17,6 @@ f:SetScript("OnEvent", function()
     ObjectiveTrackerFrame:SetHeight(673)
 end)
 
--- 聊天框
 for i = 1, NUM_CHAT_WINDOWS do
     local chatFrame = _G["ChatFrame" .. i]
     -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
@@ -30,7 +29,7 @@ for i = 1, NUM_CHAT_WINDOWS do
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
     _G["ChatFrame" .. i .. "EditBoxMid"]:Hide()
     _G["ChatFrame" .. i .. "EditBoxRight"]:Hide()
-    -- 設置輸入框位置
+    -- 移動輸入框
     local editBox = chatFrame.editBox
     editBox:ClearAllPoints()
     editBox:SetPoint("BottomLeft", ChatFrame1, "TopLeft", 155, -2)
@@ -64,6 +63,9 @@ petBar:SetScript("OnEvent", function(self, event)
     end
 end)
 
+-- 移動失去控制框架
+LossOfControlFrame:SetPoint("Center", UIParent, 0, -175)
+
 -- 移動姿態快捷列
 StanceBarFrame:ClearAllPoints()
 StanceBarFrame:SetPoint("BottomLeft", UIParent, 935, 110)
@@ -72,21 +74,15 @@ end
 
 -- 移動區域技能鍵
 ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("Center", UIParent, 180, -150)
+ZoneAbilityFrame:SetPoint("Bottom", UIParent, 49, 247)
 ZoneAbilityFrame.SetPoint = function()
 end
 
 -- 移動額外快捷鍵
 ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("Center", UIParent, -180, -150)
+ExtraActionBarFrame:SetPoint("Bottom", UIParent, -49, 247)
 ExtraActionBarFrame.SetPoint = function()
 end
-
--- 移動離開載具按鈕
-hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
-    MainMenuBarVehicleLeaveButton:ClearAllPoints()
-    MainMenuBarVehicleLeaveButton:SetPoint("BottomLeft", MainMenuBar, 512, 55)
-end)
 
 -- 移動NPC說話框架
 if LoadAddOn("Blizzard_TalkingHeadUI") then
@@ -95,6 +91,12 @@ if LoadAddOn("Blizzard_TalkingHeadUI") then
     TalkingHeadFrame.SetPoint = function()
     end
 end
+
+-- 移動離開載具按鈕
+hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
+    MainMenuBarVehicleLeaveButton:ClearAllPoints()
+    MainMenuBarVehicleLeaveButton:SetPoint("BottomLeft", MainMenuBar, 512, 55)
+end)
 
 -- 移動增益框架
 hooksecurefunc("UIParent_UpdateTopFramePositions", function()

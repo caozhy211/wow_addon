@@ -13,7 +13,7 @@ local shards = {}
 -- 靈魂裂片大小
 local height = 25
 local width = 40
-local spacing = 5
+local spacing = 7
 
 function ss:Update()
     local numPower = WarlockPowerBar_UnitPower("player")
