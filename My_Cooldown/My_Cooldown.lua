@@ -44,11 +44,11 @@ local function CreateTimer(cd)
             if fontSize > 15 then
                 fontSize = 15
             end
-            timer.text:SetFont("Fonts\\ARHei.ttf", fontSize, "Outline")
+            timer.text:SetFont(GameFontNormal:GetFont(), fontSize, "Outline")
             if type == "Aura" then
-                timer.text:SetPoint("TopRight", timer, "TopRight", 3, 0)
+                timer.text:SetPoint("TopRight", 3, 0)
             else
-                timer.text:SetPoint("Center", timer, "Center", 0, 0)
+                timer.text:SetPoint("Center")
             end
             timers[cd] = timer
 

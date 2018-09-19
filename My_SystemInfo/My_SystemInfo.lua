@@ -1,13 +1,14 @@
 local info = CreateFrame("Frame", "InfoFrame", UIParent)
+
 info:SetWidth(120)
 info:SetHeight(30)
-info:SetPoint("BottomRight", UIParent, "BottomRight", -180, 40)
+info:SetPoint("BottomRight", -180, 40)
 
 local text = info:CreateFontString(nil, "Overlay")
-text:SetFont("Fonts\\ARHei.ttf", 14)
-text:SetPoint("Right", info, "Right", 0, 5)
+text:SetFont(GameFontNormal:GetFont(), 14)
+text:SetPoint("Right", 0, 5)
 
-function text:SetColor(latency)
+local function SetColor(latency)
     if latency < 100 then
         return "|cff00ff00" .. latency .. "|r"
     elseif latency < 200 then
@@ -24,8 +25,9 @@ info:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = 0
 
     local fps = format("%.0f", GetFramerate())
-    local latencyHome = text:SetColor(select(3, GetNetStats()))
-    local latencyWorld = text:SetColor(select(4, GetNetStats()))
+    local _, _, latencyHome, latencyWorld = GetNetStats()
+    latencyHome = SetColor(latencyHome)
+    latencyWorld = SetColor(latencyWorld)
 
     text:SetText(" " .. fps .. " | " .. latencyHome .. " | " .. latencyWorld .. " ")
 end)

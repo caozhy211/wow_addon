@@ -1,8 +1,7 @@
 local modifier = "Shift" -- Shift、Ctrl、Alt
 local mouseButton = 1 -- 1：左鍵，2：右鍵，3：中鍵，4：前進鍵，5：後退鍵
 
-local focus = CreateFrame(
-        "CheckButton", "FocuserFrame", UIParent, "SecureActionButtonTemplate")
+local focus = CreateFrame("CheckButton", "FocuserFrame", UIParent, "SecureActionButtonTemplate")
 focus:SetAttribute("type1", "macro")
 focus:SetAttribute("macrotext", "/focus mouseover")
 SetOverrideBindingClick(FocuserFrame, true, modifier .. "-button" .. mouseButton, "FocuserFrame")

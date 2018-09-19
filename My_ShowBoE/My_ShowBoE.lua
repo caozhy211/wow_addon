@@ -7,13 +7,13 @@ hooksecurefunc("ContainerFrame_Update", function(self)
         slot = button:GetID()
         local itemLink = GetContainerItemLink(bag, slot)
         if itemLink then
-            local bindType = select(14, GetItemInfo(itemLink))
+            local _, _, _, _, _, _, _, _, _, _, _, _, _, bindType = GetItemInfo(itemLink)
 
             if bindType == 2 or bindType == 3 then
                 if not button.bindString then
-                    button.bindString = button:CreateFontString(nil, "Artwork")
-                    button.bindString:SetPoint("BottomLeft", button, "BottomLeft", -2, 2)
-                    button.bindString:SetFont("Fonts\\ARHei.ttf", 9, "Outline")
+                    button.bindString = button:CreateFontString()
+                    button.bindString:SetPoint("BottomLeft", -2, 2)
+                    button.bindString:SetFont(GameFontNormal:GetFont(), 9, "Outline")
                     button.bindString:SetTextColor(1, 0, 0)
                 end
                 button.bindString:SetText("裝\n綁")

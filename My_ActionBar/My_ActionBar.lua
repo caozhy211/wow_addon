@@ -9,15 +9,16 @@ local bars = {
 }
 
 for i = 1, #bars do
-    -- 隱藏快捷列巨集名稱
-    if _G[bars[i] .. "Button1Name"] ~= nil then
+    -- 隱藏巨集名稱
+    if _G[bars[i] .. "Button1Name"] then
         for j = 1, 12 do
             _G[bars[i] .. "Button" .. j .. "Name"]:SetAlpha(0)
         end
     end
-    -- 快捷列右鍵自我施法
+
+    -- 右鍵自我施法
     local bar = _G[bars[i]]
-    if bar ~= nil then
+    if bar then
         bar:SetAttribute("unit2", "player")
     end
 end

@@ -1,5 +1,7 @@
 local f = CreateFrame("Frame")
+
 f:RegisterEvent("MERCHANT_SHOW")
+
 f:SetScript("OnEvent", function()
     local totalPrice = 0
     for myBags = 0, 4 do
@@ -9,13 +11,13 @@ f:SetScript("OnEvent", function()
                 local _, _, itemRarity, _, _, _, _, _, _, _, itemSellPrice = GetItemInfo(CurrentItemLink)
                 local _, itemCount = GetContainerItemInfo(myBags, bagSlots)
                 if itemRarity == 0 and itemSellPrice ~= 0 then
-                    totalPrice = totalPrice + (itemSellPrice * itemCount)
                     UseContainerItem(myBags, bagSlots)
-                    PickupMerchantItem()
+                    totalPrice = totalPrice + itemSellPrice * itemCount
                 end
             end
         end
     end
+
     if totalPrice ~= 0 then
         DEFAULT_CHAT_FRAME:AddMessage("出售物品获得: +" .. GetCoinTextureString(totalPrice), 255, 255, 255)
     end
