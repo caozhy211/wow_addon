@@ -5,13 +5,13 @@ ss:RegisterEvent("UNIT_POWER_UPDATE")
 
 -- 靈魂裂片碎塊文字
 ss.text = ss:CreateFontString(nil, "Overlay")
-ss.text:SetFont(GameFontNormal:GetFont(), 24)
+ss.text:SetFont(GameFontNormal:GetFont(), 16)
 ss.text:SetTextColor(1, 1, 0)
 
 local shards = {}
 
 -- 靈魂裂片大小
-local height = 25
+local height = 22
 local width = 40
 local spacing = 7
 

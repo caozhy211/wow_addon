@@ -7,7 +7,7 @@ f:SetScript("OnEvent", function()
     PlayerPowerBarAlt:SetMovable(true)
     PlayerPowerBarAlt:SetUserPlaced(true)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("Bottom", UIParent, 255, 360)
+    PlayerPowerBarAlt:SetPoint("Center", UIParent, -510, -60)
 
     -- 移動追蹤框架
     ObjectiveTrackerFrame:SetMovable(true)
@@ -64,7 +64,7 @@ petBar:SetScript("OnEvent", function(self, event)
 end)
 
 -- 移動失去控制框架
-LossOfControlFrame:SetPoint("Center", UIParent, 0, -175)
+LossOfControlFrame:SetPoint("Center", UIParent, 0, -245)
 
 -- 移動姿態快捷列
 StanceBarFrame:ClearAllPoints()
@@ -74,13 +74,13 @@ end
 
 -- 移動區域技能鍵
 ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("Bottom", UIParent, 49, 247)
+ZoneAbilityFrame:SetPoint("Center", UIParent, 180, -150)
 ZoneAbilityFrame.SetPoint = function()
 end
 
 -- 移動額外快捷鍵
 ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("Bottom", UIParent, -49, 247)
+ExtraActionBarFrame:SetPoint("Center", UIParent, -180, -150)
 ExtraActionBarFrame.SetPoint = function()
 end
 
