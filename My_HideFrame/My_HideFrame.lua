@@ -9,12 +9,6 @@ MainMenuBarArtFrame.RightEndCap:Hide()
 OverrideActionBarEndCapL:Hide()
 OverrideActionBarEndCapR:Hide()
 
--- 隱藏區域技能鍵材質
-ZoneAbilityFrame.SpellButton.Style:Hide()
-
--- 隱藏額外快捷鍵材質
-ExtraActionButton1.style:Hide()
-
 -- 隱藏小地圖元素
 MinimapBorderTop:Hide()
 MinimapBorder:Hide()

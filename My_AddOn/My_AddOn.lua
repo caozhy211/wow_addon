@@ -61,7 +61,7 @@ hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
 end)
 
 -- 團隊框架滑塊值
-CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(20, 46)
+CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(20, 43)
 CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(137, 154)
 
 -- 方形小地圖
