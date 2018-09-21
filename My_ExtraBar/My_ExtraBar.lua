@@ -29,16 +29,11 @@ local bindKeys = {
     "SHIFT-F",
 }
 
-local items = {}
+local buttons = {}
 local quests = {}
-local shownItems = 0
+local numHasItemButtons = 0
 
-local predefinedItems = {}
-
-bar.tip = CreateFrame("GameTooltip", "ExtraBarFrameTip", nil, "GameTooltipTemplate")
-bar.tip:SetOwner(UIParent, "ANCHOR_NONE")
-
-local function CreateButton(index)
+for index = 1, maxNumButtons do
     local button = CreateFrame("Button", "ExtraButton" .. index, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
     button:SetWidth(buttonSize)
     button:SetHeight(buttonSize)
@@ -54,16 +49,18 @@ local function CreateButton(index)
     if index == 1 then
         button:SetPoint("TopLeft")
     else
-        button:SetPoint("Left", items[index - 1], "Right", buttonSpacing, 0)
+        button:SetPoint("Left", buttons[index - 1], "Right", buttonSpacing, 0)
     end
 
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     button:SetAttribute("type*", "item")
 
-    -- 鼠標懸停時顯示鼠標提示
+    -- 顯示滑鼠提示
     button:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
-        GameTooltip:SetInventoryItemByID(self.itemId)
+        if self.itemId then
+            GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+            GameTooltip:SetInventoryItemByID(self.itemId)
+        end
     end)
     button:SetScript("OnLeave", function()
         GameTooltip:Hide()
@@ -90,18 +87,15 @@ local function CreateButton(index)
     -- 綁定按鍵
     SetBindingClick(bindKeys[index], button:GetName())
 
-    items[index] = button
-    return button
+    buttons[index] = button
 end
 
-local function SetButton(index, link)
-    local button = items[index] or CreateButton(index)
+local function UpdateButton(index, link)
+    local button = buttons[index]
 
-    local itemName, _, _, _, _, _, _, itemCount, _, itemTexture = GetItemInfo(link)
+    local itemName, _, _, _, _, _, _, _, _, itemTexture = GetItemInfo(link)
 
     button.itemId = tonumber(link:match("item:(%d+)"))
-    -- 設置個數
-    button.Count:SetText(itemCount and itemCount > 1 and itemCount or "")
     -- 設置圖標
     button.icon:SetTexture(itemTexture)
     -- 設置文字
@@ -143,6 +137,7 @@ function bar:Update()
 
     local index = 1
 
+    -- 遍歷已裝備物品
     for i = 1, #slots do
         if index > maxNumButtons then
             return
@@ -151,11 +146,12 @@ function bar:Update()
         local slotId = GetInventorySlotInfo(slots[i])
         local link = GetInventoryItemLink("player", slotId)
         if link and IsUsableItem(link) then
-            SetButton(index, link)
+            UpdateButton(index, link)
             index = index + 1
         end
     end
 
+    -- 遍歷任務物品
     for i = 1, #quests do
         if index > maxNumButtons then
             return
@@ -164,25 +160,25 @@ function bar:Update()
         local questId = quests[i]:GetID()
         local link = GetQuestLogSpecialItemInfo(questId)
         if link then
-            SetButton(index, link)
+            UpdateButton(index, link)
             index = index + 1
         end
     end
 
-    shownItems = index - 1
+    numHasItemButtons = index - 1
 
     -- 隱藏沒有物品的按鈕,並把"item"屬性的值設置爲nil
-    for i = index, #items do
-        items[i]:Hide()
-        items[i]:SetAttribute("item", nil)
+    for i = index, #buttons do
+        buttons[i]:Hide()
+        buttons[i]:SetAttribute("item", nil)
     end
 
     self:UpdateCooldown()
 end
 
 function bar:UpdateCooldown()
-    for i = 1, shownItems do
-        CooldownFrame_Set(items[i].cooldown, GetItemCooldown(items[i].itemId))
+    for i = 1, numHasItemButtons do
+        CooldownFrame_Set(buttons[i].cooldown, GetItemCooldown(buttons[i].itemId))
     end
 end
 
