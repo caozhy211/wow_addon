@@ -4,6 +4,7 @@ bar:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+bar:RegisterEvent("PLAYER_UNGHOST")
 
 local maxNumButtons = 6
 local buttonSize = 33
