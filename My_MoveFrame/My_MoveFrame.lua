@@ -2,19 +2,21 @@ local f = CreateFrame("Frame")
 
 f:RegisterEvent("PLAYER_LOGIN")
 
+PlayerPowerBarAlt:SetScale(0.75)
+PlayerPowerBarAlt:SetMovable(true)
+PlayerPowerBarAlt:SetUserPlaced(true)
+
+ObjectiveTrackerFrame:SetHeight(673)
+ObjectiveTrackerFrame:SetMovable(true)
+ObjectiveTrackerFrame:SetUserPlaced(true)
+
 f:SetScript("OnEvent", function()
     -- 移動特殊能量條
-    PlayerPowerBarAlt:SetMovable(true)
-    PlayerPowerBarAlt:SetUserPlaced(true)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("Center", UIParent, 255, -120)
+    PlayerPowerBarAlt:SetPoint("Center", UIParent, 340, -200)
 
     -- 移動追蹤框架
-    ObjectiveTrackerFrame:SetMovable(true)
-    ObjectiveTrackerFrame:SetUserPlaced(true)
-    ObjectiveTrackerFrame:ClearAllPoints()
     ObjectiveTrackerFrame:SetPoint("TopRight", UIParent, -50, -330)
-    ObjectiveTrackerFrame:SetHeight(673)
 end)
 
 for i = 1, NUM_CHAT_WINDOWS do
