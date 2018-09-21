@@ -23,7 +23,7 @@ end
 local function CreateTimer(cd)
     local parent = cd:GetParent()
     local size = parent:GetSize()
-    if size >= 20 then
+    if size >= 28 then
         local frame = parent
         local name = frame:GetName()
         while not name do

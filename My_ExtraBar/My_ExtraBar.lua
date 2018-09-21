@@ -61,14 +61,8 @@ local function CreateButton(index)
 
     -- 鼠標懸停時顯示鼠標提示
     button:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR_RIGHT", 30, -12)
-        local slot = self:GetAttribute("slot")
-        local questId = self:GetAttribute("questId")
-        if slot then
-            GameTooltip:SetInventoryItem("player", slot)
-        elseif questId then
-            GameTooltip:SetQuestLogSpecialItem(questId)
-        end
+        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+        GameTooltip:SetInventoryItemByID(self.itemId)
     end)
     button:SetScript("OnLeave", function()
         GameTooltip:Hide()
@@ -99,12 +93,12 @@ local function CreateButton(index)
     return button
 end
 
-local function SetButton(index, questId, slot, link)
+local function SetButton(index, link)
     local button = items[index] or CreateButton(index)
 
-    button.link = link
     local itemName, _, _, _, _, _, _, itemCount, _, itemTexture = GetItemInfo(link)
 
+    button.itemId = tonumber(link:match("item:(%d+)"))
     -- 設置個數
     button.Count:SetText(itemCount and itemCount > 1 and itemCount or "")
     -- 設置圖標
@@ -112,8 +106,6 @@ local function SetButton(index, questId, slot, link)
     -- 設置文字
     button.HotKey:SetText("s-" .. bindKeys[index]:sub(-1))
 
-    button:SetAttribute("questId", questId)
-    button:SetAttribute("slot", slot)
     button:SetAttribute("item", itemName)
 
     button:Show()
@@ -158,23 +150,21 @@ function bar:Update()
         local slotId = GetInventorySlotInfo(slots[i])
         local link = GetInventoryItemLink("player", slotId)
         if link and IsUsableItem(link) then
-            SetButton(index, nil, slotId, link)
+            SetButton(index, link)
             index = index + 1
         end
     end
 
-    if quests then
-        for i = 1, #quests do
-            if index > maxNumButtons then
-                return
-            end
+    for i = 1, #quests do
+        if index > maxNumButtons then
+            return
+        end
 
-            local questId = quests[i]:GetID()
-            local link = GetQuestLogSpecialItemInfo(questId)
-            if link then
-                SetButton(index, questId, nil, link)
-                index = index + 1
-            end
+        local questId = quests[i]:GetID()
+        local link = GetQuestLogSpecialItemInfo(questId)
+        if link then
+            SetButton(index, link)
+            index = index + 1
         end
     end
 
@@ -191,13 +181,7 @@ end
 
 function bar:UpdateCooldown()
     for i = 1, shownItems do
-        local slot = items[i]:GetAttribute("slot");
-        local questId = items[i]:GetAttribute("questId")
-        if slot then
-            CooldownFrame_Set(items[i].cooldown, GetInventoryItemCooldown("player", slot));
-        else
-            CooldownFrame_Set(items[i].cooldown, GetQuestLogSpecialItemCooldown(questId));
-        end
+        CooldownFrame_Set(items[i].cooldown, GetItemCooldown(items[i].itemId))
     end
 end
 
