@@ -63,8 +63,8 @@ for index = 1, maxNumButtons do
         self.elapsed = 0
 
         -- 目標不在距離內時著色
-        local hasRange = ItemHasRange(self.link)
-        local inRange = IsItemInRange(self.link, "target")
+        local hasRange = ItemHasRange(self.itemId)
+        local inRange = IsItemInRange(self.itemId, "target")
 
         if not hasRange or (hasRange and (inRange == nil or inRange)) then
             self.icon:SetVertexColor(1, 1, 1)
@@ -79,18 +79,19 @@ for index = 1, maxNumButtons do
     buttons[index] = button
 end
 
-local function UpdateButton(index, link)
+local function UpdateButton(index, bag, slot, itemId, texture, count)
     local button = buttons[index]
 
-    local itemName, _, _, _, _, _, _, _, _, itemTexture = GetItemInfo(link)
-
-    button.itemId = tonumber(link:match("item:(%d+)"))
+    button.itemId = itemId
     -- 設置圖標
-    button.icon:SetTexture(itemTexture)
+    button.icon:SetTexture(texture)
+    -- 設置數量
+    button.Count:SetText(count and count > 1 and count or "")
     -- 設置文字
     button.HotKey:SetText("s-" .. bindKeys[index]:sub(-1))
 
-    button:SetAttribute("item", itemName)
+    button:SetAttribute("bag", bag)
+    button:SetAttribute("slot", slot)
 
     button:Show()
 end
@@ -133,33 +134,46 @@ function bar:Update()
         end
 
         local slotId = GetInventorySlotInfo(slots[i])
-        local link = GetInventoryItemLink("player", slotId)
-        if link and IsUsableItem(link) then
-            UpdateButton(index, link)
+        local itemId = GetInventoryItemID("player", slotId)
+        local texture = GetInventoryItemTexture("player", slotId)
+        if itemId and IsUsableItem(itemId) then
+            UpdateButton(index, nil, slotId, itemId, texture)
             index = index + 1
         end
     end
 
-    -- 遍歷任務物品
-    for i = 1, #quests do
+    -- 遍歷背包物品
+    for bag = 0, 4 do
         if index > maxNumButtons then
             return
         end
 
-        local questId = quests[i]:GetID()
-        local link = GetQuestLogSpecialItemInfo(questId)
-        if link then
-            UpdateButton(index, link)
-            index = index + 1
+        for slot = 1, GetContainerNumSlots(bag) do
+            if index > maxNumButtons then
+                return
+            end
+
+            local texture, count, _, _, _, _, _, _, _, itemId = GetContainerItemInfo(bag, slot)
+            for i = 1, #quests do
+                local questId = quests[i]:GetID()
+                local link = GetQuestLogSpecialItemInfo(questId)
+                local questItemId = link and tonumber(link:match("item:(%d+)"))
+                if itemId == questItemId then
+                    UpdateButton(index, bag, slot, itemId, texture, count)
+                    index = index + 1
+                    break
+                end
+            end
         end
     end
 
     numHasItemButtons = index - 1
 
-    -- 隱藏沒有物品的按鈕,並把"item"屬性的值設置爲nil
+    -- 隱藏沒有物品的按鈕,並把"bag"和"slot"屬性的值設置爲nil
     for i = index, #buttons do
         buttons[i]:Hide()
-        buttons[i]:SetAttribute("item", nil)
+        buttons[i]:SetAttribute("bag", nil)
+        buttons[i]:SetAttribute("slot", nil)
     end
 
     self:UpdateCooldown()
