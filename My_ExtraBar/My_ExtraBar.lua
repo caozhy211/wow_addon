@@ -55,17 +55,6 @@ for index = 1, maxNumButtons do
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     button:SetAttribute("type*", "item")
 
-    -- 顯示滑鼠提示
-    button:SetScript("OnEnter", function(self)
-        if self.itemId then
-            GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
-            GameTooltip:SetInventoryItemByID(self.itemId)
-        end
-    end)
-    button:SetScript("OnLeave", function()
-        GameTooltip:Hide()
-    end)
-
     button:SetScript("OnUpdate", function(self, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
         if self.elapsed < 0.2 then
