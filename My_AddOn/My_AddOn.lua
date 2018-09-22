@@ -61,8 +61,8 @@ hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
 end)
 
 -- 團隊框架滑塊值
-CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(20, 43)
-CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(137, 154)
+CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(52, 52)
+CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(137, 137)
 
 -- 方形小地圖
 Minimap:SetMaskTexture("Interface\\ChatFrame\\ChatFrameBackground")

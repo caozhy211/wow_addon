@@ -5,6 +5,7 @@ bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 bar:RegisterEvent("PLAYER_UNGHOST")
+bar:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
 local maxNumButtons = 6
 local buttonSize = 33
@@ -135,8 +136,8 @@ function bar:Update()
 
         local slotId = GetInventorySlotInfo(slots[i])
         local itemId = GetInventoryItemID("player", slotId)
-        local texture = GetInventoryItemTexture("player", slotId)
         if itemId and IsUsableItem(itemId) then
+            local texture = GetInventoryItemTexture("player", slotId)
             UpdateButton(index, nil, slotId, itemId, texture)
             index = index + 1
         end
@@ -169,11 +170,9 @@ function bar:Update()
 
     numHasItemButtons = index - 1
 
-    -- 隱藏沒有物品的按鈕,並把"bag"和"slot"屬性的值設置爲nil
+    -- 隱藏沒有物品的按鈕
     for i = index, #buttons do
         buttons[i]:Hide()
-        buttons[i]:SetAttribute("bag", nil)
-        buttons[i]:SetAttribute("slot", nil)
     end
 
     self:UpdateCooldown()
