@@ -44,18 +44,18 @@ local function OnClick(self, mouse, arg)
 end
 
 local buttons = {
-    { text = "說", color = RAID_CLASS_COLORS["PRIEST"], arg = "/s " },
-    { text = "喊", color = RAID_CLASS_COLORS["DEATHKNIGHT"], arg = "/y " },
-    { text = "隊", color = RAID_CLASS_COLORS["WARLOCK"], arg = "/p " },
-    { text = "會", color = RAID_CLASS_COLORS["MONK"], arg = "/g " },
-    { text = "團", color = RAID_CLASS_COLORS["DRUID"], arg = "/raid " },
-    { text = "副", color = RAID_CLASS_COLORS["PALADIN"], arg = "/i " },
-    { text = "綜", color = RAID_CLASS_COLORS["WARRIOR"], arg = "綜合" },
-    { text = "尋", color = RAID_CLASS_COLORS["DEMONHUNTER"], arg = "尋求組隊" },
-    { text = "組", color = RAID_CLASS_COLORS["SHAMAN"], arg = "組隊頻道" },
-    { text = "骰", color = RAID_CLASS_COLORS["ROGUE"], arg = "/roll" },
-    { text = "清", color = RAID_CLASS_COLORS["HUNTER"], arg = "/clear" },
-    { text = "重", color = RAID_CLASS_COLORS["MAGE"], arg = "/reload" },
+    { text = "說", color = "PRIEST", arg = "/s " },
+    { text = "喊", color = "DEATHKNIGHT", arg = "/y " },
+    { text = "隊", color = "WARLOCK", arg = "/p " },
+    { text = "會", color = "MONK", arg = "/g " },
+    { text = "團", color = "DRUID", arg = "/raid " },
+    { text = "副", color = "PALADIN", arg = "/i " },
+    { text = "綜", color = "WARRIOR", arg = "綜合" },
+    { text = "尋", color = "DEMONHUNTER", arg = "尋求組隊" },
+    { text = "組", color = "SHAMAN", arg = "組隊頻道" },
+    { text = "骰", color = "ROGUE", arg = "/roll" },
+    { text = "清", color = "HUNTER", arg = "/clear" },
+    { text = "重", color = "MAGE", arg = "/reload" },
 }
 
 for i = 1, #buttons do
@@ -79,7 +79,7 @@ for i = 1, #buttons do
     button.text = button:CreateFontString()
     button.text:SetFont(GameFontNormal:GetFont(), 16, "Outline")
     button.text:SetText(buttons[i].text)
-    local color = buttons[i].color
-    button.text:SetTextColor(color.r, color.g, color.b)
+    local r, g, b = GetClassColor(buttons[i].color)
+    button.text:SetTextColor(r, g, b)
     button.text:SetPoint("Right", 3, -1)
 end
