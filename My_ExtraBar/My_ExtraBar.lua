@@ -34,6 +34,8 @@ local buttons = {}
 local quests = {}
 local numHasItemButtons = 0
 
+bar.tooltip = CreateFrame("GameTooltip", "ExtraBarTooltip", UIParent, "GameTooltipTemplate")
+
 for index = 1, maxNumButtons do
     local button = CreateFrame("Button", "ExtraButton" .. index, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
     button:SetWidth(buttonSize)
@@ -55,6 +57,21 @@ for index = 1, maxNumButtons do
 
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     button:SetAttribute("type*", "item")
+
+    button:SetScript("OnEnter", function (self)
+        bar.tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+
+        local bag = self:GetAttribute("bag")
+        local slot = self:GetAttribute("slot")
+        if bag then
+            bar.tooltip:SetBagItem(bag, slot)
+        else
+            bar.tooltip:SetInventoryItem("player", slot)
+        end
+    end)
+    button:SetScript("OnLeave", function ()
+        bar.tooltip:Hide()
+    end)
 
     button:SetScript("OnUpdate", function(self, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
