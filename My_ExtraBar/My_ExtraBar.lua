@@ -13,7 +13,7 @@ local buttonSpacing = 6
 
 bar:SetWidth(buttonSize * maxNumButtons + buttonSpacing * (maxNumButtons - 1))
 bar:SetHeight(buttonSize)
-bar:SetPoint("Bottom", 0, 207)
+bar:SetPoint("Top", GCDBar, "Bottom")
 
 local slots = {
     "HeadSlot", "NeckSlot", "ShoulderSlot", "BackSlot", "ChestSlot", "ShirtSlot", "TabardSlot", "WristSlot",

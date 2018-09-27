@@ -1,8 +1,5 @@
 local ss = CreateFrame("Frame", "SoulShardFrame", UIParent)
 
-ss:RegisterEvent("PLAYER_LOGIN")
-ss:RegisterEvent("UNIT_POWER_UPDATE")
-
 -- 靈魂裂片碎塊文字
 ss.text = ss:CreateFontString(nil, "Overlay")
 ss.text:SetFont(GameFontNormal:GetFont(), 16)
@@ -31,6 +28,8 @@ function ss:Update()
     end
 end
 
+ss:RegisterEvent("PLAYER_LOGIN")
+ss:RegisterEvent("UNIT_POWER_UPDATE")
 ss:SetScript("OnEvent", function(self, event, unit, ...)
     if event == "UNIT_POWER_UPDATE" and unit == "player" and self:IsShown() then
         self:Update()
@@ -41,7 +40,7 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
 
             self:SetHeight(height)
             self:SetWidth(width * maxNumPower + spacing * (maxNumPower - 1))
-            self:SetPoint("Bottom", 0, 185)
+            self:SetPoint("Bottom", SwingBar, "Top", 0, 7)
 
             for i = 1, maxNumPower do
                 local shard = self:CreateTexture(nil, "Artwork")

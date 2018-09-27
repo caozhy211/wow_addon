@@ -2,9 +2,9 @@ local f = CreateFrame("Frame")
 
 f:RegisterEvent("PLAYER_LOGIN")
 
-PlayerPowerBarAlt:SetScale(0.75)
-PlayerPowerBarAlt:SetMovable(true)
-PlayerPowerBarAlt:SetUserPlaced(true)
+--PlayerPowerBarAlt:SetScale(0.75)
+--PlayerPowerBarAlt:SetMovable(true)
+--PlayerPowerBarAlt:SetUserPlaced(true)
 
 ObjectiveTrackerFrame:SetHeight(673)
 ObjectiveTrackerFrame:SetMovable(true)
@@ -12,8 +12,8 @@ ObjectiveTrackerFrame:SetUserPlaced(true)
 
 f:SetScript("OnEvent", function()
     -- 移動特殊能量條
-    PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("Center", UIParent, 340, -200)
+    --PlayerPowerBarAlt:ClearAllPoints()
+    --PlayerPowerBarAlt:SetPoint("Center", UIParent, 340, -200)
 
     -- 移動追蹤框架
     ObjectiveTrackerFrame:SetPoint("TopRight", UIParent, -50, -330)
@@ -66,7 +66,7 @@ petBar:SetScript("OnEvent", function(self, event)
 end)
 
 -- 移動失去控制框架
-LossOfControlFrame:SetPoint("Center", UIParent, 0, -245)
+--LossOfControlFrame:SetPoint("Center", UIParent, 0, -245)
 
 -- 移動姿態快捷列
 StanceBarFrame:ClearAllPoints()
@@ -75,18 +75,18 @@ StanceBarFrame.SetPoint = function()
 end
 
 -- 移動區域技能鍵
-ZoneAbilityFrame:SetScale(0.75)
-ZoneAbilityFrame:ClearAllPoints()
-ZoneAbilityFrame:SetPoint("Center", UIParent, 40, -200)
-ZoneAbilityFrame.SetPoint = function()
-end
+--ZoneAbilityFrame:SetScale(0.75)
+--ZoneAbilityFrame:ClearAllPoints()
+--ZoneAbilityFrame:SetPoint("Center", UIParent, 40, -200)
+--ZoneAbilityFrame.SetPoint = function()
+--end
 
 -- 移動額外快捷鍵
-ExtraActionBarFrame:SetScale(0.75)
-ExtraActionBarFrame:ClearAllPoints()
-ExtraActionBarFrame:SetPoint("Center", UIParent, -200, -200)
-ExtraActionBarFrame.SetPoint = function()
-end
+--ExtraActionBarFrame:SetScale(0.75)
+--ExtraActionBarFrame:ClearAllPoints()
+--ExtraActionBarFrame:SetPoint("Center", UIParent, -200, -200)
+--ExtraActionBarFrame.SetPoint = function()
+--end
 
 -- 移動NPC說話框架
 if LoadAddOn("Blizzard_TalkingHeadUI") then

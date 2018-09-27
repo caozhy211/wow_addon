@@ -97,8 +97,20 @@ end)
 -- 顯示光環ID
 hooksecurefunc(GameTooltip, "SetUnitAura", function(self, ...)
     local _, _, _, _, _, _, _, _, _, id = UnitAura(...)
-    self:AddLine(" ")
-    self:AddLine("|cff00ffccAura ID:|r " .. id)
-    self:Show()
+    if id then
+        self:AddLine(" ")
+        self:AddLine("|cff00ffccAura ID:|r " .. id)
+        self:Show()
+    end
+end)
+
+-- 顯示法術ID
+GameTooltip:HookScript("OnTooltipSetSpell", function(self)
+    local _, id = self:GetSpell()
+    if id then
+        self:AddLine(" ")
+        self:AddLine("|cff00ffccSpell ID:|r " .. id)
+        self:Show()
+    end
 end)
 
