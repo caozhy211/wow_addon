@@ -232,22 +232,27 @@ CastingBarFrame:HookScript("OnEvent", function(self, event, unit)
             latency.timeDiff = latency.timeDiff > castLength and castLength or latency.timeDiff
             local percent = latency.timeDiff / castLength
 
-            latency.lagBox:ClearAllPoints()
-            latency.lagText:ClearAllPoints()
-            if self.casting then
-                latency.lagBox:SetPoint("Right")
-                latency.lagText:SetPoint("BottomRight", latency.lagBox)
-                latency.lagText:SetJustifyH("Right")
-            else
-                latency.lagBox:SetPoint("Left")
-                latency.lagText:SetPoint("BottomLeft", latency.lagBox)
-                latency.lagText:SetJustifyH("Left")
-            end
+            if percent > 0 then
+                latency.lagBox:ClearAllPoints()
+                latency.lagText:ClearAllPoints()
+                if self.casting then
+                    latency.lagBox:SetPoint("Right")
+                    latency.lagText:SetPoint("BottomRight", latency.lagBox)
+                    latency.lagText:SetJustifyH("Right")
+                else
+                    latency.lagBox:SetPoint("Left")
+                    latency.lagText:SetPoint("BottomLeft", latency.lagBox)
+                    latency.lagText:SetJustifyH("Left")
+                end
 
-            latency.lagBox:SetWidth(self:GetWidth() * percent)
-            latency.lagBox:Show()
-            latency.lagText:SetFormattedText("%dms", latency.timeDiff * 1000)
-            latency.lagText:Show()
+                latency.lagBox:SetWidth(self:GetWidth() * percent)
+                latency.lagBox:Show()
+                latency.lagText:SetFormattedText("%dms", latency.timeDiff * 1000)
+                latency.lagText:Show()
+            else
+                latency.lagBox:Hide()
+                latency.lagText:Hide()
+            end
 
             latency.sendTime = nil
         end

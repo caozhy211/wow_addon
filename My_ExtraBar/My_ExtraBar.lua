@@ -13,7 +13,7 @@ local buttonSpacing = 6
 
 bar:SetWidth(buttonSize * maxNumButtons + buttonSpacing * (maxNumButtons - 1))
 bar:SetHeight(buttonSize)
-bar:SetPoint("Top", GCDBar, "Bottom")
+bar:SetPoint("Bottom", SwingBar, "Top", 0, 7)
 
 local slots = {
     "HeadSlot", "NeckSlot", "ShoulderSlot", "BackSlot", "ChestSlot", "ShirtSlot", "TabardSlot", "WristSlot",
@@ -58,7 +58,7 @@ for index = 1, maxNumButtons do
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
     button:SetAttribute("type*", "item")
 
-    button:SetScript("OnEnter", function (self)
+    button:SetScript("OnEnter", function(self)
         bar.tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
 
         local bag = self:GetAttribute("bag")
@@ -69,7 +69,7 @@ for index = 1, maxNumButtons do
             bar.tooltip:SetInventoryItem("player", slot)
         end
     end)
-    button:SetScript("OnLeave", function ()
+    button:SetScript("OnLeave", function()
         bar.tooltip:Hide()
     end)
 

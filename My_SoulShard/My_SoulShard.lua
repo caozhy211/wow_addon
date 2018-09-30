@@ -40,7 +40,7 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
 
             self:SetHeight(height)
             self:SetWidth(width * maxNumPower + spacing * (maxNumPower - 1))
-            self:SetPoint("Bottom", SwingBar, "Top", 0, 7)
+            self:SetPoint("Top", GCDBar, "Bottom")
 
             for i = 1, maxNumPower do
                 local shard = self:CreateTexture(nil, "Artwork")

@@ -35,6 +35,8 @@ SetCVar("Sound_MusicVolume", 0.5)
 SetCVar("Sound_AmbienceVolume", 1)
 -- 對話音量
 SetCVar("Sound_DialogVolume", 1)
+-- 顯示名條的最大距離
+SetCVar("nameplateMaxDistance", 40)
 
 -- 設置快捷列滑入滑出效果的距離和時間
 MainMenuBar.slideOut:GetAnimations():SetOffset(0, 0)

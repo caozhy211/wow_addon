@@ -116,5 +116,8 @@ hooksecurefunc(mt, "SetCooldown", function(cd, start, duration)
             end
             timer:Show()
         end
+    elseif timers[cd] then
+        -- 持續時間小於等於2秒時，如果timer已存在，則應該隱藏，例如騎上古柏後，使用迅速突進的光環不應該再顯示之前光環的時間
+        timers[cd]:Hide()
     end
 end)

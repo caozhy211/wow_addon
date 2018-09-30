@@ -35,7 +35,7 @@ if LoadAddOn("Blizzard_CombatText") then
 end
 
 -- 隱藏拾取框
-LootFrame:SetAlpha(0)
+--LootFrame:SetAlpha(0)
 
 -- 隱藏滑動快捷列材質
 SlidingActionBarTexture0:SetAlpha(0)

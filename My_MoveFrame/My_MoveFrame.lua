@@ -173,72 +173,72 @@ hooksecurefunc("AuraButton_OnUpdate", function(self)
 end)
 
 -- 不改變背包錨點垂直方向的位置
-UIPARENT_MANAGED_FRAME_POSITIONS["CONTAINER_OFFSET_Y"] = nil
+--UIPARENT_MANAGED_FRAME_POSITIONS["CONTAINER_OFFSET_Y"] = nil
 -- 移動背包
-hooksecurefunc("UpdateContainerFrameAnchors", function()
-    local CONTAINER_OFFSET_Y = 190
-
-    local frame, xOffset, yOffset, screenHeight, freeScreenHeight, leftMostPoint, column
-    local screenWidth = GetScreenWidth()
-    local containerScale = 1
-    local leftLimit = 0
-    if BankFrame:IsShown() then
-        leftLimit = BankFrame:GetRight() - 25
-    end
-
-    while containerScale > CONTAINER_SCALE do
-        screenHeight = GetScreenHeight() / containerScale
-        -- 根據快捷列調整背包的起始錨點
-        xOffset = CONTAINER_OFFSET_X / containerScale
-        yOffset = CONTAINER_OFFSET_Y / containerScale
-        -- freeScreenHeight決定什麼時候開始新的一列
-        freeScreenHeight = screenHeight - yOffset
-        leftMostPoint = screenWidth - xOffset
-        column = 1
-        local frameHeight
-        for index = 1, #ContainerFrame1.bags do
-            frameHeight = _G[ContainerFrame1.bags[index]]:GetHeight()
-            if freeScreenHeight < frameHeight then
-                -- 開始新的一列
-                column = column + 1
-                leftMostPoint = screenWidth - (column * CONTAINER_WIDTH * containerScale) - xOffset
-                freeScreenHeight = screenHeight - yOffset
-            end
-            freeScreenHeight = freeScreenHeight - frameHeight - VISIBLE_CONTAINER_SPACING
-        end
-        if leftMostPoint < leftLimit then
-            containerScale = containerScale - 0.01
-        else
-            break
-        end
-    end
-
-    if containerScale < CONTAINER_SCALE then
-        containerScale = CONTAINER_SCALE
-    end
-
-    screenHeight = GetScreenHeight() / containerScale
-    -- 根據快捷列調整背包的起始錨點
-    xOffset = CONTAINER_OFFSET_X / containerScale
-    yOffset = CONTAINER_OFFSET_Y / containerScale
-    -- freeScreenHeight決定什麼時候開始新的一列
-    freeScreenHeight = screenHeight - yOffset
-    column = 0
-    for index = 1, #ContainerFrame1.bags do
-        frame = _G[ContainerFrame1.bags[index]]
-        frame:SetScale(containerScale)
-        if index == 1 then
-            -- 第一個背包
-            frame:SetPoint("BottomRight", -xOffset, yOffset)
-        elseif (freeScreenHeight < frame:GetHeight()) then
-            -- 開始新的一列
-            column = column + 1
-            freeScreenHeight = screenHeight - yOffset
-            frame:SetPoint("BottomRight", -(column * CONTAINER_WIDTH) - xOffset, yOffset)
-        else
-            -- 以上一個背包作爲錨點
-            frame:SetPoint("BottomRight", ContainerFrame1.bags[index - 1], "TopRight", 0, CONTAINER_SPACING)
-        end
-        freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
-    end
-end)
+--hooksecurefunc("UpdateContainerFrameAnchors", function()
+--    local CONTAINER_OFFSET_Y = 190
+--
+--    local frame, xOffset, yOffset, screenHeight, freeScreenHeight, leftMostPoint, column
+--    local screenWidth = GetScreenWidth()
+--    local containerScale = 1
+--    local leftLimit = 0
+--    if BankFrame:IsShown() then
+--        leftLimit = BankFrame:GetRight() - 25
+--    end
+--
+--    while containerScale > CONTAINER_SCALE do
+--        screenHeight = GetScreenHeight() / containerScale
+--        -- 根據快捷列調整背包的起始錨點
+--        xOffset = CONTAINER_OFFSET_X / containerScale
+--        yOffset = CONTAINER_OFFSET_Y / containerScale
+--        -- freeScreenHeight決定什麼時候開始新的一列
+--        freeScreenHeight = screenHeight - yOffset
+--        leftMostPoint = screenWidth - xOffset
+--        column = 1
+--        local frameHeight
+--        for index = 1, #ContainerFrame1.bags do
+--            frameHeight = _G[ContainerFrame1.bags[index]]:GetHeight()
+--            if freeScreenHeight < frameHeight then
+--                -- 開始新的一列
+--                column = column + 1
+--                leftMostPoint = screenWidth - (column * CONTAINER_WIDTH * containerScale) - xOffset
+--                freeScreenHeight = screenHeight - yOffset
+--            end
+--            freeScreenHeight = freeScreenHeight - frameHeight - VISIBLE_CONTAINER_SPACING
+--        end
+--        if leftMostPoint < leftLimit then
+--            containerScale = containerScale - 0.01
+--        else
+--            break
+--        end
+--    end
+--
+--    if containerScale < CONTAINER_SCALE then
+--        containerScale = CONTAINER_SCALE
+--    end
+--
+--    screenHeight = GetScreenHeight() / containerScale
+--    -- 根據快捷列調整背包的起始錨點
+--    xOffset = CONTAINER_OFFSET_X / containerScale
+--    yOffset = CONTAINER_OFFSET_Y / containerScale
+--    -- freeScreenHeight決定什麼時候開始新的一列
+--    freeScreenHeight = screenHeight - yOffset
+--    column = 0
+--    for index = 1, #ContainerFrame1.bags do
+--        frame = _G[ContainerFrame1.bags[index]]
+--        frame:SetScale(containerScale)
+--        if index == 1 then
+--            -- 第一個背包
+--            frame:SetPoint("BottomRight", -xOffset, yOffset)
+--        elseif (freeScreenHeight < frame:GetHeight()) then
+--            -- 開始新的一列
+--            column = column + 1
+--            freeScreenHeight = screenHeight - yOffset
+--            frame:SetPoint("BottomRight", -(column * CONTAINER_WIDTH) - xOffset, yOffset)
+--        else
+--            -- 以上一個背包作爲錨點
+--            frame:SetPoint("BottomRight", ContainerFrame1.bags[index - 1], "TopRight", 0, CONTAINER_SPACING)
+--        end
+--        freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
+--    end
+--end)
