@@ -32,7 +32,7 @@ local function CreateTimer(cd)
     end
 
     if not name:find("Compact") and not name:find("LossOfControlFrame") then
-        local type = (name:find("SUF") or name:find("NamePlate")) and "Aura" or "Action"
+        local type = (name:find("MyUnit") or name:find("NamePlate")) and "Aura" or "Action"
         local timer = CreateFrame("Frame", nil, parent)
         timer:SetAllPoints(parent)
 
@@ -46,7 +46,7 @@ local function CreateTimer(cd)
         end
         timer.text:SetFont(GameFontNormal:GetFont(), fontSize, "Outline")
         if type == "Aura" then
-            timer.text:SetPoint("TopRight", 3, 1)
+            timer.text:SetPoint("TopRight", 2, 0)
         else
             timer.text:SetPoint("Center")
         end

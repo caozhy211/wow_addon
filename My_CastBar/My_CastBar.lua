@@ -558,38 +558,76 @@ local function OnChanged(castBar, event, arg1)
     end
 end
 
+local function SetCastBar(bar, width, height)
+    -- 隱藏完成動畫
+    bar.Flash:SetTexture(nil)
+    -- 隱藏邊框
+    bar.Border:SetTexture(nil)
+    -- 隱藏不可打斷邊框
+    bar.BorderShield:SetTexture(nil)
+
+    -- 顯示法術圖標
+    bar.Icon:Show()
+    bar.Icon:SetSize(bar:GetHeight(), bar:GetHeight())
+    bar.Icon:SetPoint("Right", bar, "Left")
+
+    -- 顯示施法時間
+    bar.timeText = bar:CreateFontString()
+    bar.timeText:SetFont(GameFontNormal:GetFont(), 12, "Outline")
+    bar.timeText:SetPoint("Right")
+    bar:HookScript("OnUpdate", UpdateCastBar)
+
+    -- 施法名稱
+    bar.Text:ClearAllPoints()
+    bar.Text:SetPoint("Left", 5, 0)
+    bar.Text:SetJustifyH("Left")
+
+    -- 不可打斷邊框
+    bar.topBorder = bar:CreateTexture()
+    bar.topBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    bar.topBorder:SetSize(width - border * 2, border)
+    bar.topBorder:SetPoint("BottomRight", bar, "TopRight")
+
+    bar.bottomBorder = bar:CreateTexture()
+    bar.bottomBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    bar.bottomBorder:SetSize(width - border * 2, border)
+    bar.bottomBorder:SetPoint("TopRight", bar, "BottomRight")
+
+    bar.leftBorder = bar:CreateTexture()
+    bar.leftBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    bar.leftBorder:SetSize(border, height)
+    bar.leftBorder:SetPoint("Right", bar.Icon, "Left")
+
+    bar.rightBorder = bar:CreateTexture()
+    bar.rightBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+    bar.rightBorder:SetSize(border, height)
+    bar.rightBorder:SetPoint("Left", bar, "Right")
+
+    hooksecurefunc(bar.BorderShield, "Show", function()
+        bar.topBorder:Show()
+        bar.bottomBorder:Show()
+        bar.leftBorder:Show()
+        bar.rightBorder:Show()
+    end)
+    hooksecurefunc(bar.BorderShield, "Hide", function()
+        bar.topBorder:Hide()
+        bar.bottomBorder:Hide()
+        bar.leftBorder:Hide()
+        bar.rightBorder:Hide()
+    end)
+end
+
 local targetCastBar = CreateFrame("StatusBar", "TargetCastBar", UIParent, "CastingBarFrameTemplate")
 -- 重載介面後不顯示
 targetCastBar:Hide()
 CastingBarFrame_OnLoad(targetCastBar, "target", true, true)
 
 local targetWidth = 270
-local targetHeight = 22
+local targetHeight = 30
 targetCastBar:SetSize(targetWidth - targetHeight, targetHeight - border * 2)
-targetCastBar:SetPoint("TopLeft", UIParent, "Center", 120 + targetHeight - border, -190 - border)
+targetCastBar:SetPoint("TopLeft", UIParent, "Center", 120 + targetHeight - border, -215 - border)
 
--- 隱藏完成動畫
-targetCastBar.Flash:SetTexture(nil)
--- 隱藏邊框
-targetCastBar.Border:SetTexture(nil)
--- 隱藏不可打斷邊框
-targetCastBar.BorderShield:SetTexture(nil)
-
--- 顯示法術圖標
-targetCastBar.Icon:Show()
-targetCastBar.Icon:SetSize(targetCastBar:GetHeight(), targetCastBar:GetHeight())
-targetCastBar.Icon:SetPoint("Right", targetCastBar, "Left")
-
--- 顯示施法時間
-targetCastBar.timeText = targetCastBar:CreateFontString()
-targetCastBar.timeText:SetFont(GameFontNormal:GetFont(), 12, "Outline")
-targetCastBar.timeText:SetPoint("Right")
-targetCastBar:HookScript("OnUpdate", UpdateCastBar)
-
--- 施法名稱
-targetCastBar.Text:ClearAllPoints()
-targetCastBar.Text:SetPoint("Left", 5, 0)
-targetCastBar.Text:SetJustifyH("Left")
+SetCastBar(targetCastBar, targetWidth, targetHeight)
 
 targetCastBar:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetCastBar:SetScript("OnEvent", function(self, event, unit, spell)
@@ -602,72 +640,17 @@ targetCastBar:SetScript("OnEvent", function(self, event, unit, spell)
     end
 end)
 
--- 不可打斷邊框
-targetCastBar.topBorder = targetCastBar:CreateTexture()
-targetCastBar.topBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-targetCastBar.topBorder:SetSize(targetWidth - border * 2, border)
-targetCastBar.topBorder:SetPoint("BottomRight", targetCastBar, "TopRight")
-
-targetCastBar.bottomBorder = targetCastBar:CreateTexture()
-targetCastBar.bottomBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-targetCastBar.bottomBorder:SetSize(targetWidth - border * 2, border)
-targetCastBar.bottomBorder:SetPoint("TopRight", targetCastBar, "BottomRight")
-
-targetCastBar.leftBorder = targetCastBar:CreateTexture()
-targetCastBar.leftBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-targetCastBar.leftBorder:SetSize(border, targetHeight)
-targetCastBar.leftBorder:SetPoint("Right", targetCastBar.Icon, "Left")
-
-targetCastBar.rightBorder = targetCastBar:CreateTexture()
-targetCastBar.rightBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-targetCastBar.rightBorder:SetSize(border, targetHeight)
-targetCastBar.rightBorder:SetPoint("Left", targetCastBar, "Right")
-
-hooksecurefunc(targetCastBar.BorderShield, "Show", function()
-    targetCastBar.topBorder:Show()
-    targetCastBar.bottomBorder:Show()
-    targetCastBar.leftBorder:Show()
-    targetCastBar.rightBorder:Show()
-end)
-hooksecurefunc(targetCastBar.BorderShield, "Hide", function()
-    targetCastBar.topBorder:Hide()
-    targetCastBar.bottomBorder:Hide()
-    targetCastBar.leftBorder:Hide()
-    targetCastBar.rightBorder:Hide()
-end)
-
 local focusCastBar = CreateFrame("StatusBar", "focusCastBar", UIParent, "CastingBarFrameTemplate")
 -- 重載介面後不顯示
 focusCastBar:Hide()
 CastingBarFrame_OnLoad(focusCastBar, "focus", true, true)
 
-local focusWidth = 225
-local focusHeight = 22
+local focusWidth = 226
+local focusHeight = 30
 focusCastBar:SetSize(focusWidth - focusHeight, focusHeight - border * 2)
-focusCastBar:SetPoint("TopLeft", UIParent, "Center", 420 + focusHeight - border, -330 - border)
+focusCastBar:SetPoint("TopLeft", UIParent, "Center", 423 + focusHeight - border, -370 - border)
 
--- 隱藏完成動畫
-focusCastBar.Flash:SetTexture(nil)
--- 隱藏邊框
-focusCastBar.Border:SetTexture(nil)
--- 隱藏不可打斷邊框
-focusCastBar.BorderShield:SetTexture(nil)
-
--- 顯示法術圖標
-focusCastBar.Icon:Show()
-focusCastBar.Icon:SetSize(focusCastBar:GetHeight(), focusCastBar:GetHeight())
-focusCastBar.Icon:SetPoint("Right", focusCastBar, "Left")
-
--- 顯示施法時間
-focusCastBar.timeText = focusCastBar:CreateFontString()
-focusCastBar.timeText:SetFont(GameFontNormal:GetFont(), 12, "Outline")
-focusCastBar.timeText:SetPoint("Right")
-focusCastBar:HookScript("OnUpdate", UpdateCastBar)
-
--- 施法名稱
-focusCastBar.Text:ClearAllPoints()
-focusCastBar.Text:SetPoint("Left", 5, 0)
-focusCastBar.Text:SetJustifyH("Left")
+SetCastBar(focusCastBar, focusWidth, focusHeight)
 
 focusCastBar:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusCastBar:SetScript("OnEvent", function(self, event, unit, spell)
@@ -680,36 +663,32 @@ focusCastBar:SetScript("OnEvent", function(self, event, unit, spell)
     end
 end)
 
--- 不可打斷邊框
-focusCastBar.topBorder = focusCastBar:CreateTexture()
-focusCastBar.topBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-focusCastBar.topBorder:SetSize(focusWidth - border * 2, border)
-focusCastBar.topBorder:SetPoint("BottomRight", focusCastBar, "TopRight")
+local bossCastBar = {}
+local bossWidth = 259
+local bossHeight = 20
+for i = 1, 5 do
+    bossCastBar[i] = CreateFrame("StatusBar", "Boss" .. i .. "CastBar", UIParent, "CastingBarFrameTemplate")
+    -- 重載介面後不顯示
+    bossCastBar[i]:Hide()
+    CastingBarFrame_OnLoad(bossCastBar[i], "boss" .. i, false, true)
 
-focusCastBar.bottomBorder = focusCastBar:CreateTexture()
-focusCastBar.bottomBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-focusCastBar.bottomBorder:SetSize(focusWidth - border * 2, border)
-focusCastBar.bottomBorder:SetPoint("TopRight", focusCastBar, "BottomRight")
+    bossCastBar[i]:SetSize(bossWidth - bossHeight, bossHeight - border * 2)
+    if i == 1 then
+        bossCastBar[i]:SetPoint("BottomLeft", UIParent, "Center", 390 + bossHeight - border, -255 + border)
+    else
+        bossCastBar[i]:SetPoint("Bottom", bossCastBar[i - 1], "Top", 0, 78)
+    end
 
-focusCastBar.leftBorder = focusCastBar:CreateTexture()
-focusCastBar.leftBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-focusCastBar.leftBorder:SetSize(border, focusHeight)
-focusCastBar.leftBorder:SetPoint("Right", focusCastBar.Icon, "Left")
+    SetCastBar(bossCastBar[i], bossWidth, bossHeight)
 
-focusCastBar.rightBorder = focusCastBar:CreateTexture()
-focusCastBar.rightBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-focusCastBar.rightBorder:SetSize(border, focusHeight)
-focusCastBar.rightBorder:SetPoint("Left", focusCastBar, "Right")
-
-hooksecurefunc(focusCastBar.BorderShield, "Show", function()
-    focusCastBar.topBorder:Show()
-    focusCastBar.bottomBorder:Show()
-    focusCastBar.leftBorder:Show()
-    focusCastBar.rightBorder:Show()
-end)
-hooksecurefunc(focusCastBar.BorderShield, "Hide", function()
-    focusCastBar.topBorder:Hide()
-    focusCastBar.bottomBorder:Hide()
-    focusCastBar.leftBorder:Hide()
-    focusCastBar.rightBorder:Hide()
-end)
+    bossCastBar[i]:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
+    bossCastBar[i]:SetScript("OnEvent", function(self, event, unit, spell)
+        if event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+            event, unit = OnChanged(self, event, unit)
+        end
+        CastingBarFrame_OnEvent(self, event, unit, spell)
+        if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") and unit == self.unit then
+            SetShortText(self)
+        end
+    end)
+end

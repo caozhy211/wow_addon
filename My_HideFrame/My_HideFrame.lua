@@ -38,5 +38,52 @@ end
 --LootFrame:SetAlpha(0)
 
 -- 隱藏滑動快捷列材質
-SlidingActionBarTexture0:SetAlpha(0)
-SlidingActionBarTexture1:SetAlpha(0)
+SlidingActionBarTexture0:SetTexture(nil)
+SlidingActionBarTexture1:SetTexture(nil)
+
+-- 隱藏佔用快捷列背景
+PossessBackground1:SetTexture(nil)
+PossessBackground2:SetTexture(nil)
+
+-- 隱藏框架
+local hideFrame = CreateFrame("Frame")
+hideFrame:Hide()
+local function HideFrames(taint, ...)
+    for i = 1, select("#", ...) do
+        local frame = select(i, ...)
+        frame:UnregisterAllEvents()
+        frame:Hide()
+
+        if (frame.manabar) then
+            frame.manabar:UnregisterAllEvents()
+        end
+        if (frame.healthbar) then
+            frame.healthbar:UnregisterAllEvents()
+        end
+        if (frame.spellbar) then
+            frame.spellbar:UnregisterAllEvents()
+        end
+        if (frame.powerBarAlt) then
+            frame.powerBarAlt:UnregisterAllEvents()
+        end
+
+        if (taint) then
+            frame.Show = function()
+            end
+        else
+            frame:SetParent(hiddenFrame)
+            frame:HookScript("OnShow", function(self)
+                if not InCombatLockdown() then
+                    self:Hide()
+                end
+            end)
+        end
+    end
+end
+
+PlayerFrame:Hide()
+HideFrames(false, TargetFrame, FocusFrame)
+for i = 1, MAX_BOSS_FRAMES do
+    local name = "Boss" .. i .. "TargetFrame"
+    HideFrames(false, _G[name], _G[name .. "HealthBar"], _G[name .. "ManaBar"])
+end

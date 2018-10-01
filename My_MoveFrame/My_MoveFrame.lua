@@ -24,8 +24,8 @@ for i = 1, NUM_CHAT_WINDOWS do
     -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
     chatFrame:SetClampRectInsets(-35, 38, 38, -117)
     -- 設置聊天框的最小尺寸和最大尺寸
-    chatFrame:SetMinResize(481, 181)
-    chatFrame:SetMaxResize(481, 181)
+    chatFrame:SetMinResize(480, 139)
+    chatFrame:SetMaxResize(480, 139)
 
     -- 隱藏輸入框的邊框
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
@@ -45,7 +45,7 @@ local petBar = CreateFrame("Frame", "PetBarFrame", UIParent)
 
 petBar:SetWidth(372)
 petBar:SetHeight(30)
-petBar:SetPoint("BottomLeft", 566, 113)
+petBar:SetPoint("Bottom", 0, 113)
 
 petBar:RegisterEvent("PET_BATTLE_OPENING_START")
 petBar:RegisterEvent("PET_BATTLE_OPENING_DONE")
@@ -69,10 +69,10 @@ end)
 --LossOfControlFrame:SetPoint("Center", UIParent, 0, -245)
 
 -- 移動姿態快捷列
-StanceBarFrame:ClearAllPoints()
-StanceBarFrame:SetPoint("BottomLeft", UIParent, 935, 110)
-StanceBarFrame.SetPoint = function()
-end
+--StanceBarFrame:ClearAllPoints()
+--StanceBarFrame:SetPoint("BottomLeft", UIParent, 935, 110)
+--StanceBarFrame.SetPoint = function()
+--end
 
 -- 移動區域技能鍵
 --ZoneAbilityFrame:SetScale(0.75)
@@ -87,6 +87,12 @@ end
 --ExtraActionBarFrame:SetPoint("Center", UIParent, -200, -200)
 --ExtraActionBarFrame.SetPoint = function()
 --end
+
+-- 移動佔用快捷列
+PossessBarFrame:ClearAllPoints()
+PossessBarFrame:SetPoint("BottomLeft", UIParent, "Bottom", -44, 110)
+PossessBarFrame.SetPoint = function()
+end
 
 -- 移動NPC說話框架
 if LoadAddOn("Blizzard_TalkingHeadUI") then
