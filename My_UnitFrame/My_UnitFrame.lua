@@ -808,7 +808,7 @@ target.tags.afk:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 target.tags.afk:SetPoint("Left", target.tags.group, "Right")
 target.tags.race = target.tags:CreateFontString()
 target.tags.race:SetFont(GameFontNormal:GetFont(), 11, "Outline")
-target.tags.race:SetPoint("TopRight", target.health, -3, -3)
+target.tags.race:SetPoint("Right", target.health, "TopRight", -3, -9)
 target.tags.level = target.tags:CreateFontString()
 target.tags.level:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 target.tags.level:SetPoint("Right", target.tags.race, "Left")
@@ -817,7 +817,7 @@ target.tags.percentHealth:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 target.tags.percentHealth:SetPoint("BottomLeft", target.health, 3, 3)
 target.tags.absorb = target.tags:CreateFontString()
 target.tags.absorb:SetFont(GameFontNormal:GetFont(), 11, "Outline")
-target.tags.absorb:SetPoint("BottomRight", target.health, -3, 3)
+target.tags.absorb:SetPoint("Right", target.health, "BottomRight", -3, 9)
 target.tags.health = target.tags:CreateFontString()
 target.tags.health:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 target.tags.health:SetPoint("Right", target.tags.absorb, "Left")
@@ -1038,7 +1038,7 @@ player.portrait:SetScript("OnHide", ResetGUID)
 player.portrait:RegisterUnitEvent("UNIT_PORTRAIT_UPDATE", "player", "vehicle")
 player.portrait:RegisterUnitEvent("UNIT_MODEL_CHANGED", "player", "vehicle")
 player.portrait:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "UNIT_MODEL_CHANGED" then
@@ -1107,7 +1107,7 @@ player.health:RegisterUnitEvent("UNIT_CONNECTION", "player", "vehicle")
 player.health:RegisterUnitEvent("UNIT_FACTION", "player", "vehicle")
 player.health:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "player", "vehicle")
 player.health:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "UNIT_FACTION" or event == "UNIT_CONNECTION" or event == "UNIT_TARGETABLE_CHANGED" then
@@ -1136,7 +1136,7 @@ player.power:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player", "vehicle")
 player.power:RegisterUnitEvent("UNIT_MANA", "player", "vehicle")
 player.power:RegisterEvent("PLAYER_UNGHOST")
 player.power:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "UNIT_DISPLAYPOWER" or event == "UNIT_CONNECTION" then
@@ -1157,7 +1157,7 @@ player.tags.name:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 player.tags.name:SetPoint("TopRight", player.health, -3, -3)
 player.tags.group = player.tags:CreateFontString()
 player.tags.group:SetFont(GameFontNormal:GetFont(), 11, "Outline")
-player.tags.group:SetPoint("Right", player.tags.name, "Right")
+player.tags.group:SetPoint("Right", player.tags.name, "Left")
 player.tags.afk = player.tags:CreateFontString()
 player.tags.afk:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 player.tags.afk:SetPoint("Right", player.tags.group, "Left")
@@ -1197,7 +1197,7 @@ player.tags:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "player", "vehicle")
 player.tags:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player", "vehicle")
 player.tags:RegisterUnitEvent("UNIT_MAXPOWER", "player", "vehicle")
 player.tags:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "GROUP_ROSTER_UPDATE" then
@@ -1241,7 +1241,7 @@ player.healPrediction:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "player", "vehic
 player.healPrediction:RegisterUnitEvent("UNIT_HEAL_PREDICTION", "player", "vehicle")
 player.healPrediction:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "player", "vehicle")
 player.healPrediction:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateHealPrediction(self)
@@ -1258,7 +1258,7 @@ player.healAbsorb:RegisterUnitEvent("UNIT_HEALTH", "player")
 player.healAbsorb:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "player")
 player.healAbsorb:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "player", "vehicle")
 player.healAbsorb:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateHealAbsorb(self)
@@ -1277,7 +1277,7 @@ player.totalAbsorb:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "player", "ve
 player.totalAbsorb:RegisterUnitEvent("UNIT_HEAL_PREDICTION", "player", "vehicle")
 player.totalAbsorb:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "player", "vehicle")
 player.totalAbsorb:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateTotalAbsorb(self)
@@ -1304,7 +1304,7 @@ player.comboPoints:RegisterUnitEvent("UNIT_POWER_UPDATE", "player", "vehicle")
 player.comboPoints:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player", "vehicle")
 player.comboPoints:RegisterUnitEvent("UNIT_MAXPOWER", "player", "vehicle")
 player.comboPoints:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateComboPoint(self)
@@ -1334,7 +1334,7 @@ player.auras.buffs.buttons = CreateAuraButtons(player.auras.buffs, 34, 4, "left"
 player.auras:RegisterEvent("PLAYER_ENTERING_WORLD")
 player.auras:RegisterUnitEvent("UNIT_AURA", "player", "vehicle")
 player.auras:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateAura(self)
@@ -1676,7 +1676,7 @@ pet.health:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "pet", "player")
 pet.health:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "pet", "player")
 pet.health:RegisterUnitEvent("UNIT_POWER_UPDATE", "pet")
 pet.health:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "UNIT_FACTION" or event == "UNIT_CONNECTION" or event == "UNIT_TARGETABLE_CHANGED" or event == "UNIT_POWER_UPDATE" then
@@ -1704,7 +1704,7 @@ pet.power:RegisterUnitEvent("UNIT_POWER_BAR_HIDE", "pet", "player")
 pet.power:RegisterUnitEvent("UNIT_DISPLAYPOWER", "pet", "player")
 pet.power:RegisterUnitEvent("UNIT_MANA", "pet", "player")
 pet.power:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "UNIT_DISPLAYPOWER" or event == "UNIT_CONNECTION" then
@@ -1744,7 +1744,7 @@ pet.tags:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "pet", "player")
 pet.tags:RegisterUnitEvent("UNIT_POWER_FREQUENT", "pet", "player")
 pet.tags:RegisterUnitEvent("UNIT_MAXPOWER", "pet", "player")
 pet.tags:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     if event == "UNIT_NAME_UPDATE" then
@@ -1775,7 +1775,7 @@ pet.healPrediction:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "pet", "player")
 pet.healPrediction:RegisterUnitEvent("UNIT_HEAL_PREDICTION", "pet", "player")
 pet.healPrediction:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "pet", "player")
 pet.healPrediction:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateHealPrediction(self)
@@ -1792,7 +1792,7 @@ pet.healPrediction:RegisterUnitEvent("UNIT_HEALTH", "pet", "player")
 pet.healPrediction:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "pet", "player")
 pet.healPrediction:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "pet", "player")
 pet.healAbsorb:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateHealAbsorb(self)
@@ -1811,7 +1811,7 @@ pet.totalAbsorb:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "pet", "player")
 pet.totalAbsorb:RegisterUnitEvent("UNIT_HEAL_PREDICTION", "pet", "player")
 pet.totalAbsorb:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "pet", "player")
 pet.totalAbsorb:SetScript("OnEvent", function(self, event, unit)
-    if unit ~= self:GetParent().unit then
+    if unit and unit ~= self:GetParent().unit then
         return
     end
     UpdateTotalAbsorb(self)
