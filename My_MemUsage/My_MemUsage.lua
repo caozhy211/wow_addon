@@ -5,11 +5,13 @@ local f = CreateFrame("Frame")
 f:RegisterEvent("PLAYER_LOGIN")
 
 f:SetScript("OnEvent", function()
+    local count = 0
     for i = 1, GetNumAddOns() do
         if not addOnInfo[i] and IsAddOnLoaded(i) then
+            count = count + 1
             local name = GetAddOnInfo(i)
             local memory = GetAddOnMemoryUsage(i)
-            addOnInfo[i] = { name = name, memory = memory, min = 100000, max = 0 }
+            addOnInfo[count] = { name = name, memory = memory, min = 100000, max = 0 }
         end
     end
 end)
@@ -39,7 +41,7 @@ f:SetScript("OnUpdate", function(self, elapsed)
     end
 end)
 
-local function formatNumber(number)
+local function FormatNumber(number)
     if number < 1000 then
         return format("%.2f KB", number)
     end
@@ -75,14 +77,14 @@ button:SetScript("OnClick", function()
     print("|cff8787ed-----------------------------------------------------------------|r")
     for _, value in pairs(info) do
         local name = value.name
-        local memory = formatNumber(value.memory)
-        local min = formatNumber(value.min)
-        local max = formatNumber(value.max)
+        local memory = FormatNumber(value.memory)
+        local min = FormatNumber(value.min)
+        local max = FormatNumber(value.max)
         print(name .. ": |cffffff00" .. memory .. "|r (|cff00ff00min: " .. min .. "|r, |cffff0000max: " .. max .. "|r)")
         totalMem = totalMem + value.memory
     end
     print("|cff8787ed-----------------------------------------------------------------|r")
-    print("Total (" .. #info .. "): " .. formatNumber(totalMem))
+    print("Total (" .. #info .. "): " .. FormatNumber(totalMem))
     print("|cff8787ed-----------------------------------------------------------------|r")
 end)
 
