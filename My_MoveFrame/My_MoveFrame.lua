@@ -88,6 +88,9 @@ end)
 --ExtraActionBarFrame.SetPoint = function()
 --end
 
+-- 修改UIParent與頂部的偏移值
+UIParent:SetAttribute("TOP_OFFSET", -145)
+
 -- 移動佔用快捷列
 PossessBarFrame:ClearAllPoints()
 PossessBarFrame:SetPoint("BottomLeft", UIParent, "Bottom", -44, 110)
