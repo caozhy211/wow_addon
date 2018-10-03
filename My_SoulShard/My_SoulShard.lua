@@ -12,44 +12,6 @@ local height = 22
 local width = 40
 local spacing = 7
 
-local maxNumPower = UnitPowerMax("player", Enum.PowerType.SoulShards)
-ss:SetHeight(height)
-ss:SetWidth(width * maxNumPower + spacing * (maxNumPower - 1))
-ss:SetPoint("Bottom", SwingBar, "Top", 0, 7)
-for i = 1, maxNumPower do
-    local shard = ss:CreateTexture(nil, "Artwork")
-    shard:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")
-    shard:SetColorTexture(0.53, 0.53, 0.93, 1)
-    shard:SetWidth(width)
-    shard:SetHeight(height)
-    shard:SetPoint("Left", (width + spacing) * (i - 1), 0)
-    shards[i] = shard
-
-    local topBorder = ss:CreateTexture(nil, "Overlay")
-    topBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    topBorder:SetWidth(width)
-    topBorder:SetHeight(2)
-    topBorder:SetPoint("Top", shard)
-
-    local bottomBorder = ss:CreateTexture(nil, "Overlay")
-    bottomBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    bottomBorder:SetWidth(width)
-    bottomBorder:SetHeight(2)
-    bottomBorder:SetPoint("Bottom", shard)
-
-    local leftBorder = ss:CreateTexture(nil, "Overlay")
-    leftBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    leftBorder:SetWidth(2)
-    leftBorder:SetHeight(height)
-    leftBorder:SetPoint("Left", shard)
-
-    local rightBorder = ss:CreateTexture(nil, "Overlay")
-    rightBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    rightBorder:SetWidth(2)
-    rightBorder:SetHeight(height)
-    rightBorder:SetPoint("Right", shard)
-end
-
 function ss:Update()
     local numPower = WarlockPowerBar_UnitPower("player")
     local numShards, numSlivers = math.modf(numPower)
@@ -74,6 +36,43 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
     elseif event == "PLAYER_LOGIN" then
         local _, class = UnitClass("player")
         if class == "WARLOCK" then
+            local maxNumPower = UnitPowerMax("player", Enum.PowerType.SoulShards)
+            self:SetHeight(height)
+            self:SetWidth(width * maxNumPower + spacing * (maxNumPower - 1))
+            self:SetPoint("Bottom", SwingBar, "Top", 0, 7)
+            for i = 1, maxNumPower do
+                local shard = self:CreateTexture(nil, "Artwork")
+                shard:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")
+                shard:SetColorTexture(0.53, 0.53, 0.93, 1)
+                shard:SetWidth(width)
+                shard:SetHeight(height)
+                shard:SetPoint("Left", (width + spacing) * (i - 1), 0)
+                shards[i] = shard
+
+                local topBorder = self:CreateTexture(nil, "Overlay")
+                topBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                topBorder:SetWidth(width)
+                topBorder:SetHeight(2)
+                topBorder:SetPoint("Top", shard)
+
+                local bottomBorder = self:CreateTexture(nil, "Overlay")
+                bottomBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                bottomBorder:SetWidth(width)
+                bottomBorder:SetHeight(2)
+                bottomBorder:SetPoint("Bottom", shard)
+
+                local leftBorder = self:CreateTexture(nil, "Overlay")
+                leftBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                leftBorder:SetWidth(2)
+                leftBorder:SetHeight(height)
+                leftBorder:SetPoint("Left", shard)
+
+                local rightBorder = self:CreateTexture(nil, "Overlay")
+                rightBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
+                rightBorder:SetWidth(2)
+                rightBorder:SetHeight(height)
+                rightBorder:SetPoint("Right", shard)
+            end
             self:Update()
         else
             self:Hide()
