@@ -952,6 +952,7 @@ target.auras.debuffs:SetPoint("Bottom", target, "Top", 0, 1)
 target.auras.debuffs.maxAuras = 8
 target.auras.debuffs.onlyPlayerCast = true
 target.auras.debuffs.blacklist = true
+target.auras.debuffs.overridelist = true
 
 target.auras.debuffs.buttons = CreateAuraButtons(target.auras.debuffs, 34, 4, "right", 8)
 ------------------------------------------------------------------------------------------------------------------------
@@ -1577,6 +1578,7 @@ focus.auras.debuffs:SetPoint("Bottom", focus, "Top", 0, 3)
 focus.auras.debuffs.maxAuras = 8
 focus.auras.debuffs.onlyPlayerCast = true
 focus.auras.debuffs.blacklist = true
+focus.auras.debuffs.overridelist = true
 
 focus.auras.debuffs.buttons = CreateAuraButtons(focus.auras.debuffs, 27, 1, "right", 8)
 ------------------------------------------------------------------------------------------------------------------------
@@ -2261,6 +2263,7 @@ for i = 1, 5 do
     bosses[i].auras.debuffs.maxAuras = 8
     bosses[i].auras.debuffs.onlyPlayerCast = true
     bosses[i].auras.debuffs.blacklist = true
+    bosses[i].auras.debuffs.overridelist = true
 
     bosses[i].auras.debuffs.buttons = CreateAuraButtons(bosses[i].auras.debuffs, 31, 1, "right", 8)
 
