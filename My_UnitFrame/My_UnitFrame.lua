@@ -522,7 +522,7 @@ local function CreateAuraButtons(parent, size, spacing, direction, numPerLine)
                 local auraName = UnitAura(self.unit, self.auraID, self.filter)
                 local type = self.filter == "HELPFUL" and "buff" or "debuff"
                 auraFilter.blacklist[type][auraName] = true
-                UpdateAura(parent)
+                UpdateAura(parent:GetParent())
             else
                 if InCombatLockdown() or (not UnitIsUnit(self.unit, "player") and not UnitIsUnit(self.unit, "vehicle")) then
                     return
@@ -945,7 +945,7 @@ end)
 ------------------------------------------------------------------------------------------------------------------------
 target.auras = CreateFrame("Frame", nil, target)
 
-target.auras.debuffs = CreateFrame("Frame", "MyUnitTargetDebuff", target)
+target.auras.debuffs = CreateFrame("Frame", "MyUnitTargetDebuff", target.auras)
 target.auras.debuffs:SetSize(300, 34)
 target.auras.debuffs:SetPoint("Bottom", target, "Top", 0, 1)
 
@@ -956,7 +956,7 @@ target.auras.debuffs.overridelist = true
 
 target.auras.debuffs.buttons = CreateAuraButtons(target.auras.debuffs, 34, 4, "right", 8)
 ------------------------------------------------------------------------------------------------------------------------
-target.auras.buffs = CreateFrame("Frame", "MyUnitTargetBuff", target)
+target.auras.buffs = CreateFrame("Frame", "MyUnitTargetBuff", target.auras)
 target.auras.buffs:SetSize(300, 34)
 target.auras.buffs:SetPoint("Top", target, "Bottom", 0, -1)
 
@@ -1312,7 +1312,7 @@ end)
 ------------------------------------------------------------------------------------------------------------------------
 player.auras = CreateFrame("Frame", nil, player)
 
-player.auras.debuffs = CreateFrame("Frame", "MyUnitPlayerDebuff", player)
+player.auras.debuffs = CreateFrame("Frame", "MyUnitPlayerDebuff", player.auras)
 player.auras.debuffs:SetSize(300, 34)
 player.auras.debuffs:SetPoint("Top", player, "Bottom", 0, -1)
 
@@ -1320,7 +1320,7 @@ player.auras.debuffs.maxAuras = 8
 
 player.auras.debuffs.buttons = CreateAuraButtons(player.auras.debuffs, 34, 4, "left", 8)
 ------------------------------------------------------------------------------------------------------------------------
-player.auras.buffs = CreateFrame("Frame", "MyUnitPlayerBuff", player)
+player.auras.buffs = CreateFrame("Frame", "MyUnitPlayerBuff", player.auras)
 player.auras.buffs:SetSize(300, 69)
 player.auras.buffs:SetPoint("Bottom", player, "Top", 0, 1)
 
@@ -1571,7 +1571,7 @@ end)
 ------------------------------------------------------------------------------------------------------------------------
 focus.auras = CreateFrame("Frame", nil, focus)
 
-focus.auras.debuffs = CreateFrame("Frame", "MyUnitFocusDebuff", focus)
+focus.auras.debuffs = CreateFrame("Frame", "MyUnitFocusDebuff", focus.auras)
 focus.auras.debuffs:SetSize(focus:GetWidth(), 27)
 focus.auras.debuffs:SetPoint("Bottom", focus, "Top", 0, 3)
 
@@ -1582,7 +1582,7 @@ focus.auras.debuffs.overridelist = true
 
 focus.auras.debuffs.buttons = CreateAuraButtons(focus.auras.debuffs, 27, 1, "right", 8)
 ------------------------------------------------------------------------------------------------------------------------
-focus.auras.buffs = CreateFrame("Frame", "MyUnitFocusBuff", focus)
+focus.auras.buffs = CreateFrame("Frame", "MyUnitFocusBuff", focus.auras)
 focus.auras.buffs:SetSize(focus:GetWidth(), 27)
 focus.auras.buffs:SetPoint("Top", focus, "Bottom", 0, -3)
 
@@ -2256,7 +2256,7 @@ for i = 1, 5 do
     --------------------------------------------------------------------------------------------------------------------
     bosses[i].auras = CreateFrame("Frame", nil, bosses[i])
 
-    bosses[i].auras.debuffs = CreateFrame("Frame", "MyUnitBoss" .. i .. "Debuff", bosses[i])
+    bosses[i].auras.debuffs = CreateFrame("Frame", "MyUnitBoss" .. i .. "Debuff", bosses[i].auras)
     bosses[i].auras.debuffs:SetSize(bosses[i]:GetWidth(), 31)
     bosses[i].auras.debuffs:SetPoint("Bottom", bosses[i], "Top", 0, 3)
 
