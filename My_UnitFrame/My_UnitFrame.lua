@@ -832,7 +832,7 @@ target.tags:RegisterEvent("GROUP_ROSTER_UPDATE")
 target.tags:RegisterUnitEvent("UNIT_NAME_UPDATE", "target")
 target.tags:RegisterUnitEvent("PLAYER_FLAGS_CHANGED", "target")
 target.tags:RegisterUnitEvent("UNIT_LEVEL", "target")
-target.tags:RegisterUnitEvent("UNIT_FACTION", "target")
+target.tags:RegisterEvent("PLAYER_LEVEL_UP")
 target.tags:RegisterUnitEvent("UNIT_CLASSIFICATION_CHANGED", "target")
 target.tags:RegisterUnitEvent("UNIT_HEALTH", "target")
 target.tags:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "target")
@@ -850,7 +850,7 @@ target.tags:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_FLAGS_CHANGED" then
         UpdateTagAFK(self)
     end
-    if event == "UNIT_LEVEL" or event == "UNIT_FACTION" then
+    if event == "UNIT_LEVEL" or event == "PLAYER_LEVEL_UP" or event == "UNIT_CLASSIFICATION_CHANGED" then
         UpdateTagLevel(self)
     end
     if event == "UNIT_CLASSIFICATION_CHANGED" then
@@ -1188,7 +1188,6 @@ player.tags:RegisterEvent("PLAYER_LEVEL_UP")
 player.tags:RegisterUnitEvent("UNIT_NAME_UPDATE", "player", "vehicle")
 player.tags:RegisterUnitEvent("PLAYER_FLAGS_CHANGED", "player", "vehicle")
 player.tags:RegisterUnitEvent("UNIT_LEVEL", "player", "vehicle")
-player.tags:RegisterUnitEvent("UNIT_FACTION", "player", "vehicle")
 player.tags:RegisterUnitEvent("UNIT_CLASSIFICATION_CHANGED", "player", "vehicle")
 player.tags:RegisterUnitEvent("UNIT_HEALTH", "player", "vehicle")
 player.tags:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "player", "vehicle")
@@ -1209,7 +1208,7 @@ player.tags:SetScript("OnEvent", function(self, event, unit)
     if event == "PLAYER_FLAGS_CHANGED" then
         UpdateTagAFK(self)
     end
-    if event == "UNIT_LEVEL" or event == "UNIT_FACTION" or "PLAYER_LEVEL_UP" then
+    if event == "UNIT_LEVEL" or event == "UNIT_CLASSIFICATION_CHANGED" or "PLAYER_LEVEL_UP" then
         UpdateTagLevel(self)
     end
     if event == "UNIT_CLASSIFICATION_CHANGED" then
