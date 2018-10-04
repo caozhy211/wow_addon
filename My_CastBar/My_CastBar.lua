@@ -377,18 +377,22 @@ end)
 
 -- 揮擊
 local swing = CreateFrame("Frame", "SwingBar", UIParent)
-swing:Hide()
 
 swing:SetSize(playerWidth, 3)
 swing:SetPoint("BottomRight", CastingBarFrame, "TopRight")
 
-swing:SetBackdrop({ bgFile = "Interface\\Tooltips\\UI-Tooltip-Background", tile = true, tileSize = 16 })
-swing:SetBackdropColor(0, 0, 0)
+swing.bg = swing:CreateTexture(nil, "Background")
+swing.bg:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")
+swing.bg:SetColorTexture(0, 0, 0)
+swing.bg:SetAllPoints()
+swing.bg:Hide()
 
 swing.bar = CreateFrame("StatusBar", nil, swing)
 swing.bar:SetAllPoints()
 swing.bar:SetStatusBarTexture("Interface\\ChatFrame\\ChatFrameBackground")
 swing.bar:SetMinMaxValues(0, 1)
+swing.bar:SetValue(0)
+swing.bar:Hide()
 
 swing.bar.durationText = swing.bar:CreateFontString()
 swing.bar.durationText:SetFont(GameFontNormal:GetFont(), 9, "Outline")
@@ -406,12 +410,14 @@ function swing:Update()
 
     if self.startTime then
         local spent = GetTime() - self.startTime
-        self.bar.remainingText:SetFormattedText("%.1f", self.duration - spent)
+        self.bar.remainingText:SetFormattedText("%.1f", self.duration - spent < 0 and 0 or self.duration - spent)
 
         local percent = spent / self.duration
         if percent > 1 then
             self:SetScript("OnUpdate", nil)
-            self:Hide()
+            self.bg:Hide()
+            self.bar:Hide()
+            return
         else
             self.bar:SetValue(percent)
         end
@@ -424,14 +430,18 @@ function swing:MeleeSwing()
         self.duration = nil
         self.startTime = nil
         self:SetScript("OnUpdate", nil)
-        self:Hide()
+        self.bg:Hide()
+        self.bar:Hide()
         return
     end
 
     self.bar.durationText:SetFormattedText("%.1f", self.duration)
     self.startTime = GetTime()
+    self.bg:Show()
+    self.bar:SetValue(0)
+    self.bar:Show()
     self:SetScript("OnUpdate", self.Update)
-    self:Show()
+    return
 end
 
 function swing:Shoot()
@@ -440,14 +450,18 @@ function swing:Shoot()
         self.duration = nil
         self.startTime = nil
         self:SetScript("OnUpdate", nil)
-        self:Hide()
+        self.bg:Hide()
+        self.bar:Hide()
         return
     end
 
     self.bar.durationText:SetFormattedText("%.1f", self.duration)
     self.startTime = GetTime()
+    self.bg:Show()
+    self.bar:SetValue(0)
+    self.bar:Show()
     self:SetScript("OnUpdate", self.Update)
-    self:Show()
+    return
 end
 
 local playerClass
@@ -558,7 +572,10 @@ local function OnChanged(castBar, event, arg1)
     end
 end
 
-local function SetCastBar(bar, width, height)
+local function CreateCastBar(unitFrame)
+    local bar = CreateFrame("StatusBar", unitFrame.name, UIParent, "CastingBarFrameTemplate")
+    bar:Hide()
+    CastingBarFrame_OnLoad(bar, unitFrame.unit, unitFrame.showTradeSkills, unitFrame.showShield)
     -- 隱藏完成動畫
     bar.Flash:SetTexture(nil)
     -- 隱藏邊框
@@ -568,7 +585,8 @@ local function SetCastBar(bar, width, height)
 
     -- 顯示法術圖標
     bar.Icon:Show()
-    bar.Icon:SetSize(bar:GetHeight(), bar:GetHeight())
+    local size = unitFrame.height - border * 2
+    bar.Icon:SetSize(size, size)
     bar.Icon:SetPoint("Right", bar, "Left")
 
     -- 顯示施法時間
@@ -583,24 +601,25 @@ local function SetCastBar(bar, width, height)
     bar.Text:SetJustifyH("Left")
 
     -- 不可打斷邊框
+    local borderWidth = unitFrame.width - border * 2
     bar.topBorder = bar:CreateTexture()
     bar.topBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    bar.topBorder:SetSize(width - border * 2, border)
+    bar.topBorder:SetSize(borderWidth, border)
     bar.topBorder:SetPoint("BottomRight", bar, "TopRight")
 
     bar.bottomBorder = bar:CreateTexture()
     bar.bottomBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    bar.bottomBorder:SetSize(width - border * 2, border)
+    bar.bottomBorder:SetSize(borderWidth, border)
     bar.bottomBorder:SetPoint("TopRight", bar, "BottomRight")
 
     bar.leftBorder = bar:CreateTexture()
     bar.leftBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    bar.leftBorder:SetSize(border, height)
+    bar.leftBorder:SetSize(border, unitFrame.height)
     bar.leftBorder:SetPoint("Right", bar.Icon, "Left")
 
     bar.rightBorder = bar:CreateTexture()
     bar.rightBorder:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-    bar.rightBorder:SetSize(border, height)
+    bar.rightBorder:SetSize(border, unitFrame.height)
     bar.rightBorder:SetPoint("Left", bar, "Right")
 
     hooksecurefunc(bar.BorderShield, "Show", function()
@@ -615,75 +634,10 @@ local function SetCastBar(bar, width, height)
         bar.leftBorder:Hide()
         bar.rightBorder:Hide()
     end)
-end
 
-local targetCastBar = CreateFrame("StatusBar", "TargetCastBar", UIParent, "CastingBarFrameTemplate")
--- 重載介面後不顯示
-targetCastBar:Hide()
-CastingBarFrame_OnLoad(targetCastBar, "target", true, true)
-
-local targetWidth = 270
-local targetHeight = 30
-targetCastBar:SetSize(targetWidth - targetHeight, targetHeight - border * 2)
-targetCastBar:SetPoint("TopLeft", UIParent, "Center", 120 + targetHeight - border, -215 - border)
-
-SetCastBar(targetCastBar, targetWidth, targetHeight)
-
-targetCastBar:RegisterEvent("PLAYER_TARGET_CHANGED")
-targetCastBar:SetScript("OnEvent", function(self, event, unit, spell)
-    if event == "PLAYER_TARGET_CHANGED" then
-        event, unit = OnChanged(self, event, unit)
-    end
-    CastingBarFrame_OnEvent(self, event, unit, spell)
-    if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") and unit == self.unit then
-        SetShortText(self)
-    end
-end)
-
-local focusCastBar = CreateFrame("StatusBar", "focusCastBar", UIParent, "CastingBarFrameTemplate")
--- 重載介面後不顯示
-focusCastBar:Hide()
-CastingBarFrame_OnLoad(focusCastBar, "focus", true, true)
-
-local focusWidth = 226
-local focusHeight = 30
-focusCastBar:SetSize(focusWidth - focusHeight, focusHeight - border * 2)
-focusCastBar:SetPoint("TopLeft", UIParent, "Center", 423 + focusHeight - border, -370 - border)
-
-SetCastBar(focusCastBar, focusWidth, focusHeight)
-
-focusCastBar:RegisterEvent("PLAYER_FOCUS_CHANGED")
-focusCastBar:SetScript("OnEvent", function(self, event, unit, spell)
-    if event == "PLAYER_FOCUS_CHANGED" then
-        event, unit = OnChanged(self, event, unit)
-    end
-    CastingBarFrame_OnEvent(self, event, unit, spell)
-    if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") and unit == self.unit then
-        SetShortText(self)
-    end
-end)
-
-local bossCastBar = {}
-local bossWidth = 259
-local bossHeight = 20
-for i = 1, 5 do
-    bossCastBar[i] = CreateFrame("StatusBar", "Boss" .. i .. "CastBar", UIParent, "CastingBarFrameTemplate")
-    -- 重載介面後不顯示
-    bossCastBar[i]:Hide()
-    CastingBarFrame_OnLoad(bossCastBar[i], "boss" .. i, false, true)
-
-    bossCastBar[i]:SetSize(bossWidth - bossHeight, bossHeight - border * 2)
-    if i == 1 then
-        bossCastBar[i]:SetPoint("BottomLeft", UIParent, "Center", 390 + bossHeight - border, -255 + border)
-    else
-        bossCastBar[i]:SetPoint("Bottom", bossCastBar[i - 1], "Top", 0, 78)
-    end
-
-    SetCastBar(bossCastBar[i], bossWidth, bossHeight)
-
-    bossCastBar[i]:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
-    bossCastBar[i]:SetScript("OnEvent", function(self, event, unit, spell)
-        if event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
+    bar:RegisterEvent(unitFrame.event)
+    bar:SetScript("OnEvent", function(self, event, unit, spell)
+        if event == unitFrame.event then
             event, unit = OnChanged(self, event, unit)
         end
         CastingBarFrame_OnEvent(self, event, unit, spell)
@@ -691,4 +645,51 @@ for i = 1, 5 do
             SetShortText(self)
         end
     end)
+
+    return bar
+end
+
+local target = {
+    name = "TargetCastBar",
+    unit = "target",
+    showTradeSkills = true,
+    showShield = true,
+    width = 270,
+    height = 30,
+    event = "PLAYER_TARGET_CHANGED",
+}
+local targetCastBar = CreateCastBar(target)
+targetCastBar:SetSize(target.width - target.height, target.height - border * 2)
+targetCastBar:SetPoint("TopLeft", UIParent, "Center", 120 + target.height - border, -215 - border)
+
+local focus = {
+    name = "FocusCastBar",
+    unit = "focus",
+    showTradeSkills = true,
+    showShield = true,
+    width = 226,
+    height = 30,
+    event = "PLAYER_FOCUS_CHANGED",
+}
+local focusCastBar = CreateCastBar(focus)
+focusCastBar:SetSize(focus.width - focus.height, focus.height - border * 2)
+focusCastBar:SetPoint("TopLeft", UIParent, "Center", 423 + focus.height - border, -370 - border)
+
+local boss = {
+    showTradeSkills = false,
+    showShield = true,
+    width = 259,
+    height = 20,
+    event = "INSTANCE_ENCOUNTER_ENGAGE_UNIT",
+}
+for i = 1, 5 do
+    boss.name = "Boss" .. i .. "CastBar"
+    boss.unit = "boss" .. i
+    boss[i] = CreateCastBar(boss)
+    boss[i]:SetSize(boss.width - boss.height, boss.height - border * 2)
+    if i == 1 then
+        boss[i]:SetPoint("BottomLeft", UIParent, "Center", 390 + boss.height - border, -255 + border)
+    else
+        boss[i]:SetPoint("Bottom", boss[i - 1], "Top", 0, 78)
+    end
 end
