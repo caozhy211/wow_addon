@@ -45,6 +45,10 @@ SlidingActionBarTexture1:SetTexture(nil)
 PossessBackground1:SetTexture(nil)
 PossessBackground2:SetTexture(nil)
 
+-- 隱藏佔用按鈕的正常材質
+PossessButton1NormalTexture:SetTexture(nil)
+PossessButton2NormalTexture:SetTexture(nil)
+
 -- 隱藏框架
 local hideFrame = CreateFrame("Frame")
 hideFrame:Hide()

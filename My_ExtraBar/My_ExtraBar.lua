@@ -13,7 +13,7 @@ local buttonSpacing = 6
 
 bar:SetWidth(buttonSize * maxNumButtons + buttonSpacing * (maxNumButtons - 1))
 bar:SetHeight(buttonSize)
-bar:SetPoint("Bottom", SwingBar, "Top", 0, 29)
+bar:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 25)
 
 local slots = {
     "HeadSlot", "NeckSlot", "ShoulderSlot", "BackSlot", "ChestSlot", "ShirtSlot", "TabardSlot", "WristSlot",

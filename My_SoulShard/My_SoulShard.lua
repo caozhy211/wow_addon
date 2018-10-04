@@ -8,7 +8,7 @@ ss.text:SetTextColor(1, 1, 0)
 local shards = {}
 
 -- 靈魂裂片大小
-local height = 22
+local height = 20
 local width = 40
 local spacing = 7
 
@@ -39,7 +39,7 @@ ss:SetScript("OnEvent", function(self, event, unit, ...)
             local maxNumPower = UnitPowerMax("player", Enum.PowerType.SoulShards)
             self:SetHeight(height)
             self:SetWidth(width * maxNumPower + spacing * (maxNumPower - 1))
-            self:SetPoint("Bottom", SwingBar, "Top", 0, 7)
+            self:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 5)
             for i = 1, maxNumPower do
                 local shard = self:CreateTexture(nil, "Artwork")
                 shard:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")

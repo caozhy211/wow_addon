@@ -2,9 +2,8 @@ local f = CreateFrame("Frame")
 
 f:RegisterEvent("PLAYER_LOGIN")
 
---PlayerPowerBarAlt:SetScale(0.75)
---PlayerPowerBarAlt:SetMovable(true)
---PlayerPowerBarAlt:SetUserPlaced(true)
+PlayerPowerBarAlt:SetMovable(true)
+PlayerPowerBarAlt:SetUserPlaced(true)
 
 ObjectiveTrackerFrame:SetHeight(673)
 ObjectiveTrackerFrame:SetMovable(true)
@@ -12,8 +11,8 @@ ObjectiveTrackerFrame:SetUserPlaced(true)
 
 f:SetScript("OnEvent", function()
     -- 移動特殊能量條
-    --PlayerPowerBarAlt:ClearAllPoints()
-    --PlayerPowerBarAlt:SetPoint("Center", UIParent, 340, -200)
+    PlayerPowerBarAlt:ClearAllPoints()
+    PlayerPowerBarAlt:SetPoint("Bottom", UIParent, 255, 330)
 
     -- 移動追蹤框架
     ObjectiveTrackerFrame:SetPoint("TopRight", UIParent, -50, -330)
@@ -24,8 +23,8 @@ for i = 1, NUM_CHAT_WINDOWS do
     -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
     chatFrame:SetClampRectInsets(-35, 38, 38, -117)
     -- 設置聊天框的最小尺寸和最大尺寸
-    chatFrame:SetMinResize(480, 139)
-    chatFrame:SetMaxResize(480, 139)
+    chatFrame:SetMinResize(480, 155)
+    chatFrame:SetMaxResize(480, 155)
 
     -- 隱藏輸入框的邊框
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
@@ -66,7 +65,9 @@ petBar:SetScript("OnEvent", function(self, event)
 end)
 
 -- 移動失去控制框架
---LossOfControlFrame:SetPoint("Center", UIParent, 0, -245)
+LossOfControlFrame:SetScale(0.7)
+LossOfControlFrame:SetPoint("Center", UIParent, "Bottom", 0, 395)
+--LossOfControlFrame:SetPoint("Center", UIParent, "Bottom", 0, 376)
 
 -- 移動姿態快捷列
 --StanceBarFrame:ClearAllPoints()
@@ -75,21 +76,21 @@ end)
 --end
 
 -- 移動區域技能鍵
---ZoneAbilityFrame:SetScale(0.75)
---ZoneAbilityFrame:ClearAllPoints()
---ZoneAbilityFrame:SetPoint("Center", UIParent, 40, -200)
---ZoneAbilityFrame.SetPoint = function()
---end
+ZoneAbilityFrame:SetScale(0.75)
+ZoneAbilityFrame:ClearAllPoints()
+ZoneAbilityFrame:SetPoint("Center", UIParent, 40, -240)
+ZoneAbilityFrame.SetPoint = function()
+end
 
 -- 移動額外快捷鍵
---ExtraActionBarFrame:SetScale(0.75)
---ExtraActionBarFrame:ClearAllPoints()
---ExtraActionBarFrame:SetPoint("Center", UIParent, -200, -200)
---ExtraActionBarFrame.SetPoint = function()
---end
+ExtraActionBarFrame:SetScale(0.75)
+ExtraActionBarFrame:ClearAllPoints()
+ExtraActionBarFrame:SetPoint("Center", UIParent, -200, -240)
+ExtraActionBarFrame.SetPoint = function()
+end
 
 -- 修改UIParent與頂部的偏移值
-UIParent:SetAttribute("TOP_OFFSET", -145)
+UIParent:SetAttribute("TOP_OFFSET", -140)
 
 -- 移動佔用快捷列
 PossessBarFrame:ClearAllPoints()

@@ -58,9 +58,12 @@ local function UpdateCastBar(castBar)
 end
 
 local playerWidth = 228
-local playerHeight = 28
+local playerHeight = 27
 CastingBarFrame:SetSize(playerWidth - playerHeight, playerHeight)
-CastingBarFrame:SetPoint("Center", playerHeight / 2, 0)
+CastingBarFrame:ClearAllPoints()
+CastingBarFrame:SetPoint("Bottom", playerHeight / 2, 153)
+CastingBarFrame.SetPoint = function()
+end
 
 -- 延迟
 local latency = CreateFrame("Frame", "CastBarLatencyFrame", CastingBarFrame)
@@ -328,7 +331,7 @@ end)
 local gcd = CreateFrame("Frame", "GCDBar", UIParent)
 
 gcd:SetSize(playerWidth, 3)
-gcd:SetPoint("TopRight", CastingBarFrame, "BottomRight")
+gcd:SetPoint("BottomRight", CastingBarFrame, "TopRight")
 
 gcd.bg = gcd:CreateTexture(nil, "Background")
 gcd.bg:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")
@@ -379,7 +382,7 @@ end)
 local swing = CreateFrame("Frame", "SwingBar", UIParent)
 
 swing:SetSize(playerWidth, 3)
-swing:SetPoint("BottomRight", CastingBarFrame, "TopRight")
+swing:SetPoint("TopRight", CastingBarFrame, "BottomRight")
 
 swing.bg = swing:CreateTexture(nil, "Background")
 swing.bg:SetTexture("Interface\\Tooltips\\UI-Tooltip-Background")
@@ -396,11 +399,11 @@ swing.bar:Hide()
 
 swing.bar.durationText = swing.bar:CreateFontString()
 swing.bar.durationText:SetFont(GameFontNormal:GetFont(), 9, "Outline")
-swing.bar.durationText:SetPoint("BottomLeft", swing)
+swing.bar.durationText:SetPoint("TopLeft")
 swing.bar.durationText:SetJustifyH("Left")
 swing.bar.remainingText = swing.bar:CreateFontString()
 swing.bar.remainingText:SetFont(GameFontNormal:GetFont(), 9, "Outline")
-swing.bar.remainingText:SetPoint("BottomRight", swing)
+swing.bar.remainingText:SetPoint("TopRight")
 swing.bar.durationText:SetJustifyH("Right")
 
 function swing:Update()
@@ -660,7 +663,7 @@ local target = {
 }
 local targetCastBar = CreateCastBar(target)
 targetCastBar:SetSize(target.width - target.height, target.height - border * 2)
-targetCastBar:SetPoint("TopLeft", UIParent, "Center", 120 + target.height - border, -215 - border)
+targetCastBar:SetPoint("TopLeft", UIParent, "Center", 120 + target.height - border, -225 - border)
 
 local focus = {
     name = "FocusCastBar",
