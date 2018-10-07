@@ -73,13 +73,28 @@ local function CreateUnitFrame(config)
 
     frame:SetScript("OnEvent", function(self, event)
         if self.otherUnit then
-            if event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_ENTERING_VEHICLE" then
-                local temp = self.unit
-                self.unit = self.otherUnit
-                self.otherUnit = temp
+            if event == "PLAYER_REGEN_ENABLED" then
+                self:SetAttribute("unit", self.unit)
+                self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+            elseif event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_ENTERING_VEHICLE" then
+                if UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
+                    local temp = self.unit
+                    self.unit = self.otherUnit
+                    self.otherUnit = temp
+                    if not InCombatLockdown() then
+                        self:SetAttribute("unit", self.unit)
+                    else
+                        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+                    end
+                end
             elseif event == "UNIT_EXITED_VEHICLE" or event == "UNIT_EXITING_VEHICLE" then
                 self.unit = config.unit
                 self.otherUnit = config.otherUnit
+                if not InCombatLockdown() then
+                    self:SetAttribute("unit", self.unit)
+                else
+                    self:RegisterEvent("PLAYER_REGEN_ENABLED")
+                end
             end
         end
 
@@ -1483,7 +1498,7 @@ for i = 1, 5 do
     bosses[i] = CreateUnitFrame(bossConfig)
     bosses[i]:SetSize(228, 33)
     if i == 1 then
-        bosses[i]:SetPoint("BottomLeft", 2, 23)
+        bosses[i]:SetPoint("BottomLeft", boss, 2, 23)
     else
         bosses[i]:SetPoint("Bottom", bosses[i - 1], "Top", 0, 61)
     end
