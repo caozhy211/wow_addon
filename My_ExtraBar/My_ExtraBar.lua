@@ -2,10 +2,9 @@ local bar = CreateFrame("Frame", "ExtraBarFrame", UIParent)
 
 bar:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 bar:RegisterEvent("PLAYER_REGEN_ENABLED")
-bar:RegisterEvent("PLAYER_LOGIN")
+bar:RegisterEvent("PLAYER_ENTERING_WORLD")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 bar:RegisterEvent("PLAYER_UNGHOST")
-bar:RegisterEvent("ZONE_CHANGED_NEW_AREA")
 
 local maxNumButtons = 6
 local buttonSize = 33

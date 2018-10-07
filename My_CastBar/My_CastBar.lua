@@ -75,7 +75,7 @@ latency:SetFrameLevel(1)
 latency.lagBox = latency:CreateTexture()
 latency.lagBox:SetHeight(CastingBarFrame:GetHeight())
 latency.lagBox:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-latency.lagBox:SetVertexColor(1, 0, 0)
+latency.lagBox:SetVertexColor(1, 0, 0, 0.5)
 latency.lagText = latency:CreateFontString()
 latency.lagText:SetFont(GameFontNormal:GetFont(), 7, "Outline")
 
