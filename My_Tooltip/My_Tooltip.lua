@@ -108,9 +108,19 @@ end)
 GameTooltip:HookScript("OnTooltipSetSpell", function(self)
     local _, id = self:GetSpell()
     if id then
-        self:AddLine(" ")
-        self:AddLine("|cff00ffccSpell ID:|r " .. id)
-        self:Show()
+        local find = false
+        for i = 2, self:NumLines() do
+            local text = _G[self:GetName() .. "TextLeft" .. i]:GetText() or ""
+            if text:find("Spell ID:") then
+                find = true
+                break
+            end
+        end
+        if not find then
+            self:AddLine(" ")
+            self:AddLine("|cff00ffccSpell ID:|r " .. id)
+            self:Show()
+        end
     end
 end)
 
