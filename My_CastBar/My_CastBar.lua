@@ -69,11 +69,12 @@ end
 local latency = CreateFrame("Frame", "CastBarLatencyFrame", CastingBarFrame)
 latency:SetSize(CastingBarFrame:GetWidth(), CastingBarFrame:GetHeight())
 latency:SetAllPoints()
+-- 設置和施法條同等級
+latency:SetFrameLevel(1)
 
 latency.lagBox = latency:CreateTexture()
 latency.lagBox:SetHeight(CastingBarFrame:GetHeight())
 latency.lagBox:SetTexture("Interface\\ChatFrame\\ChatFrameBackground")
-latency.lagBox:SetAlpha(0.5)
 latency.lagBox:SetVertexColor(1, 0, 0)
 latency.lagText = latency:CreateFontString()
 latency.lagText:SetFont(GameFontNormal:GetFont(), 7, "Outline")
@@ -110,7 +111,7 @@ CastingBarFrame.Icon:SetSize(playerHeight, playerHeight)
 CastingBarFrame.Icon:SetPoint("Right", CastingBarFrame, "Left")
 
 -- 顯示施法時間
-CastingBarFrame.timeText = CastBarLatencyFrame:CreateFontString()
+CastingBarFrame.timeText = CastingBarFrame:CreateFontString()
 CastingBarFrame.timeText:SetFont(GameFontNormal:GetFont(), 12, "Outline")
 CastingBarFrame.timeText:SetPoint("Right")
 CastingBarFrame:HookScript("OnUpdate", UpdateCastBar)
@@ -326,6 +327,25 @@ CastingBarFrame:HookScript("OnEvent", function(self, event, unit)
         end
     end
 end)
+
+-- 寵物施法條
+PetCastingBarFrame:SetSize(playerWidth - playerHeight, playerHeight)
+PetCastingBarFrame:ClearAllPoints()
+PetCastingBarFrame:SetPoint("Bottom", playerHeight / 2, 153)
+PetCastingBarFrame.SetPoint = function()
+end
+PetCastingBarFrame.Flash:SetTexture(nil)
+PetCastingBarFrame.Border:SetTexture(nil)
+PetCastingBarFrame.Icon:Show()
+PetCastingBarFrame.Icon:SetSize(playerHeight, playerHeight)
+PetCastingBarFrame.Icon:SetPoint("Right", PetCastingBarFrame, "Left")
+PetCastingBarFrame.timeText = PetCastingBarFrame:CreateFontString()
+PetCastingBarFrame.timeText:SetFont(GameFontNormal:GetFont(), 12, "Outline")
+PetCastingBarFrame.timeText:SetPoint("Right")
+PetCastingBarFrame:HookScript("OnUpdate", UpdateCastBar)
+PetCastingBarFrame.Text:ClearAllPoints()
+PetCastingBarFrame.Text:SetPoint("Left", 5, 0)
+PetCastingBarFrame.Text:SetJustifyH("Left")
 
 -- GCD
 local gcd = CreateFrame("Frame", "GCDBar", UIParent)
