@@ -90,7 +90,7 @@ GameTooltipStatusBar.text:SetFont(GameFontNormal:GetFont(), 11, "Outline")
 GameTooltipStatusBar.text:SetPoint("Center")
 GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
     local _, max = self:GetMinMaxValues();
-    local percent = ceil(value / max * 100)
+    local percent = floor(value / max * 100 + 0.5)
     GameTooltipStatusBar.text:SetText("(" .. percent .. "%) " .. FormatNumber(value) .. " / " .. FormatNumber(max))
 end)
 
@@ -124,3 +124,160 @@ GameTooltip:HookScript("OnTooltipSetSpell", function(self)
     end
 end)
 
+local f = CreateFrame("Frame")
+local tooltip = CreateFrame("GameTooltip", "ScanUnitTooltip", UIParent, "GameTooltipTemplate")
+local currentGUID, currentUnit
+local levelCache = {}
+local specCache = {}
+
+local function OnUpdate(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 0.2 then
+        return
+    end
+    self.elapsed = 0
+
+    self:SetScript("OnUpdate", nil)
+    ClearInspectPlayer()
+    if currentUnit and UnitGUID(currentUnit) == currentGUID then
+        NotifyInspect(currentUnit)
+        self:RegisterEvent("INSPECT_READY")
+    end
+end
+
+local function AddToGameTooltip(iLevel, spec)
+    local _, unit = GameTooltip:GetUnit()
+    if not unit or UnitGUID(unit) ~= currentGUID then
+        return
+    end
+
+    local index
+    for i = 2, GameTooltip:NumLines() do
+        local line = _G["GameTooltipTextLeft" .. i]
+        local text = line:GetText() or ""
+        if text:find(STAT_AVERAGE_ITEM_LEVEL .. ": ") then
+            index = i
+            break
+        end
+    end
+    local levelText = STAT_AVERAGE_ITEM_LEVEL .. ": " .. iLevel
+    if index then
+        _G["GameTooltipTextLeft" .. index]:SetText(levelText)
+        _G["GameTooltipTextRight" .. index]:SetText(spec)
+    else
+        GameTooltip:AddDoubleLine(levelText, spec)
+        GameTooltip:Show()
+    end
+end
+
+local function ScanUnit(unit)
+    if not unit or UnitGUID(unit) ~= currentGUID then
+        return
+    end
+
+    local iLevel = levelCache[currentGUID] or "..."
+    local spec = specCache[currentGUID] or "..."
+    AddToGameTooltip(iLevel, spec)
+    f:SetScript("OnUpdate", OnUpdate)
+end
+
+local function GetUnitSpec(unit)
+    if not unit or UnitGUID(unit) ~= currentGUID then
+        return
+    end
+
+    if (UnitLevel(unit) > 10) then
+        local specID, specName
+        if (unit == "player") then
+            specID = GetSpecialization()
+            specName = select(2, GetSpecializationInfo(specID))
+        else
+            specID = GetInspectSpecialization(unit)
+            if (specID and specID > 0) then
+                specName = select(2, GetSpecializationInfoByID(specID))
+            end
+        end
+        return specName
+    end
+end
+
+local function GetUnitItemLevel(unit)
+    if not unit or UnitGUID(unit) ~= currentGUID then
+        return
+    end
+
+    local iLevel, delay
+    local total, mLevel, oLevel = 0, 0, 0
+    local mQuality, mSlot, oQuality, oSlot
+    for i = 1, 17 do
+        if i ~= 4 then
+            tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+            tooltip:SetInventoryItem(unit, i)
+            local link = GetInventoryItemLink(unit, i) or select(2, tooltip:GetItem())
+            if link then
+                local level
+                local _, _, quality, _, _, _, _, _, slot = GetItemInfo(link)
+                if not quality then
+                    delay = true
+                else
+                    for j = 2, 5 do
+                        local text = _G["ScanUnitTooltipTextLeft" .. j]:GetText() or ""
+                        level = text:match(gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+                        if level then
+                            level = tonumber(level)
+                            break
+                        end
+                    end
+                    if i == 16 then
+                        mLevel = level or 0
+                        mQuality = quality
+                        mSlot = slot
+                    elseif i == 17 then
+                        oLevel = level or 0
+                        oQuality = quality
+                        oSlot = slot
+                    else
+                        total = total + level or 0
+                    end
+                end
+            end
+        end
+    end
+    if not delay then
+        if mQuality == 6 or oQuality == 6 then
+            total = total + max(mLevel, oLevel) * 2
+        elseif oSlot == "INVTYPE_2HWEAPON" or mSlot == "INVTYPE_2HWEAPON" or mSlot == "INVTYPE_RANGED" or mSlot == "INVTYPE_RANGEDRIGHT" then
+            total = total + max(mLevel, oLevel) * 2
+        else
+            total = total + mLevel + oLevel
+        end
+
+        iLevel = floor(total / 16)
+    end
+    return iLevel
+end
+
+f:SetScript("OnEvent", function(self, event, guid)
+    if guid == currentGUID then
+        local iLevel = GetUnitItemLevel(currentUnit)
+        local spec = GetUnitSpec(currentUnit)
+        levelCache[guid] = iLevel
+        specCache[guid] = spec
+        if not iLevel or not spec then
+            ScanUnit(currentUnit)
+        else
+            AddToGameTooltip(iLevel, spec)
+        end
+    end
+    self:UnregisterEvent("INSPECT_READY")
+end)
+
+GameTooltip:HookScript("OnTooltipSetUnit", function(self)
+    local _, unit = self:GetUnit()
+    if not unit or not CanInspect(unit) or not UnitIsVisible(unit) then
+        return
+    end
+    currentUnit = unit
+    currentGUID = UnitGUID(unit)
+    ScanUnit(unit)
+end)
