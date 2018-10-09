@@ -677,7 +677,7 @@ local target = {
     unit = "target",
     showTradeSkills = true,
     showShield = true,
-    width = 270,
+    width = 264,
     height = 30,
     event = "PLAYER_TARGET_CHANGED",
 }
