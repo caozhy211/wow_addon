@@ -274,7 +274,7 @@ end)
 
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local _, unit = self:GetUnit()
-    if not unit or not CanInspect(unit) or not UnitIsVisible(unit) then
+    if not unit or not CanInspect(unit) then
         return
     end
     currentUnit = unit

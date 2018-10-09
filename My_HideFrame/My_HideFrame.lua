@@ -75,7 +75,7 @@ local function HideFrames(taint, ...)
             frame.Show = function()
             end
         else
-            frame:SetParent(hiddenFrame)
+            frame:SetParent(hideFrame)
             frame:HookScript("OnShow", function(self)
                 if not InCombatLockdown() then
                     self:Hide()
@@ -86,7 +86,7 @@ local function HideFrames(taint, ...)
 end
 
 PlayerFrame:Hide()
-HideFrames(false, TargetFrame, FocusFrame)
+HideFrames(false, TargetFrame, FocusFrame, LootFrame, AlertFrame)
 for i = 1, MAX_BOSS_FRAMES do
     local name = "Boss" .. i .. "TargetFrame"
     HideFrames(false, _G[name], _G[name .. "HealthBar"], _G[name .. "ManaBar"])

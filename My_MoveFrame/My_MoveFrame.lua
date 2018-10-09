@@ -182,6 +182,23 @@ hooksecurefunc("AuraButton_OnUpdate", function(self)
     self.duration:SetPoint("Bottom", self, "Top")
 end)
 
+-- 移動團隊框架單位
+hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
+    if CUF_HORIZONTAL_GROUPS then
+        for i = 2, MEMBERS_PER_RAID_GROUP do
+            local unitFrame = _G[frame:GetName() .. "Member" .. i];
+            unitFrame:ClearAllPoints();
+            unitFrame:SetPoint("LEFT", _G[frame:GetName() .. "Member" .. (i - 1)], "RIGHT", 2, 0);
+        end
+    else
+        for i = 2, MEMBERS_PER_RAID_GROUP do
+            local unitFrame = _G[frame:GetName() .. "Member" .. i];
+            unitFrame:ClearAllPoints();
+            unitFrame:SetPoint("TOP", _G[frame:GetName() .. "Member" .. (i - 1)], "BOTTOM", 0, -2);
+        end
+    end
+end)
+
 -- 不改變背包錨點垂直方向的位置
 --UIPARENT_MANAGED_FRAME_POSITIONS["CONTAINER_OFFSET_Y"] = nil
 -- 移動背包
