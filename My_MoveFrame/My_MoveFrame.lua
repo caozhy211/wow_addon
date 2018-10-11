@@ -182,21 +182,36 @@ hooksecurefunc("AuraButton_OnUpdate", function(self)
     self.duration:SetPoint("Bottom", self, "Top")
 end)
 
--- 移動團隊框架單位
+-- 調整團隊框架單位的間距
 hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
+    local totalWidth = 0
+    local totalHeight = frame.title:GetHeight()
+    local unitFrame1 = _G[frame:GetName() .. "Member1"]
     if CUF_HORIZONTAL_GROUPS then
         for i = 2, MEMBERS_PER_RAID_GROUP do
             local unitFrame = _G[frame:GetName() .. "Member" .. i];
             unitFrame:ClearAllPoints();
-            unitFrame:SetPoint("LEFT", _G[frame:GetName() .. "Member" .. (i - 1)], "RIGHT", 2, 0);
+            unitFrame:SetPoint("Left", _G[frame:GetName() .. "Member" .. (i - 1)], "Right", 2, 0);
         end
+        totalWidth = totalWidth + unitFrame1:GetWidth() * MEMBERS_PER_RAID_GROUP + 2 * (MEMBERS_PER_RAID_GROUP - 1)
+        totalHeight = totalHeight + unitFrame1:GetHeight()
     else
+        unitFrame1:SetPoint("TopLeft", frame, 0, -frame.title:GetHeight())
         for i = 2, MEMBERS_PER_RAID_GROUP do
             local unitFrame = _G[frame:GetName() .. "Member" .. i];
             unitFrame:ClearAllPoints();
-            unitFrame:SetPoint("TOP", _G[frame:GetName() .. "Member" .. (i - 1)], "BOTTOM", 0, -2);
+            unitFrame:SetPoint("Top", _G[frame:GetName() .. "Member" .. (i - 1)], "Bottom", 0, -2);
         end
+        totalWidth = totalWidth + unitFrame1:GetWidth() + 2
+        totalHeight = totalHeight + unitFrame1:GetHeight() * MEMBERS_PER_RAID_GROUP + 2 * (MEMBERS_PER_RAID_GROUP - 1)
     end
+
+    if frame.borderFrame:IsShown() then
+        totalWidth = totalWidth + 12
+        totalHeight = totalHeight + 4
+    end
+
+    frame:SetSize(totalWidth, totalHeight)
 end)
 
 -- 不改變背包錨點垂直方向的位置

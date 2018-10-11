@@ -1,6 +1,6 @@
 -- 顯示在光標右邊
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
-    tooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 30, -12)
+    tooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 30, -30)
 end)
 
 local function UnitClassColor(unit)

@@ -64,7 +64,7 @@ end)
 
 -- 團隊框架滑塊值
 CompactUnitFrameProfilesGeneralOptionsFrameHeightSlider:SetMinMaxValues(54, 54)
-CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(137, 137)
+CompactUnitFrameProfilesGeneralOptionsFrameWidthSlider:SetMinMaxValues(131, 131)
 
 -- 方形小地圖
 Minimap:SetMaskTexture("Interface\\ChatFrame\\ChatFrameBackground")
