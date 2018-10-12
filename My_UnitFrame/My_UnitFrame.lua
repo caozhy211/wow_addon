@@ -35,6 +35,9 @@ local function CreateUnitFrame(config)
     frame:RegisterForClicks("AnyUp")
     frame:SetAttribute("*type1", "target")
     frame:SetAttribute("*type2", "togglemenu")
+    if config.unit == "player" then
+        frame:SetAttribute("toggleForVehicle", true)
+    end
 
     frame:SetScript("OnEnter", function(self)
         UnitFrame_OnEnter(self)
@@ -73,28 +76,15 @@ local function CreateUnitFrame(config)
 
     frame:SetScript("OnEvent", function(self, event)
         if self.otherUnit then
-            if event == "PLAYER_REGEN_ENABLED" then
-                self:SetAttribute("unit", self.unit)
-                self:UnregisterEvent("PLAYER_REGEN_ENABLED")
-            elseif event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_ENTERING_VEHICLE" then
+            if event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_ENTERING_VEHICLE" then
                 if UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
                     local temp = self.unit
                     self.unit = self.otherUnit
                     self.otherUnit = temp
-                    if not InCombatLockdown() then
-                        self:SetAttribute("unit", self.unit)
-                    else
-                        self:RegisterEvent("PLAYER_REGEN_ENABLED")
-                    end
                 end
             elseif event == "UNIT_EXITED_VEHICLE" or event == "UNIT_EXITING_VEHICLE" then
                 self.unit = config.unit
                 self.otherUnit = config.otherUnit
-                if not InCombatLockdown() then
-                    self:SetAttribute("unit", self.unit)
-                else
-                    self:RegisterEvent("PLAYER_REGEN_ENABLED")
-                end
             end
         end
 
@@ -310,10 +300,11 @@ local function CreateIndicators(frame, config)
     end
 
     function indicators:UpdateStatus()
-        if UnitAffectingCombat(frame.unit) then
+        local unit = frame.unit == "vehicle" and "player" or frame.unit
+        if UnitAffectingCombat(unit) then
             self.status:SetTexCoord(0.50, 1.0, 0.0, 0.49)
             self.status:Show()
-        elseif IsResting() then
+        elseif unit == "player" and IsResting() then
             self.status:SetTexCoord(0.0, 0.50, 0.0, 0.421875)
             self.status:Show()
         else
@@ -709,14 +700,23 @@ local function SetBarValue(bar, amount)
         return
     end
 
-    bar:SetMinMaxValues(0, maxHealth)
-    bar:SetValue(health + amount)
+    local maxWidth = frame.health:GetWidth()
+    local healthWidth = maxWidth * (health / maxHealth)
+    local barWidth = maxWidth * (amount / maxHealth)
+    if healthWidth + barWidth > maxWidth then
+        barWidth = maxWidth - healthWidth
+    end
+    bar:SetPoint("TopLeft", frame.health, healthWidth, 0)
+    bar:SetPoint("BottomRight", frame.health, "BottomLeft", healthWidth + barWidth, 0)
+    bar:SetMinMaxValues(0, 1)
+    bar:SetValue(1)
     bar:Show()
 end
 
 local function CreateHealAbsorb(frame)
     local healAbsorb = CreateFrame("StatusBar", nil, frame)
-    healAbsorb:SetStatusBarTexture("Interface\\RaidFrame\\Absorb-Fill", "Border")
+    healAbsorb:SetStatusBarTexture("Interface\\RaidFrame\\Raid-Bar-Hp-Fill", "Border")
+    healAbsorb:SetStatusBarColor(0.608, 0.659, 0)
     healAbsorb:SetAllPoints(frame.health)
 
     healAbsorb.events = {
@@ -738,7 +738,7 @@ end
 local function CreateHealPrediction(frame)
     local healPrediction = CreateFrame("StatusBar", nil, frame)
     healPrediction:SetStatusBarTexture("Interface\\RaidFrame\\Raid-Bar-Hp-Fill", "Border")
-    healPrediction:SetStatusBarColor(0.0, 0.659, 0.608)
+    healPrediction:SetStatusBarColor(0, 0.659, 0.608)
     healPrediction:SetAllPoints(frame.health)
 
     healPrediction.events = {
@@ -766,6 +766,9 @@ local function CreateTotalAbsorb(frame)
     local totalAbsorb = CreateFrame("StatusBar", nil, frame)
     totalAbsorb:SetStatusBarTexture("Interface\\RaidFrame\\Shield-Fill", "Border")
     totalAbsorb:SetAllPoints(frame.health)
+    local texture = totalAbsorb:CreateTexture()
+    texture:SetTexture("Interface\\RaidFrame\\Shield-Overlay")
+    texture:SetAllPoints()
 
     totalAbsorb.events = {
         "UNIT_HEALTH", true, "Update",
