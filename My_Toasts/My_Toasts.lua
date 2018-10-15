@@ -1148,7 +1148,7 @@ local function RecipeToast(event, recipeID)
                 sound = 73919,
             }
 
-            ShowToast(tostring())
+            ShowToast(toast)
         end
     end
 end

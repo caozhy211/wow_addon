@@ -3,7 +3,7 @@ local bar = CreateFrame("Frame", "ChatBarFrame", UIParent)
 -- 設置框架層級比載具快捷列高
 bar:SetFrameStrata("DIALOG")
 bar:SetWidth(75)
-bar:SetHeight(110)
+bar:SetHeight(115)
 bar:SetPoint("TopRight", ChatFrame1ResizeButton, "BottomRight")
 
 local function OnClick(self, mouse, arg)
@@ -62,7 +62,7 @@ for i = 1, #buttons do
     local button = CreateFrame("Button", "ChatButton" .. i, bar)
 
     button:SetWidth(25)
-    button:SetHeight(27.5)
+    button:SetHeight(30)
     if i == 1 then
         button:SetPoint("TopLeft")
     elseif i % 3 == 1 then

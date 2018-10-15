@@ -219,7 +219,7 @@ local function CreateIndicators(frame, config)
     if config.pvp then
         indicators.pvp = indicators:CreateTexture(nil, "Overlay")
         indicators.pvp:SetSize(35, 35)
-        indicators.pvp:SetPoint("BottomRight", 15, -13)
+        indicators.pvp:SetPoint("BottomRight", 14, -14)
         AddToEvents(indicators, "PLAYER_FLAGS_CHANGED", true, "UpdatePVPFlag")
         AddToEvents(indicators, "UNIT_FACTION", true, "UpdatePVPFlag")
         AddToFullUpdates(indicators, "UpdatePVPFlag")

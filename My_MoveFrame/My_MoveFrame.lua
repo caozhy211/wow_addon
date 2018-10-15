@@ -21,10 +21,10 @@ end)
 for i = 1, NUM_CHAT_WINDOWS do
     local chatFrame = _G["ChatFrame" .. i]
     -- 離左、右、上、下邊界的距離，正數向左和下移動，負數向右和上移動
-    chatFrame:SetClampRectInsets(-35, 38, 38, -117)
+    chatFrame:SetClampRectInsets(-35, 38, 38, -122)
     -- 設置聊天框的最小尺寸和最大尺寸
-    chatFrame:SetMinResize(480, 155)
-    chatFrame:SetMaxResize(480, 155)
+    chatFrame:SetMinResize(480, 150)
+    chatFrame:SetMaxResize(480, 150)
 
     -- 隱藏輸入框的邊框
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
