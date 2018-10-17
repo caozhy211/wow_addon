@@ -20,6 +20,8 @@ end)
 local defaultUnitFrames = {
     PlayerFrame,
     PetFrame,
+    TargetFrame,
+    TargetFrameToT,
     PartyMemberFrame1,
     PartyMemberFrame2,
     PartyMemberFrame3,
@@ -28,8 +30,6 @@ local defaultUnitFrames = {
     PartyMemberFrame2PetFrame,
     PartyMemberFrame3PetFrame,
     PartyMemberFrame4PetFrame,
-    TargetFrame,
-    TargetofTargetFrame,
 }
 
 for i = 1, #defaultUnitFrames do
