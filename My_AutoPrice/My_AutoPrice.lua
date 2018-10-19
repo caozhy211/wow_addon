@@ -66,7 +66,7 @@ f:SetScript("OnEvent", function(self, event)
                 exactMatch = true
 
                 -- 更新拍賣價格
-                if (not myBuyoutPrice and not myStartPrice) or myBuyoutPrice > buyoutPrice / count then
+                if (not myBuyoutPrice and not myStartPrice) or myBuyoutPrice > buyoutPrice / count * UNDERCUT then
                     myBuyoutPrice = buyoutPrice / count * UNDERCUT
                     myStartPrice = minBid / count * UNDERCUT
                 end
@@ -74,7 +74,7 @@ f:SetScript("OnEvent", function(self, event)
         end
 
         -- 掃描其它頁
-        if currentPage < totalPageCount then
+        if currentPage <= totalPageCount then
             AuctionFrameAuctions.tip:SetText("掃描中... " .. currentPage .. " / " .. totalPageCount)
 
             -- 下一頁
