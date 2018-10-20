@@ -39,8 +39,8 @@ SetCVar("Sound_DialogVolume", 1)
 SetCVar("nameplateMaxDistance", 40)
 
 -- 設置快捷列滑入滑出效果的距離和時間
-MainMenuBar.slideOut:GetAnimations():SetOffset(0, 0)
-OverrideActionBar.slideOut:GetAnimations():SetDuration(0)
+MultiBarLeft.slideOut:GetAnimations():SetDuration(0.4)
+MultiBarRight.slideOut:GetAnimations():SetDuration(0.4)
 
 -- 技能范圍外時快捷列按鈕著色
 hooksecurefunc("ActionButton_OnUpdate", function(self)
