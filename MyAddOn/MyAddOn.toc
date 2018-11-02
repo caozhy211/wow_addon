@@ -1,0 +1,33 @@
+## Interface: 80000
+## Title: MyAddOn
+## SavedVariables: MyAuraFilter
+## SavedVariablesPerCharacter: MyDamageMeter
+
+ActionBar.lua
+AlterPowerBar.lua
+Auction.lua
+CastingBar.lua
+ChannelBox.lua
+CharacterStats.lua
+ChatFrame.lua
+Cooldown.lua
+Coordinate.lua
+DamageMeter.lua
+ExtraButton.lua
+FocusHotKey.lua
+Grid.lua
+Hider.lua
+ItemInfo.lua
+Memory.lua
+Merchant.lua
+MiniMap.lua
+MirrorTimer.lua
+Mover.lua
+NamePlate.lua
+PerformanceBar.lua
+Settings.lua
+SimulationProfile.lua
+SoulShard.lua
+Toast.lua
+Tooltip.lua
+UnitFrame.lua
