@@ -1,5 +1,0 @@
-## Interface: 80000
-## Title: |cff8787edMy_|rUnitFrame
-## SavedVariables: AuraFilter
-
-My_UnitFrame.lua
