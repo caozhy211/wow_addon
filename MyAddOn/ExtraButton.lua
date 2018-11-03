@@ -3,14 +3,7 @@ local quests = {}
 local buttons = {}
 local maxButtons = 6
 local numButtons = 0
-local bindKeys = {
-    "SHIFT-W",
-    "SHIFT-E",
-    "SHIFT-R",
-    "SHIFT-S",
-    "SHIFT-D",
-    "SHIFT-F",
-}
+local bindKeys = { "ALT-W", "ALT-E", "ALT-R", "ALT-S", "ALT-D", "ALT-F", }
 local bar = CreateFrame("Frame", "MyExtraButtonBar", UIParent)
 bar:SetSize(228, 33)
 bar:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 3 + 2 + 20)
@@ -78,7 +71,7 @@ local function UpdateButton(index, bag, slot, itemID, texture, count)
     button.itemID = itemID
     button.icon:SetTexture(texture)
     button.Count:SetText(count and count > 1 and count or "")
-    button.HotKey:SetText("s-" .. strsub(bindKeys[index], -1))
+    button.HotKey:SetText("a-" .. strsub(bindKeys[index], -1))
 
     button:SetAttribute("bag", bag)
     button:SetAttribute("slot", slot)
