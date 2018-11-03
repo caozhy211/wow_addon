@@ -1,5 +1,6 @@
 local _, class = UnitClass("player")
-if class == "WARLOCK" then
+local level = UnitLevel("player")
+if class == "WARLOCK" and level >= 10 then
     local color = RAID_CLASS_COLORS[class]
     local shards = {}
     local soulShard = CreateFrame("Frame", "MySoulShard", UIParent)
