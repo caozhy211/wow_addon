@@ -19,7 +19,7 @@ listener:SetScript("OnEvent", function()
         end
     end
 
-    SetCVar("scriptErrors", 0)
+    SetCVar("scriptErrors", 1)
     SetCVar("cameraDistanceMaxZoomFactor", 2.6)
     SetCVar("floatingCombatTextFloatMode", 3)
     SetCVar("floatingCombatTextCombatHealing", 0)
@@ -46,6 +46,9 @@ listener:SetScript("OnEvent", function()
     SetCVar("lockActionBars", 0)
     SetCVar("alwaysShowActionBars", 1)
 
+    SetCVar("UnitNameFriendlySpecialNPCName", 1)
+    SetCVar("UnitNameHostleNPC", 1)
+    SetCVar("UnitNameInteractiveNPC", 1)
     SetCVar("nameplateShowSelf", 0)
     SetCVar("NamePlateHorizontalScale", 1.4)
     SetCVar("NamePlateVerticalScale", 2.7)
