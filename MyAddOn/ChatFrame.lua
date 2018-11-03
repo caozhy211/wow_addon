@@ -55,9 +55,11 @@ end
 
 for i = 1, NUM_CHAT_WINDOWS do
     local chatFrame = _G["ChatFrame" .. i]
-    chatFrame:SetClampRectInsets(-35, 38, 38, -122)
-    chatFrame:SetMinResize(480, 150)
-    chatFrame:SetMaxResize(480, 150)
+
+    chatFrame:ClearAllPoints()
+    chatFrame:SetPoint("TopLeft", UIParent, "BottomLeft", 2 + 29 + 3 + 2, 330 - 32 - 24 - (i == 2 and 27 or 3))
+    chatFrame:SetPoint("BottomRight", UIParent, "BottomLeft", 540 - 24, 116 + 6)
+    chatFrame.SetPoint = nop
 
     _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
     _G["ChatFrame" .. i .. "EditBoxMid"]:Hide()
