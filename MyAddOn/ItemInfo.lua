@@ -384,7 +384,7 @@ local function ChatItemInfo(hyperlink)
 
     local link = strmatch(hyperlink, "|H(.-)|h")
     local name, _, _, _, _, class, subclass, _, equipSlot = GetItemInfo(link)
-    local level = GetItemLevel(link)
+    local level = GetDetailedItemLevelInfo(link)
     local checkGem = true
     if level then
         if equipSlot and strfind(equipSlot, "INVTYPE_") then
