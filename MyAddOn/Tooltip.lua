@@ -140,7 +140,7 @@ local function GetUnitSpec(unit)
         return
     end
 
-    if UnitLevel(unit) > 10 then
+    if UnitLevel(unit) >= 10 then
         local specID, specName, _
         if unit == "player" then
             specID = GetSpecialization()
@@ -153,6 +153,7 @@ local function GetUnitSpec(unit)
         end
         return specName
     end
+    return ""
 end
 
 listener:SetScript("OnEvent", function(self, event, guid)
