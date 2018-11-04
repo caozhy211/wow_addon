@@ -1206,7 +1206,7 @@ local function CreateUnitFrame(config)
             if UnitCanAssist("player", self.unit) then
                 spell = GetSpellInfo(20707)
             elseif UnitCanAttack("player", self.unit) then
-                spell = GetSpellInfo(234153)
+                spell = GetSpellInfo(232670)
             end
 
             if spell then
