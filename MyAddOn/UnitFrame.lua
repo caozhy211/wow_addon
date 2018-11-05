@@ -1209,7 +1209,7 @@ local function CreateUnitFrame(config)
                 spell = GetSpellInfo(232670)
             end
 
-            if spell then
+            if spell and IsUsableSpell(spell) then
                 self:SetAlpha(IsSpellInRange(spell, self.unit) == 1 and 1 or 0.55)
             else
                 self:SetAlpha(CheckInteractDistance(self.unit, 1) and 1 or 0.55)
