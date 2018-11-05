@@ -1,7 +1,7 @@
 ## Interface: 80000
 ## Title: MyAddOn
 ## SavedVariables: MyAuraFilter
-## SavedVariablesPerCharacter: MyDamageMeter
+## SavedVariablesPerCharacter: MySettings, MyDamageMeter
 
 ActionBar.lua
 AlterPowerBar.lua
