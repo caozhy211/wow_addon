@@ -1,4 +1,3 @@
-local addonName = ...
 local defaultMiniMapTrack = {
     ["飛行管理員"] = true,
     ["專注目標"] = true,
@@ -43,11 +42,48 @@ local interfaceCVars = {
     movieSubtitle = 1,
     useCompactPartyFrames = 1,
 }
-local settings = CreateFrame("Button", "MySettingsButton", UIParent, "UIPanelButtonTemplate")
-settings:SetSize(60, 22)
-settings:SetPoint("Right", 0, 240)
-settings:SetText("設置")
-settings:SetAlpha(0)
+
+local default = CreateFrame("Button", "DefaultSettingsButton", UIParent, "UIPanelButtonTemplate")
+default:SetSize(60, 22)
+default:SetPoint("Right", 0, 225)
+default:SetText("BLZ")
+default:SetAlpha(0)
+
+local my = CreateFrame("Button", "MySettingsButton", UIParent, "UIPanelButtonTemplate")
+my:SetSize(60, 22)
+my:SetPoint("Right", 0, 255)
+my:SetText("MY")
+my:SetAlpha(0)
+
+StaticPopupDialogs["RELOAD_UI"] = {
+    text = "重載介面以使設置生效",
+    button1 = "重載介面",
+    OnAccept = function()
+        ReloadUI()
+    end,
+    OnCancel = function()
+        ReloadUI()
+    end,
+    timeout = 0,
+    exclusive = 1,
+    whileDead = 1,
+    hideOnEscape = 1,
+}
+
+local function OnEnter()
+    default:SetAlpha(1)
+    my:SetAlpha(1)
+end
+
+local function OnLeave()
+    default:SetAlpha(0)
+    my:SetAlpha(0)
+end
+
+default:SetScript("OnEnter", OnEnter)
+default:SetScript("OnLeave", OnLeave)
+my:SetScript("OnEnter", OnEnter)
+my:SetScript("OnLeave", OnLeave)
 
 local function SetCVars(cvars, toDefault)
     for cvar, value in pairs(cvars) do
@@ -77,6 +113,11 @@ local function ApplyDefaultSettings()
         SetTracking(i, defaultMiniMapTrack[name])
     end
 end
+
+default:SetScript("OnClick", function()
+    ApplyDefaultSettings()
+    StaticPopup_Show("RELOAD_UI")
+end)
 
 local function SetMyInterfaceOptions()
     SetCVars(interfaceCVars)
@@ -189,8 +230,6 @@ local function SetMyBindings()
 end
 
 local function ApplyMySettings()
-    MySettings = false
-
     SetCVars(hiddenCVars)
     SetCVars(voiceCVars)
 
@@ -220,32 +259,9 @@ local function ApplyMySettings()
     end
 end
 
-settings:RegisterEvent("ADDON_LOADED")
-settings:RegisterEvent("PLAYER_LOGIN")
-
-settings:SetScript("OnEvent", function(self, event, ...)
-    if event == "ADDON_LOADED" then
-        if addonName == ... then
-            if MySettings == nil then
-                MySettings = false
-            end
-            self:UnregisterEvent(event)
-        end
-    elseif MySettings then
-        ApplyMySettings()
-    end
-end)
-
-settings:SetScript("OnEnter", function(self)
-    self:SetAlpha(1)
-end)
-
-settings:SetScript("OnLeave", function(self)
-    self:SetAlpha(0)
-end)
-
-settings:SetScript("OnClick", function()
+my:SetScript("OnClick", function()
     ApplyDefaultSettings()
+    ApplyMySettings()
 
     InterfaceOptionsActionBarsPanelBottomLeft.value = "1"
     InterfaceOptionsActionBarsPanelBottomRight.value = "1"
@@ -263,26 +279,8 @@ settings:SetScript("OnClick", function()
     SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameHeight", 54, 54)
     SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameWidth", 137, 137)
 
-    StaticPopup_Show("SELECT_APPLY_SETTINGS")
+    StaticPopup_Show("RELOAD_UI")
 end)
-
-StaticPopupDialogs["SELECT_APPLY_SETTINGS"] = {
-    text = "選擇應用的設置(我的設置會重載介面)",
-    button1 = "我的設置",
-    button2 = "默認設置",
-    OnAccept = function()
-        MySettings = true
-        ReloadUI()
-    end,
-    OnCancel = function()
-        MySettings = false
-        ApplyDefaultSettings()
-    end,
-    timeout = 0,
-    exclusive = 1,
-    whileDead = 1,
-    hideOnEscape = 1,
-}
 
 hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
     self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
