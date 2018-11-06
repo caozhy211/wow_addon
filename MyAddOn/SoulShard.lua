@@ -1,11 +1,11 @@
 local _, class = UnitClass("player")
-local level = UnitLevel("player")
-if class == "WARLOCK" and level >= 10 then
-    local color = RAID_CLASS_COLORS[class]
-    local shards = {}
+if class == "WARLOCK" then
     local soulShard = CreateFrame("Frame", "MySoulShard", UIParent)
     soulShard:SetSize(228, 20)
     soulShard:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 3 + 2)
+    local level = UnitLevel("player")
+    local color = RAID_CLASS_COLORS[class]
+    local shards = {}
     local text = soulShard:CreateFontString()
     text:SetFont(GameFontNormal:GetFont(), 16, "Outline")
     text:SetTextColor(1, 1, 0)
@@ -14,26 +14,40 @@ if class == "WARLOCK" and level >= 10 then
     local border = 2
     local spacing
 
-    soulShard:RegisterEvent("PLAYER_LOGIN")
-    soulShard:RegisterEvent("UNIT_POWER_UPDATE")
+    if level < SHARDBAR_SHOW_LEVEL then
+        soulShard:RegisterEvent("PLAYER_LEVEL_UP")
+    else
+        soulShard:RegisterEvent("PLAYER_LOGIN")
+        soulShard:RegisterEvent("UNIT_POWER_UPDATE")
+    end
 
-    soulShard:SetScript("OnEvent", function(self, event, unit)
-        if event == "PLAYER_LOGIN" then
-            local maxNumPower = UnitPowerMax("player", Enum.PowerType.SoulShards)
-            spacing = (self:GetWidth() - maxNumPower * width) / (maxNumPower - 1)
-            for i = 1, maxNumPower do
-                local shard = self:CreateTexture()
-                shard:SetSize(width, height)
-                shard:SetPoint("Left", (width + spacing) * (i - 1), 0)
-                shard:SetColorTexture(color:GetRGB())
-                self:CreateShardBorder(shard)
-                shards[i] = shard
+    soulShard:SetScript("OnEvent", function(self, event, ...)
+        if event == "PLAYER_LEVEL_UP" then
+            if ... >= SHARDBAR_SHOW_LEVEL then
+                self:UnregisterEvent(event)
+                self:RegisterEvent("UNIT_POWER_UPDATE")
+                self:CreateShards()
             end
+        elseif event == "PLAYER_LOGIN" then
+            self:CreateShards()
             self:Update()
-        elseif unit == "player" then
+        elseif ... == "player" then
             self:Update()
         end
     end)
+
+    function soulShard:CreateShards()
+        local maxNumPower = UnitPowerMax("player", Enum.PowerType.SoulShards)
+        spacing = (self:GetWidth() - maxNumPower * width) / (maxNumPower - 1)
+        for i = 1, maxNumPower do
+            local shard = self:CreateTexture()
+            shard:SetSize(width, height)
+            shard:SetPoint("Left", (width + spacing) * (i - 1), 0)
+            shard:SetColorTexture(color:GetRGB())
+            self:CreateShardBorder(shard)
+            shards[i] = shard
+        end
+    end
 
     function soulShard:CreateShardBorder(shard)
         local top = self:CreateTexture(nil, "Overlay")
