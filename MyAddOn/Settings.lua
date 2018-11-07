@@ -42,6 +42,18 @@ local interfaceCVars = {
     movieSubtitle = 1,
     useCompactPartyFrames = 1,
 }
+local worldMapTrackingCVars = {
+    questPOI = 1,
+    digSites = 1,
+    showTamers = 0,
+    primaryProfessionsFilter = 1,
+    secondaryProfessionsFilter = 1,
+    worldQuestFilterResources = 1,
+    worldQuestFilterArtifactPower = 1,
+    worldQuestFilterProfessionMaterials = 1,
+    worldQuestFilterGold = 1,
+    worldQuestFilterEquipment = 1,
+}
 
 local default = CreateFrame("Button", "DefaultSettingsButton", UIParent, "UIPanelButtonTemplate")
 default:SetSize(60, 22)
@@ -112,6 +124,8 @@ local function ApplyDefaultSettings()
         local name = GetTrackingInfo(i)
         SetTracking(i, defaultMiniMapTrack[name])
     end
+
+    SetCVars(worldMapTrackingCVars, true)
 end
 
 default:SetScript("OnClick", function()
@@ -257,6 +271,8 @@ local function ApplyMySettings()
             break
         end
     end
+
+    SetCVars(worldMapTrackingCVars)
 end
 
 my:SetScript("OnClick", function()
