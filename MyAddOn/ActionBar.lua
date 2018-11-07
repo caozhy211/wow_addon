@@ -109,6 +109,22 @@ local function MoveVehicleLeaveButton()
     end)
 end
 
+local function ResizeOverrideExpBar()
+    local width = 360
+    hooksecurefunc("OverrideActionBar_CalcSize", function()
+        OverrideActionBar.xpBar.XpMid:SetWidth(width - 16)
+        OverrideActionBar.xpBar:SetWidth(width)
+        for i = 1, 19 do
+            local texture = OverrideActionBar.xpBar["XpDiv" .. i]
+            if i <= 9 then
+                texture:SetPoint("Left", floor(width / 10 * i - 7 / 2), 1)
+            else
+                texture:Hide()
+            end
+        end
+    end)
+end
+
 hooksecurefunc("ActionButton_OnUpdate", function(self)
     if self.rangeTimer == TOOLTIP_UPDATE_TIME then
         local valid = IsActionInRange(self.action)
@@ -122,6 +138,7 @@ end)
 
 SetSlideOutDuration()
 ResizeMultiBarRightButton()
+ResizeOverrideExpBar()
 MovePossessBar()
 MovePetActionButtons()
 MoveExtraActionBar()
