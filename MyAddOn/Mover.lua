@@ -94,7 +94,7 @@ local function MoveTrackerFrame()
     listener:RegisterEvent("PLAYER_LOGIN")
     listener:SetScript("OnEvent", function()
         ObjectiveTrackerFrame:SetPoint("TopLeft", 1622 + 27, -330)
-        ObjectiveTrackerFrame:SetPoint("BottomRight", -(289 - 235 - 27), 88 + 2)
+        ObjectiveTrackerFrame:SetPoint("BottomRight", -(298 - 235 - 27), 88 + 2)
     end)
 end
 
