@@ -140,7 +140,7 @@ local function GetUnitSpec(unit)
         return
     end
 
-    if UnitLevel(unit) >= 10 then
+    if UnitLevel(unit) >= SHOW_SPEC_LEVEL then
         local specID, specName, _
         if unit == "player" then
             specID = GetSpecialization()
