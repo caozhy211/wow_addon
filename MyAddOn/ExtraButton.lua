@@ -54,7 +54,6 @@ for i = 1, maxButtons do
     button.cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
     button.cooldown:SetAllPoints()
 
-    SetBindingClick(bindKeys[i], button:GetName())
     button:SetAttribute("type*", "item")
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
@@ -63,6 +62,12 @@ for i = 1, maxButtons do
     button:SetScript("OnUpdate", OnUpdate)
 
     buttons[i] = button
+end
+
+local function SetBindingKey()
+    for i = 1, maxButtons do
+        SetBindingClick(bindKeys[i], buttons[i]:GetName())
+    end
 end
 
 local function UpdateCooldown()
@@ -136,6 +141,9 @@ bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 bar:SetScript("OnEvent", function(_, event)
     if event == "ACTIONBAR_UPDATE_COOLDOWN" then
         UpdateCooldown()
+    elseif event == "PLAYER_LOGIN" then
+        SetBindingKey()
+        UpdateBar()
     else
         UpdateBar()
     end
