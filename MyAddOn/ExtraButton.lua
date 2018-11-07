@@ -13,6 +13,38 @@ local height = bar:GetHeight()
 local width = height
 local spacing = (bar:GetWidth() - width * maxButtons) / (maxButtons - 1)
 
+local function OnEnter(self)
+    tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+    local bag = self:GetAttribute("bag")
+    local slot = self:GetAttribute("slot")
+    if bag then
+        tooltip:SetBagItem(bag, slot)
+    else
+        tooltip:SetInventoryItem("player", slot)
+    end
+end
+
+local function OnLeave()
+    tooltip:Hide()
+end
+
+local function OnUpdate(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 0.2 then
+        return
+    end
+    self.elapsed = 0
+
+    local hasRange = ItemHasRange(self.itemID)
+    local inRange = IsItemInRange(self.itemID, "target")
+
+    if not hasRange or (hasRange and (inRange == nil or inRange)) then
+        self.icon:SetVertexColor(1, 1, 1)
+    else
+        self.icon:SetVertexColor(1, 0, 0)
+    end
+end
+
 for i = 1, maxButtons do
     local button = CreateFrame("Button", "MyExtraButton" .. i, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
     button:SetSize(width, height)
@@ -26,37 +58,9 @@ for i = 1, maxButtons do
     button:SetAttribute("type*", "item")
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
-    button:SetScript("OnEnter", function(self)
-        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
-        local bag = self:GetAttribute("bag")
-        local slot = self:GetAttribute("slot")
-        if bag then
-            tooltip:SetBagItem(bag, slot)
-        else
-            tooltip:SetInventoryItem("player", slot)
-        end
-    end)
-
-    button:SetScript("OnLeave", function(self)
-        tooltip:Hide()
-    end)
-
-    button:SetScript("OnUpdate", function(self, elapsed)
-        self.elapsed = (self.elapsed or 0) + elapsed
-        if self.elapsed < 0.2 then
-            return
-        end
-        self.elapsed = 0
-
-        local hasRange = ItemHasRange(self.itemID)
-        local inRange = IsItemInRange(self.itemID, "target")
-
-        if not hasRange or (hasRange and (inRange == nil or inRange)) then
-            self.icon:SetVertexColor(1, 1, 1)
-        else
-            self.icon:SetVertexColor(1, 0, 0)
-        end
-    end)
+    button:SetScript("OnEnter", OnEnter)
+    button:SetScript("OnLeave", OnLeave)
+    button:SetScript("OnUpdate", OnUpdate)
 
     buttons[i] = button
 end
