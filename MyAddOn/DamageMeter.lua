@@ -1170,7 +1170,7 @@ end
 
 local function CreateWindow()
     local window = CreateFrame("Frame", "MyDamageMeterFrame", UIParent)
-    window:SetSize(470, 116)
+    window:SetSize(540 - 72, 116)
     window:SetPoint("BottomLeft")
     window:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
     window:SetBackdropColor(0, 0, 0, 0.8)

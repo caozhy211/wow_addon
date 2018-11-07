@@ -14,7 +14,7 @@ local buttons = {
 }
 local box = CreateFrame("Frame", "MyChannelBox", UIParent)
 box:SetFrameStrata("Dialog")
-box:SetSize(70, 116)
+box:SetSize(72, 116)
 box:SetPoint("TopRight", ChatFrame1ResizeButton, "BottomRight")
 box:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
 box:SetBackdropColor(0, 0, 0, 0.2)
