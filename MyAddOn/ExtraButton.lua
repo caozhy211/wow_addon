@@ -1,5 +1,7 @@
 local tooltip = CreateFrame("GameTooltip", "MyExtraButtonTooltip", UIParent, "GameTooltipTemplate")
-local quests = {}
+local questItems = {}
+local numQuestItems = 0
+local numCheckedQuest = 0
 local buttons = {}
 local maxButtons = 6
 local numButtons = 0
@@ -104,11 +106,8 @@ local function UpdateBar()
                 return
             end
             local texture, count, _, _, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot)
-            for i = 1, #quests do
-                local questID = quests[i]:GetID()
-                local link = GetQuestLogSpecialItemInfo(questID)
-                local questItemID = link and tonumber(strmatch(link, "item:(%d+)"))
-                if itemID == questItemID then
+            for i = 1, #questItems do
+                if itemID == questItems[i] then
                     UpdateButton(index, bag, slot, itemID, texture, count)
                     index = index + 1
                     break
@@ -138,26 +137,22 @@ bar:SetScript("OnEvent", function(_, event)
     end
 end)
 
-hooksecurefunc("QuestObjectiveItem_OnShow", function(self)
-    if #quests == 0 then
-        quests[1] = self
+hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
+    local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
+    local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
+    if shouldShowItem then
+        local questItemID = tonumber(strmatch(link, "item:(%d+)"))
+        numQuestItems = numQuestItems + 1
+        questItems[numQuestItems] = questItemID
     end
+    numCheckedQuest = numCheckedQuest + 1
 
-    for i = 1, #quests do
-        if quests[i]:GetID() ~= self:GetID() then
-            quests[#quests + 1] = self
+    if numCheckedQuest == GetNumQuestWatches() then
+        for i = numQuestItems + 1, #questItems do
+            tremove(questItems, i)
         end
-    end
-
-    UpdateBar()
-end)
-
-hooksecurefunc("QuestObjectiveItem_OnHide", function(self)
-    for i = 1, #quests do
-        if quests[i]:GetID() == self:GetID() then
-            tremove(quests, i)
-            UpdateBar()
-            return
-        end
+        UpdateBar()
+        numQuestItems = 0
+        numCheckedQuest = 0
     end
 end)
