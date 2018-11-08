@@ -5,7 +5,7 @@ local numCheckedQuest = 0
 local buttons = {}
 local maxButtons = 6
 local numButtons = 0
-local bindKeys = { "ALT-W", "ALT-E", "ALT-R", "ALT-S", "ALT-D", "ALT-F", }
+local bindKeys = { "ALT-Q", "ALT-W", "ALT-A", "ALT-R", "ALT-T", "ALT-G", }
 local bar = CreateFrame("Frame", "MyExtraButtonBar", UIParent)
 bar:SetSize(228, 33)
 bar:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 3 + 2 + 20)

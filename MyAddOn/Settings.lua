@@ -43,16 +43,7 @@ local interfaceCVars = {
     useCompactPartyFrames = 1,
 }
 local worldMapTrackingCVars = {
-    questPOI = 1,
-    digSites = 1,
     showTamers = 0,
-    primaryProfessionsFilter = 1,
-    secondaryProfessionsFilter = 1,
-    worldQuestFilterResources = 1,
-    worldQuestFilterArtifactPower = 1,
-    worldQuestFilterProfessionMaterials = 1,
-    worldQuestFilterGold = 1,
-    worldQuestFilterEquipment = 1,
 }
 
 local default = CreateFrame("Button", "DefaultSettingsButton", UIParent, "UIPanelButtonTemplate")
@@ -196,27 +187,27 @@ local function SetMyBindings()
 
     BindButton("Q", "ACTIONBUTTON1")
     BindButton("W", "ACTIONBUTTON2")
-    BindButton("R", "ACTIONBUTTON3")
-    BindButton("T", "ACTIONBUTTON4")
-    BindButton("A", "ACTIONBUTTON5")
+    BindButton("A", "ACTIONBUTTON3")
+    BindButton("R", "ACTIONBUTTON4")
+    BindButton("T", "ACTIONBUTTON5")
     BindButton("G", "ACTIONBUTTON6")
-    BindButton("4", "ACTIONBUTTON7")
-    BindButton("3", "ACTIONBUTTON8")
-    BindButton("2", "ACTIONBUTTON9")
-    BindButton("1", "ACTIONBUTTON10")
+    BindButton("1", "ACTIONBUTTON7")
+    BindButton("2", "ACTIONBUTTON8")
+    BindButton("3", "ACTIONBUTTON9")
+    BindButton("4", "ACTIONBUTTON10")
     BindButton("Z", "ACTIONBUTTON11")
     BindButton("X", "ACTIONBUTTON12")
     BindButton("`", "EXTRAACTIONBUTTON1")
-    BindButton("CTRL-8", "BONUSACTIONBUTTON1")
-    BindButton("CTRL-9", "BONUSACTIONBUTTON2")
-    BindButton("CTRL-0", "BONUSACTIONBUTTON3")
-    BindButton("CTRL-1", "BONUSACTIONBUTTON4")
-    BindButton("CTRL-2", "BONUSACTIONBUTTON5")
-    BindButton("CTRL-3", "BONUSACTIONBUTTON6")
-    BindButton("CTRL-4", "BONUSACTIONBUTTON7")
-    BindButton("CTRL-5", "BONUSACTIONBUTTON8")
-    BindButton("CTRL-6", "BONUSACTIONBUTTON9")
-    BindButton("CTRL-7", "BONUSACTIONBUTTON10")
+    BindButton("CTRL-`", "BONUSACTIONBUTTON1")
+    UnbindButton("BONUSACTIONBUTTON2", 1)
+    UnbindButton("BONUSACTIONBUTTON3", 1)
+    UnbindButton("BONUSACTIONBUTTON4", 1)
+    UnbindButton("BONUSACTIONBUTTON5", 1)
+    UnbindButton("BONUSACTIONBUTTON6", 1)
+    UnbindButton("BONUSACTIONBUTTON7", 1)
+    UnbindButton("BONUSACTIONBUTTON8", 1)
+    UnbindButton("BONUSACTIONBUTTON9", 1)
+    UnbindButton("BONUSACTIONBUTTON10", 1)
     UnbindButton("ACTIONPAGE1", 1)
     UnbindButton("ACTIONPAGE2", 1)
     UnbindButton("ACTIONPAGE3", 1)
@@ -228,16 +219,28 @@ local function SetMyBindings()
 
     BindButton("CTRL-Q", "MULTIACTIONBAR1BUTTON1")
     BindButton("CTRL-W", "MULTIACTIONBAR1BUTTON2")
-    BindButton("CTRL-R", "MULTIACTIONBAR1BUTTON3")
-    BindButton("CTRL-T", "MULTIACTIONBAR1BUTTON4")
-    BindButton("CTRL-A", "MULTIACTIONBAR1BUTTON5")
+    BindButton("CTRL-A", "MULTIACTIONBAR1BUTTON3")
+    BindButton("CTRL-R", "MULTIACTIONBAR1BUTTON4")
+    BindButton("CTRL-T", "MULTIACTIONBAR1BUTTON5")
     BindButton("CTRL-G", "MULTIACTIONBAR1BUTTON6")
-    BindButton("CTRL-E", "MULTIACTIONBAR1BUTTON7")
-    BindButton("CTRL-D", "MULTIACTIONBAR1BUTTON8")
-    BindButton("CTRL-S", "MULTIACTIONBAR1BUTTON9")
-    BindButton("CTRL-F", "MULTIACTIONBAR1BUTTON10")
+    BindButton("CTRL-1", "MULTIACTIONBAR1BUTTON7")
+    BindButton("CTRL-2", "MULTIACTIONBAR1BUTTON8")
+    BindButton("CTRL-3", "MULTIACTIONBAR1BUTTON9")
+    BindButton("CTRL-4", "MULTIACTIONBAR1BUTTON10")
     BindButton("CTRL-Z", "MULTIACTIONBAR1BUTTON11")
     BindButton("CTRL-X", "MULTIACTIONBAR1BUTTON12")
+    BindButton("CTRL-E", "MULTIACTIONBAR2BUTTON1")
+    BindButton("CTRL-D", "MULTIACTIONBAR2BUTTON2")
+    BindButton("CTRL-S", "MULTIACTIONBAR2BUTTON3")
+    BindButton("CTRL-F", "MULTIACTIONBAR2BUTTON4")
+    BindButton("SHIFT-E", "MULTIACTIONBAR2BUTTON5")
+    BindButton("SHIFT-D", "MULTIACTIONBAR2BUTTON6")
+    BindButton("SHIFT-S", "MULTIACTIONBAR2BUTTON7")
+    BindButton("SHIFT-F", "MULTIACTIONBAR2BUTTON8")
+    BindButton("ALT-E", "MULTIACTIONBAR2BUTTON9")
+    BindButton("ALT-D", "MULTIACTIONBAR2BUTTON10")
+    BindButton("ALT-S", "MULTIACTIONBAR2BUTTON11")
+    BindButton("ALT-F", "MULTIACTIONBAR2BUTTON12")
 
     SaveBindings(ACCOUNT_BINDINGS)
     KeyBindingFrame.outputText:SetText("")
