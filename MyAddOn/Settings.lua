@@ -119,7 +119,10 @@ local function ApplyDefaultSettings()
     SetCVars(worldMapTrackingCVars, true)
 end
 
-default:SetScript("OnClick", function()
+default:SetScript("OnClick", function(self)
+    self:SetScript("OnClick", nil)
+    my:SetScript("OnClick", nil)
+
     ApplyDefaultSettings()
     StaticPopup_Show("RELOAD_UI")
 end)
@@ -278,7 +281,10 @@ local function ApplyMySettings()
     SetCVars(worldMapTrackingCVars)
 end
 
-my:SetScript("OnClick", function()
+my:SetScript("OnClick", function(self)
+    self:SetScript("OnClick", nil)
+    default:SetScript("OnClick", nil)
+
     ApplyDefaultSettings()
     ApplyMySettings()
 
