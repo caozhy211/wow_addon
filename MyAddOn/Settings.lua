@@ -1,4 +1,4 @@
-local defaultMiniMapTrack = {
+local defaultMiniMapTracking = {
     ["飛行管理員"] = true,
     ["專注目標"] = true,
     ["任務目標區域追蹤"] = true,
@@ -45,8 +45,10 @@ local interfaceCVars = {
 local worldMapTrackingCVars = {
     showTamers = 0,
 }
+local addonName = ...
+local listener = CreateFrame("Frame")
 
-local default = CreateFrame("Button", "DefaultSettingsButton", UIParent, "UIPanelButtonTemplate")
+local default = CreateFrame("Button", "MyBLZSettingsButton", UIParent, "UIPanelButtonTemplate")
 default:SetSize(60, 22)
 default:SetPoint("Right", 0, 225)
 default:SetText("BLZ")
@@ -73,6 +75,26 @@ StaticPopupDialogs["RELOAD_UI"] = {
     hideOnEscape = 1,
 }
 
+listener:RegisterEvent("ADDON_LOADED")
+listener:RegisterEvent("PLAYER_LOGIN")
+
+listener:SetScript("OnEvent", function(self, event, ...)
+    if event == "ADDON_LOADED" then
+        if ... == addonName then
+            if not MySettings then
+                MySettings = {
+                    autoEnterDelete = false,
+                }
+            end
+            self:UnregisterEvent(event)
+        end
+    elseif MySettings.autoEnterDelete then
+        hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
+            self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
+        end)
+    end
+end)
+
 local function OnEnter()
     default:SetAlpha(1)
     my:SetAlpha(1)
@@ -95,6 +117,8 @@ local function SetCVars(cvars, toDefault)
 end
 
 local function ApplyDefaultSettings()
+    MySettings.autoEnterDelete = false
+
     SetCVars(hiddenCVars, true)
     SetCVars(voiceCVars, true)
 
@@ -113,7 +137,7 @@ local function ApplyDefaultSettings()
 
     for i = 1, GetNumTrackingTypes() do
         local name = GetTrackingInfo(i)
-        SetTracking(i, defaultMiniMapTrack[name])
+        SetTracking(i, defaultMiniMapTracking[name])
     end
 
     SetCVars(worldMapTrackingCVars, true)
@@ -250,6 +274,8 @@ local function SetMyBindings()
 end
 
 local function ApplyMySettings()
+    MySettings.autoEnterDelete = true
+
     SetCVars(hiddenCVars)
     SetCVars(voiceCVars)
 
@@ -305,8 +331,4 @@ my:SetScript("OnClick", function(self)
     SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameWidth", 137, 137)
 
     StaticPopup_Show("RELOAD_UI")
-end)
-
-hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
-    self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
 end)

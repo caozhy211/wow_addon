@@ -286,7 +286,7 @@ local function StartCombat()
 
     if not total then
         total = CreateSet("total")
-        MyDamageMeter.total = total
+        MyDamageMeterDB.total = total
     end
 
     UpdateDisplay(true)
@@ -350,12 +350,12 @@ listener:RegisterEvent("PLAYER_LOGOUT")
 listener:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" then
         if ... == addonName then
-            if not MyDamageMeter then
-                MyDamageMeter = {
+            if not MyDamageMeterDB then
+                MyDamageMeterDB = {
                     ["sets"] = {},
                 }
             end
-            sets = MyDamageMeter.sets
+            sets = MyDamageMeterDB.sets
             self:UnregisterEvent(event)
         end
     elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
@@ -374,7 +374,7 @@ listener:SetScript("OnEvent", function(self, event, ...)
             current.mobName = encounterName
         end
     elseif event == "PLAYER_LOGIN" then
-        total = MyDamageMeter.total
+        total = MyDamageMeterDB.total
         damageModule.next1 = playerModule
         damageModule.next2 = targetModule
         playerModule.previous = damageModule
@@ -1169,7 +1169,7 @@ local function CutOffText(text, maxWidth)
 end
 
 local function CreateWindow()
-    local window = CreateFrame("Frame", "MyDamageMeterFrame", UIParent)
+    local window = CreateFrame("Frame", "MyDamageMeter", UIParent)
     window:SetSize(540 - 72, 116)
     window:SetPoint("BottomLeft")
     window:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
@@ -1483,7 +1483,7 @@ local function CreateWindow()
         if total ~= nil then
             wipe(total)
             total = CreateSet("total")
-            MyDamageMeter.total = total
+            MyDamageMeterDB.total = total
         end
         last = nil
 

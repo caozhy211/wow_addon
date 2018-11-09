@@ -7,8 +7,8 @@ listener:RegisterEvent("ADDON_LOADED")
 
 listener:SetScript("OnEvent", function(self, event, ...)
     if ... == addonName then
-        if not MyAuraFilter then
-            MyAuraFilter = {
+        if not MyUnitAuraFilter then
+            MyUnitAuraFilter = {
                 ["blacklist"] = {
                     ["buff"] = {},
                     ["debuff"] = {},
@@ -906,7 +906,7 @@ local function AuraButtonOnClick(self, mouse)
     if mouse == "LeftButton" then
         local auraName = UnitAura(self.unit, self.auraID, self.filter)
         local type = self.filter == "HELPFUL" and "buff" or "debuff"
-        MyAuraFilter.blacklist[type][auraName] = true
+        MyUnitAuraFilter.blacklist[type][auraName] = true
         self:GetParent():GetParent():Update()
     else
         if InCombatLockdown() or (not UnitIsUnit(self.unit, "player") and not UnitIsUnit(self.unit, "vehicle")) then
@@ -1048,12 +1048,12 @@ local function CreateAuras(frame, config)
 
     function auras:RenderAura(auraFrame, type, index, filter, name, texture, count, duration, endTime, caster, spellID)
         spellID = tostring(spellID)
-        if auraFrame.blacklist and (MyAuraFilter.blacklist[type][name] or MyAuraFilter.blacklist[type][spellID]) then
+        if auraFrame.blacklist and (MyUnitAuraFilter.blacklist[type][name] or MyUnitAuraFilter.blacklist[type][spellID]) then
             return
         end
 
         local casterIsPlayer = caster == "player" or caster == "vehicle" or caster == "pet"
-        if not (auraFrame.overridelist and (MyAuraFilter.overridelist[type][name] or MyAuraFilter.overridelist[type][spellID])) and auraFrame.onlyPlayerCast and not casterIsPlayer then
+        if not (auraFrame.overridelist and (MyUnitAuraFilter.overridelist[type][name] or MyUnitAuraFilter.overridelist[type][spellID])) and auraFrame.onlyPlayerCast and not casterIsPlayer then
             return
         end
 
