@@ -32,27 +32,11 @@ local function HideLayers()
 end
 
 local function MovePetActionButtons()
-    local bar = CreateFrame("Frame", "MyPetActionBar", UIParent)
-    bar:SetSize(30 * NUM_PET_ACTION_SLOTS + 8 * (NUM_PET_ACTION_SLOTS - 1), 30)
-    bar:SetPoint("Bottom", 0, 143 - 30)
-
-    for i = 1, NUM_PET_ACTION_SLOTS do
-        local button = _G["PetActionButton" .. i]
-        button:ClearAllPoints()
-        button:SetPoint("Left", bar, (30 + 8) * (i - 1), 0)
-    end
-
-    bar:RegisterEvent("PET_BATTLE_OPENING_START")
-    bar:RegisterEvent("PET_BATTLE_OPENING_DONE")
-    bar:RegisterEvent("PET_BATTLE_CLOSE")
-
-    bar:SetScript("OnEvent", function(self, event)
-        if event == "PET_BATTLE_CLOSE" then
-            self:Show()
-        else
-            self:Hide()
-        end
-    end)
+    local xOffset = (PetActionBarFrame:GetWidth() - 371) / 2 - 36
+    local yOffset = 143 - 30 - 2
+    PetActionBarFrame:ClearAllPoints()
+    PetActionBarFrame:SetPoint("Bottom", UIParent, xOffset, yOffset)
+    PetActionBarFrame.SetPoint = nop
 end
 
 local function SetSlideOutDuration()
