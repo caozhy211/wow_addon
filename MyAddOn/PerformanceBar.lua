@@ -36,13 +36,13 @@ fpsValue:SetPoint("BottomRight", -offset, offset)
 
 local function FormatLatency(latency)
     if latency < 100 then
-        return "|cff00ff00" .. latency .. "ms|r"
+        return "|cff00ff00%dms|r", latency
     elseif latency < 200 then
-        return "|cffffff00" .. latency .. "ms|r"
+        return "|cffffff00%dms|r", latency
     elseif latency < 1000 then
-        return "|cffff0000" .. latency .. "ms|r"
+        return "|cffff0000%dms|r", latency
     end
-    return format("|cffff0000%.2fs|r", latency / 1000)
+    return "|cffff0000%.2fs|r", latency / 1000
 end
 
 bar:SetScript("OnUpdate", function(self, elapsed)
@@ -55,7 +55,7 @@ bar:SetScript("OnUpdate", function(self, elapsed)
     local fps = format("%.0f", GetFramerate())
     local _, _, latencyHome, latencyWorld = GetNetStats()
 
-    latencyHomeValue:SetText(FormatLatency(latencyHome))
-    latencyWorldValue:SetText(FormatLatency(latencyWorld))
+    latencyHomeValue:SetFormattedText(FormatLatency(latencyHome))
+    latencyWorldValue:SetFormattedText(FormatLatency(latencyWorld))
     fpsValue:SetText(fps)
 end)
