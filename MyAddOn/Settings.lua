@@ -1,8 +1,8 @@
 local defaultMiniMapTracking = {
-    ["飛行管理員"] = true,
-    ["專注目標"] = true,
-    ["任務目標區域追蹤"] = true,
-    ["追蹤挖掘場"] = true,
+    ["136456"] = true,
+    ["524051"] = true,
+    ["535616"] = true,
+    ["535615"] = true,
 }
 local hiddenCVars = {
     scriptErrors = 1,
@@ -43,18 +43,112 @@ local interfaceCVars = {
     useCompactPartyFrames = 1,
 }
 local worldMapTrackingCVars = {
+    questPOI = 1,
+    digSites = 1,
     showTamers = 0,
+    primaryProfessionsFilter = 1,
+    secondaryProfessionsFilter = 1,
+    worldQuestFilterResources = 1,
+    worldQuestFilterArtifactPower = 1,
+    worldQuestFilterProfessionMaterials = 1,
+    worldQuestFilterGold = 1,
+    worldQuestFilterEquipment = 1,
 }
-local addonName = ...
-local listener = CreateFrame("Frame")
+local myBagFilter = {
+    LE_BAG_FILTER_FLAG_TRADE_GOODS,
+    LE_BAG_FILTER_FLAG_TRADE_GOODS,
+    LE_BAG_FILTER_FLAG_CONSUMABLES,
+    LE_BAG_FILTER_FLAG_EQUIPMENT,
+}
+local unbinds = {
+    MOVEANDSTEER = 1,
+    MOVEFORWARD = 2,
+    MOVEBACKWARD = 2,
+    TURNLEFT = 1,
+    TURNRIGHT = 1,
+    JUMP = 2,
+    TOGGLEAUTORUN = 2,
 
-local default = CreateFrame("Button", "MyBLZSettingsButton", UIParent, "UIPanelButtonTemplate")
+    REPLY2 = 1,
+
+    BONUSACTIONBUTTON2 = 1,
+    BONUSACTIONBUTTON3 = 1,
+    BONUSACTIONBUTTON4 = 1,
+    BONUSACTIONBUTTON5 = 1,
+    BONUSACTIONBUTTON6 = 1,
+    BONUSACTIONBUTTON7 = 1,
+    BONUSACTIONBUTTON8 = 1,
+    BONUSACTIONBUTTON9 = 1,
+    BONUSACTIONBUTTON10 = 1,
+    ACTIONPAGE1 = 1,
+    ACTIONPAGE2 = 1,
+    ACTIONPAGE3 = 1,
+    ACTIONPAGE4 = 1,
+    ACTIONPAGE5 = 1,
+    ACTIONPAGE6 = 1,
+    PREVIOUSACTIONPAGE = 1,
+    NEXTACTIONPAGE = 1,
+
+    TOGGLEBACKPACK = 2,
+}
+local binds = {
+    MOVEFORWARD = "E",
+    MOVEBACKWARD = "D",
+    STRAFELEFT = "S",
+    STRAFERIGHT = "F",
+    SITORSTAND = ".",
+    TOGGLESHEATH = ",",
+    TOGGLEAUTORUN = ";",
+    FOLLOWTARGET = "'",
+
+    ACTIONBUTTON1 = "Q",
+    ACTIONBUTTON2 = "W",
+    ACTIONBUTTON3 = "A",
+    ACTIONBUTTON4 = "R",
+    ACTIONBUTTON5 = "T",
+    ACTIONBUTTON6 = "H",
+    ACTIONBUTTON7 = "1",
+    ACTIONBUTTON8 = "2",
+    ACTIONBUTTON9 = "3",
+    ACTIONBUTTON10 = "4",
+    ACTIONBUTTON11 = "Z",
+    ACTIONBUTTON12 = "X",
+    EXTRAACTIONBUTTON1 = "`",
+    BONUSACTIONBUTTON1 = "CTRL-`",
+
+    MULTIACTIONBAR1BUTTON1 = "CTRL-Q",
+    MULTIACTIONBAR1BUTTON2 = "CTRL-W",
+    MULTIACTIONBAR1BUTTON3 = "CTRL-A",
+    MULTIACTIONBAR1BUTTON4 = "CTRL-R",
+    MULTIACTIONBAR1BUTTON5 = "CTRL-T",
+    MULTIACTIONBAR1BUTTON6 = "CTRL-G",
+    MULTIACTIONBAR1BUTTON7 = "CTRL-1",
+    MULTIACTIONBAR1BUTTON8 = "CTRL-2",
+    MULTIACTIONBAR1BUTTON9 = "CTRL-3",
+    MULTIACTIONBAR1BUTTON10 = "CTRL-4",
+    MULTIACTIONBAR1BUTTON11 = "CTRL-Z",
+    MULTIACTIONBAR1BUTTON12 = "CTRL-X",
+    MULTIACTIONBAR2BUTTON1 = "CTRL-E",
+    MULTIACTIONBAR2BUTTON2 = "CTRL-D",
+    MULTIACTIONBAR2BUTTON3 = "CTRL-S",
+    MULTIACTIONBAR2BUTTON4 = "CTRL-F",
+    MULTIACTIONBAR2BUTTON5 = "SHIFT-E",
+    MULTIACTIONBAR2BUTTON6 = "SHIFT-D",
+    MULTIACTIONBAR2BUTTON7 = "SHIFT-S",
+    MULTIACTIONBAR2BUTTON8 = "SHIFT-F",
+    MULTIACTIONBAR2BUTTON9 = "ALT-E",
+    MULTIACTIONBAR2BUTTON10 = "ALT-D",
+    MULTIACTIONBAR2BUTTON11 = "ALT-S",
+    MULTIACTIONBAR2BUTTON12 = "ALT-F",
+}
+
+local default = CreateFrame("Button", nil, UIParent, "UIPanelButtonTemplate")
 default:SetSize(60, 22)
 default:SetPoint("Right", 0, 225)
 default:SetText("BLZ")
 default:SetAlpha(0)
 
-local my = CreateFrame("Button", "MySettingsButton", UIParent, "UIPanelButtonTemplate")
+local my = CreateFrame("Button", nil, UIParent, "UIPanelButtonTemplate")
 my:SetSize(60, 22)
 my:SetPoint("Right", 0, 255)
 my:SetText("MY")
@@ -74,26 +168,6 @@ StaticPopupDialogs["RELOAD_UI"] = {
     whileDead = 1,
     hideOnEscape = 1,
 }
-
-listener:RegisterEvent("ADDON_LOADED")
-listener:RegisterEvent("PLAYER_LOGIN")
-
-listener:SetScript("OnEvent", function(self, event, ...)
-    if event == "ADDON_LOADED" then
-        if ... == addonName then
-            if not MySettings then
-                MySettings = {
-                    autoEnterDelete = false,
-                }
-            end
-            self:UnregisterEvent(event)
-        end
-    elseif MySettings.autoEnterDelete then
-        hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
-            self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
-        end)
-    end
-end)
 
 local function OnEnter()
     default:SetAlpha(1)
@@ -117,8 +191,6 @@ local function SetCVars(cvars, toDefault)
 end
 
 local function ApplyDefaultSettings()
-    MySettings.autoEnterDelete = false
-
     SetCVars(hiddenCVars, true)
     SetCVars(voiceCVars, true)
 
@@ -136,18 +208,47 @@ local function ApplyDefaultSettings()
     end
 
     for i = 1, GetNumTrackingTypes() do
-        local name = GetTrackingInfo(i)
-        SetTracking(i, defaultMiniMapTracking[name])
+        local _, texture = GetTrackingInfo(i)
+        SetTracking(i, defaultMiniMapTracking[tostring(texture)])
     end
 
     SetCVars(worldMapTrackingCVars, true)
+end
+
+local function SetBagFilterToDefault(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 1 then
+        return
+    end
+    self.elapsed = 0
+
+    local flag = false
+    if GetBackpackAutosortDisabled() then
+        flag = true
+        SetBackpackAutosortDisabled(false)
+    end
+    for i = 1, NUM_BAG_SLOTS do
+        for j = LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, LE_BAG_FILTER_FLAG_TRADE_GOODS do
+            if GetBagSlotFlag(i, j) then
+                flag = true
+                SetBagSlotFlag(i, j, false)
+            end
+        end
+    end
+
+    if not flag then
+        self:SetScript("OnUpdate", nil)
+    end
 end
 
 default:SetScript("OnClick", function(self)
     self:SetScript("OnClick", nil)
     my:SetScript("OnClick", nil)
 
+    self:SetScript("OnUpdate", SetBagFilterToDefault)
+
     ApplyDefaultSettings()
+
     StaticPopup_Show("RELOAD_UI")
 end)
 
@@ -159,123 +260,43 @@ local function SetMyInterfaceOptions()
     SetAutoDeclineGuildInvites(true)
 end
 
-local function UnbindButton(action, buttonID)
+local function UnbindButton(action, isButton2)
     local key1, key2 = GetBindingKey(action, 1)
     if key1 then
         SetBinding(key1, nil, 1)
+        if isButton2 then
+            KeyBindingFrame_SetBinding(key1, action, 1)
+        else
+            KeyBindingFrame_SetBinding(key1, nil, 1, key1)
+        end
     end
     if key2 then
         SetBinding(key2, nil, 1)
-    end
-    if key1 and buttonID == 1 then
-        KeyBindingFrame_SetBinding(key1, nil, 1, key1)
-        if key2 then
-            KeyBindingFrame_SetBinding(key2, action, 1, key2)
-        end
-    else
-        if key1 then
-            KeyBindingFrame_SetBinding(key1, action, 1)
-        end
-        if key2 then
-            KeyBindingFrame_SetBinding(key2, nil, 1, key2)
-        end
+        KeyBindingFrame_SetBinding(key2, nil, 1, key2)
     end
 end
 
-local function BindButton(key, action, buttonID)
-    KeyBindingFrame_AttemptKeybind(KeyBindingFrame, key, action, 1, buttonID or 1, true)
+local function UnbindButtons(unbinds)
+    for action, id in pairs(unbinds) do
+        UnbindButton(action, id == 2)
+    end
+end
+
+local function BindButtons(binds)
+    for action, key in pairs(binds) do
+        KeyBindingFrame_AttemptKeybind(KeyBindingFrame, key, action, 1, 1, true)
+    end
 end
 
 local function SetMyBindings()
-    UnbindButton("MOVEFORWARD", 2)
-    UnbindButton("MOVEBACKWARD", 2)
-    UnbindButton("TURNLEFT", 2)
-    UnbindButton("TURNRIGHT", 2)
-    UnbindButton("JUMP", 2)
-    UnbindButton("TOGGLEAUTORUN", 2)
-    UnbindButton("PREVIOUSACTIONPAGE", 2)
-    UnbindButton("NEXTACTIONPAGE", 2)
-    UnbindButton("TOGGLEBACKPACK", 2)
-
-    UnbindButton("MOVEANDSTEER", 1)
-    UnbindButton("TURNRIGHT", 1)
-    UnbindButton("TURNRIGHT", 1)
-    BindButton("E", "MOVEFORWARD")
-    BindButton("D", "MOVEBACKWARD")
-    BindButton("S", "STRAFELEFT")
-    BindButton("F", "STRAFERIGHT")
-    BindButton(".", "SITORSTAND")
-    BindButton(",", "TOGGLESHEATH")
-    BindButton(";", "TOGGLEAUTORUN")
-    BindButton("'", "FOLLOWTARGET")
-
-    UnbindButton("REPLY2", 1)
+    UnbindButtons(unbinds)
+    BindButtons(binds)
     C_VoiceChat.SetPushToTalkBinding({ "BUTTON3" })
-
-    BindButton("Q", "ACTIONBUTTON1")
-    BindButton("W", "ACTIONBUTTON2")
-    BindButton("A", "ACTIONBUTTON3")
-    BindButton("R", "ACTIONBUTTON4")
-    BindButton("T", "ACTIONBUTTON5")
-    BindButton("G", "ACTIONBUTTON6")
-    BindButton("1", "ACTIONBUTTON7")
-    BindButton("2", "ACTIONBUTTON8")
-    BindButton("3", "ACTIONBUTTON9")
-    BindButton("4", "ACTIONBUTTON10")
-    BindButton("Z", "ACTIONBUTTON11")
-    BindButton("X", "ACTIONBUTTON12")
-    BindButton("`", "EXTRAACTIONBUTTON1")
-    BindButton("CTRL-`", "BONUSACTIONBUTTON1")
-    UnbindButton("BONUSACTIONBUTTON2", 1)
-    UnbindButton("BONUSACTIONBUTTON3", 1)
-    UnbindButton("BONUSACTIONBUTTON4", 1)
-    UnbindButton("BONUSACTIONBUTTON5", 1)
-    UnbindButton("BONUSACTIONBUTTON6", 1)
-    UnbindButton("BONUSACTIONBUTTON7", 1)
-    UnbindButton("BONUSACTIONBUTTON8", 1)
-    UnbindButton("BONUSACTIONBUTTON9", 1)
-    UnbindButton("BONUSACTIONBUTTON10", 1)
-    UnbindButton("ACTIONPAGE1", 1)
-    UnbindButton("ACTIONPAGE2", 1)
-    UnbindButton("ACTIONPAGE3", 1)
-    UnbindButton("ACTIONPAGE4", 1)
-    UnbindButton("ACTIONPAGE5", 1)
-    UnbindButton("ACTIONPAGE6", 1)
-    UnbindButton("PREVIOUSACTIONPAGE", 1)
-    UnbindButton("NEXTACTIONPAGE", 1)
-
-    BindButton("CTRL-Q", "MULTIACTIONBAR1BUTTON1")
-    BindButton("CTRL-W", "MULTIACTIONBAR1BUTTON2")
-    BindButton("CTRL-A", "MULTIACTIONBAR1BUTTON3")
-    BindButton("CTRL-R", "MULTIACTIONBAR1BUTTON4")
-    BindButton("CTRL-T", "MULTIACTIONBAR1BUTTON5")
-    BindButton("CTRL-G", "MULTIACTIONBAR1BUTTON6")
-    BindButton("CTRL-1", "MULTIACTIONBAR1BUTTON7")
-    BindButton("CTRL-2", "MULTIACTIONBAR1BUTTON8")
-    BindButton("CTRL-3", "MULTIACTIONBAR1BUTTON9")
-    BindButton("CTRL-4", "MULTIACTIONBAR1BUTTON10")
-    BindButton("CTRL-Z", "MULTIACTIONBAR1BUTTON11")
-    BindButton("CTRL-X", "MULTIACTIONBAR1BUTTON12")
-    BindButton("CTRL-E", "MULTIACTIONBAR2BUTTON1")
-    BindButton("CTRL-D", "MULTIACTIONBAR2BUTTON2")
-    BindButton("CTRL-S", "MULTIACTIONBAR2BUTTON3")
-    BindButton("CTRL-F", "MULTIACTIONBAR2BUTTON4")
-    BindButton("SHIFT-E", "MULTIACTIONBAR2BUTTON5")
-    BindButton("SHIFT-D", "MULTIACTIONBAR2BUTTON6")
-    BindButton("SHIFT-S", "MULTIACTIONBAR2BUTTON7")
-    BindButton("SHIFT-F", "MULTIACTIONBAR2BUTTON8")
-    BindButton("ALT-E", "MULTIACTIONBAR2BUTTON9")
-    BindButton("ALT-D", "MULTIACTIONBAR2BUTTON10")
-    BindButton("ALT-S", "MULTIACTIONBAR2BUTTON11")
-    BindButton("ALT-F", "MULTIACTIONBAR2BUTTON12")
-
     SaveBindings(ACCOUNT_BINDINGS)
     KeyBindingFrame.outputText:SetText("")
 end
 
 local function ApplyMySettings()
-    MySettings.autoEnterDelete = true
-
     SetCVars(hiddenCVars)
     SetCVars(voiceCVars)
 
@@ -297,8 +318,8 @@ local function ApplyMySettings()
     end
 
     for i = 1, GetNumTrackingTypes() do
-        local name = GetTrackingInfo(i)
-        if name == "旅店老闆" then
+        local _, texture = GetTrackingInfo(i)
+        if texture == 136458 then
             SetTracking(i, true)
             break
         end
@@ -307,9 +328,39 @@ local function ApplyMySettings()
     SetCVars(worldMapTrackingCVars)
 end
 
+local function SetBagFilter(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 1 then
+        return
+    end
+    self.elapsed = 0
+
+    local flag = false
+    if GetBackpackAutosortDisabled() then
+        flag = true
+        SetBackpackAutosortDisabled(false)
+    end
+    for i = 1, NUM_BAG_SLOTS do
+        if GetBagSlotFlag(i, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
+            flag = true
+            SetBagSlotFlag(i, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, false)
+        end
+        if not GetBagSlotFlag(i, myBagFilter[i]) then
+            flag = true
+            SetBagSlotFlag(i, myBagFilter[i], true)
+        end
+    end
+
+    if not flag then
+        self:SetScript("OnUpdate", nil)
+    end
+end
+
 my:SetScript("OnClick", function(self)
     self:SetScript("OnClick", nil)
     default:SetScript("OnClick", nil)
+
+    self:SetScript("OnUpdate", SetBagFilter)
 
     ApplyDefaultSettings()
     ApplyMySettings()

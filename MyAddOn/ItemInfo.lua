@@ -33,6 +33,10 @@ local listener = CreateFrame("Frame")
 local tooltip = CreateFrame("GameToolTip", "MyItemInfoTooltip", UIParent, "GameTooltipTemplate")
 local chatItemCache = {}
 
+hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
+    self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
+end)
+
 local function GetInfoFrame(button)
     if not button.info then
         local info = CreateFrame("Frame", nil, button)
