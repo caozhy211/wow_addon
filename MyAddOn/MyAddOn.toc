@@ -25,6 +25,7 @@ MirrorTimer.lua
 Mover.lua
 NamePlate.lua
 PerformanceBar.lua
+PetBattle.lua
 Settings.lua
 SimulationProfile.lua
 SoulShard.lua
