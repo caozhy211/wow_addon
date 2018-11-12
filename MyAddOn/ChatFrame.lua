@@ -5,6 +5,13 @@ local abbrevs = {
     ["尋求組隊"] = "尋組",
     ["組隊頻道"] = "組隊",
 }
+local dockedChatFrames = GeneralDockManager.DOCKED_CHAT_FRAMES
+local numActiveFrames = FCF_GetNumActiveChatFrames()
+
+ChatFrame1:ClearAllPoints()
+ChatFrame1:SetPoint("TopLeft", UIParent, "BottomLeft", 2 + 29 + 3 + 2, 330 - 32 - 24 - 3)
+ChatFrame1:SetPoint("BottomRight", UIParent, "BottomLeft", 540 - 24, 116 + 6)
+ChatFrame1.SetPoint = nop
 
 hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     local type = editBox:GetAttribute("chatType")
@@ -53,22 +60,47 @@ for name, abbrev in pairs(abbrevs) do
     end
 end
 
-for i = 1, NUM_CHAT_WINDOWS do
-    local chatFrame = _G["ChatFrame" .. i]
+local function IsNewChatFrame()
+    local count = FCF_GetNumActiveChatFrames()
+    return count > numActiveFrames
+end
 
-    chatFrame:ClearAllPoints()
-    chatFrame:SetPoint("TopLeft", UIParent, "BottomLeft", 2 + 29 + 3 + 2, 330 - 32 - 24 - (i == 2 and 27 or 3))
-    chatFrame:SetPoint("BottomRight", UIParent, "BottomLeft", 540 - 24, 116 + 6)
-    chatFrame.SetPoint = nop
+local function PositionEditBox()
+    local index = #dockedChatFrames
+    local rightTab = _G[dockedChatFrames[index]:GetName() .. "Tab"]
+    for i = 1, NUM_CHAT_WINDOWS do
+        local editBox = _G["ChatFrame" .. i].editBox
+        editBox:ClearAllPoints()
+        editBox:SetPoint("BottomLeft", rightTab, "BottomRight")
+        editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, 3)
+    end
+end
 
-    _G["ChatFrame" .. i .. "EditBoxLeft"]:Hide()
-    _G["ChatFrame" .. i .. "EditBoxMid"]:Hide()
-    _G["ChatFrame" .. i .. "EditBoxRight"]:Hide()
+local function HandleNewChatFrame(chatFrame)
+    local name = chatFrame:GetName()
+    _G[name .. "EditBoxLeft"]:Hide()
+    _G[name .. "EditBoxMid"]:Hide()
+    _G[name .. "EditBoxRight"]:Hide()
 
     local editBox = chatFrame.editBox
-    editBox:ClearAllPoints()
-    editBox:SetPoint("BottomLeft", ChatFrame1, "TopLeft", 155, -2)
-    editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, -2)
-
     editBox:SetAltArrowKeyMode(false)
 end
+
+for i = 1, NUM_CHAT_WINDOWS do
+    local chatFrame = _G["ChatFrame" .. i]
+    HandleNewChatFrame(chatFrame)
+end
+PositionEditBox()
+
+hooksecurefunc("FCFDock_AddChatFrame", function(_, chatFrame)
+    if IsNewChatFrame() then
+        HandleNewChatFrame(chatFrame)
+        numActiveFrames = numActiveFrames + 1
+    end
+    PositionEditBox()
+end)
+
+hooksecurefunc("FCFDock_RemoveChatFrame", function()
+    numActiveFrames = numActiveFrames - 1
+    PositionEditBox()
+end)
