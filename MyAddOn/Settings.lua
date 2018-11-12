@@ -4,6 +4,7 @@ local defaultMiniMapTracking = {
     ["535616"] = true,
     ["535615"] = true,
 }
+local isPetTrainer = IsSpellKnown(125439) and C_PetJournal.IsJournalUnlocked()
 local hiddenCVars = {
     scriptErrors = 1,
     taintLog = 1,
@@ -41,18 +42,6 @@ local interfaceCVars = {
     cameraSmoothStyle = 0,
     movieSubtitle = 1,
     useCompactPartyFrames = 1,
-}
-local worldMapTrackingCVars = {
-    questPOI = 1,
-    digSites = 1,
-    showTamers = 0,
-    primaryProfessionsFilter = 1,
-    secondaryProfessionsFilter = 1,
-    worldQuestFilterResources = 1,
-    worldQuestFilterArtifactPower = 1,
-    worldQuestFilterProfessionMaterials = 1,
-    worldQuestFilterGold = 1,
-    worldQuestFilterEquipment = 1,
 }
 local myBagFilter = {
     LE_BAG_FILTER_FLAG_TRADE_GOODS,
@@ -211,8 +200,6 @@ local function ApplyDefaultSettings()
         local _, texture = GetTrackingInfo(i)
         SetTracking(i, defaultMiniMapTracking[tostring(texture)])
     end
-
-    SetCVars(worldMapTrackingCVars, true)
 end
 
 local function SetBagFilterToDefault(self, elapsed)
@@ -319,13 +306,10 @@ local function ApplyMySettings()
 
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
-        if texture == 136458 then
+        if texture == 136458 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
             SetTracking(i, true)
-            break
         end
     end
-
-    SetCVars(worldMapTrackingCVars)
 end
 
 local function SetBagFilter(self, elapsed)
@@ -383,3 +367,19 @@ my:SetScript("OnClick", function(self)
 
     StaticPopup_Show("RELOAD_UI")
 end)
+
+if not isPetTrainer then
+    my:RegisterEvent("SPELLS_CHANGED")
+
+    my:SetScript("OnEvent", function(self, event)
+        if isPetTrainer then
+            for i = 1, GetNumTrackingTypes() do
+                local _, texture = GetTrackingInfo(i)
+                if texture == 613074 or texture == 136466 then
+                    SetTracking(i, true)
+                end
+            end
+            self:UnregisterEvent(event)
+        end
+    end)
+end
