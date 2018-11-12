@@ -12,16 +12,18 @@ local buttons = {
     { text = "清", color = "HUNTER", arg = "/clear" },
     { text = "重", color = "MAGE", arg = "/reload" },
 }
+local rows = 4
+local columns = 3
+local height = 116
+local width = height / rows * columns
 local box = CreateFrame("Frame", "MyChannelBox", UIParent)
 box:SetFrameStrata("Dialog")
-box:SetSize(72, 116)
+box:SetSize(width, height)
 box:SetPoint("TopRight", ChatFrame1ResizeButton, "BottomRight")
 box:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
 box:SetBackdropColor(0, 0, 0, 0.2)
-local rows = 4
-local columns = 3
-local buttonWidth = box:GetWidth() / columns
-local buttonHeight = box:GetHeight() / rows
+local buttonWidth = width / columns
+local buttonHeight = height / rows
 
 local function Click(arg, mouse)
     if arg == "/roll" then
