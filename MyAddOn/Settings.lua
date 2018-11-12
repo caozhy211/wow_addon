@@ -383,3 +383,7 @@ if not isPetTrainer then
         end
     end)
 end
+
+hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
+    self.editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
+end)
