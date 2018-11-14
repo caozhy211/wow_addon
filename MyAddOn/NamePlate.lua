@@ -161,6 +161,11 @@ hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
             end
         end
         frame.name:SetText(name)
+        frame.name:SetFont(font, 12, "Outline")
+        frame.name:SetPoint("Bottom", frame.healthBar, "Top", frame.classificationIndicator:IsShown() and (14 / 2) or 0, verticalSpacing)
+        frame.name:Show()
+
+        frame.ClassificationFrame:SetPoint("Right", frame.name, "Left")
 
         if UnitIsUnit(frame.unit, "target") then
             frame.name:SetVertexColor(1, 0, 1)
@@ -169,10 +174,6 @@ hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
             frame.name:SetVertexColor(1, 1, 1)
             HideTargetArrow(frame)
         end
-
-        frame.name:SetFont(font, 12, "Outline")
-        frame.name:SetPoint("Bottom", frame.healthBar, "Top", 0, verticalSpacing)
-        frame.name:Show()
 
         if IsQuestUnit(frame.unit) then
             ShowQuestMark(frame)
