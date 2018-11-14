@@ -18,7 +18,7 @@ FocusHotKey.lua
 Grid.lua
 Hider.lua
 ItemInfo.lua
-Memory.lua
+MemoryBar.lua
 Merchant.lua
 MiniMap.lua
 MirrorTimer.lua
