@@ -293,16 +293,15 @@ local function ApplyMySettings()
         SetMyBindings()
     end
 
-    for i = 1, NUM_CHAT_WINDOWS do
-        local list = _G["ChatFrame" .. i].messageTypeList
-        for j = 1, #list do
-            if list[j] == "CHANNEL" then
-                tremove(list, j)
-                ChatFrame_RemoveMessageGroup(_G["ChatFrame" .. i], "CHANNEL")
-                break
-            end
+    local list = ChatFrame1.messageTypeList
+    for i = 1, #list do
+        if list[i] == "CHANNEL" then
+            tremove(list, i)
+            ChatFrame_RemoveMessageGroup(ChatFrame1, "CHANNEL")
+            break
         end
     end
+    ChatFrame_AddChannel(ChatFrame1, "尋求組隊")
 
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
