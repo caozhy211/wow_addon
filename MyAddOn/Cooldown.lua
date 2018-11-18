@@ -39,7 +39,7 @@ local function CreateTimer(cooldown)
 
     timer.updateTime = 0.01
     local text = timer:CreateFontString()
-    local height = max(floor(cooldown:GetParent():GetHeight() * 0.4), 7)
+    local height = min(max(floor(cooldown:GetParent():GetHeight() * 0.4), 7), 21)
     text:SetFont(font, height, "Outline")
     local type = (strfind(name, "MyUnit") or strfind(name, "NamePlate")) and "Aura" or "Action"
     text:SetPoint(type == "Aura" and "TopRight" or "Center")
