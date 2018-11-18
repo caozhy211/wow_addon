@@ -17,9 +17,13 @@ local function FormatNumber(number)
 end
 
 GameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
-    local _, maxValue = self:GetMinMaxValues();
-    local percent = floor(value / maxValue * 100 + 0.5)
-    statusBarText:SetText("(" .. percent .. "%) " .. FormatNumber(value) .. " / " .. FormatNumber(maxValue))
+    local _, maxValue = self:GetMinMaxValues()
+    if maxValue > 0 then
+        local percent = floor(value / maxValue * 100 + 0.5)
+        statusBarText:SetText("(" .. percent .. "%) " .. FormatNumber(value) .. " / " .. FormatNumber(maxValue))
+    else
+        statusBarText:SetText("")
+    end
 end)
 
 local function AddToGameTooltip(iLevel, spec)
