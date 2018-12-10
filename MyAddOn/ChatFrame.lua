@@ -1,10 +1,5 @@
-local abbrevs = {
-    ["綜合"] = "綜合",
-    ["交易"] = "交易",
-    ["本地防務"] = "防務",
-    ["尋求組隊"] = "尋組",
-    ["組隊頻道"] = "組隊",
-}
+local names = { "綜合", "交易", "本地防務", "尋求組隊", "組隊頻道", }
+local abbrevNames = { "綜合", "交易", "防務", "尋組", "組隊", }
 local dockedChatFrames = GeneralDockManager.DOCKED_CHAT_FRAMES
 local numActiveFrames = FCF_GetNumActiveChatFrames()
 
@@ -34,9 +29,9 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
             end
             editBox:SetAttribute("channelTarget", channel)
 
-            for key, value in pairs(abbrevs) do
-                if strfind(channelName, key) then
-                    channelName = value
+            for i = 1, #names do
+                if strfind(channelName, names[i]) then
+                    channelName = abbrevNames[i]
                 end
             end
 
@@ -47,13 +42,15 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     editBox:SetTextInsets(15 + header:GetWidth() + (headerSuffix:IsShown() and headerSuffix:GetWidth() or 0), 13, 0, 0)
 end)
 
-for name, abbrev in pairs(abbrevs) do
-    for i = 1, NUM_CHAT_WINDOWS do
-        if i ~= 2 then
-            local chatFrame = _G["ChatFrame" .. i]
+for i = 1, #names do
+    local name = names[i]
+    local abbrevName = abbrevNames[i]
+    for j = 1, NUM_CHAT_WINDOWS do
+        if j ~= 2 then
+            local chatFrame = _G["ChatFrame" .. j]
             local addMessage = chatFrame.AddMessage
             function chatFrame:AddMessage(text, ...)
-                local abbrevText = gsub(text, "|h%[(%d+)%. " .. name .. ".-%]|h", "|h%[%1%. " .. abbrev .. "%]|h")
+                local abbrevText = gsub(text, "|h%[(%d+)%. " .. name .. ".-%]|h", "|h%[%1%. " .. abbrevName .. "%]|h")
                 return addMessage(self, abbrevText, ...)
             end
         end

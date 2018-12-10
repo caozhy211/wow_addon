@@ -663,14 +663,14 @@ local function GetPlayer(set, playerID, playerName)
             targets = {},
         }
 
-        local name, realm = strsplit("-", playerName, 2)
+        local name = strsplit("-", playerName)
         player.name = name or playerName
 
         set.players[#set.players + 1] = player
     end
 
     if player.name == UNKNOWN and playerName ~= UNKNOWN then
-        local name, realm = strsplit("-", playerName, 2)
+        local name = strsplit("-", playerName)
         player.name = name or playerName
         local _, playerClass = UnitClass(playerName)
         player.class = playerClass
@@ -685,27 +685,27 @@ local function GetPlayer(set, playerID, playerName)
     return player
 end
 
-local function LogDamage(set, dmg)
-    local player = GetPlayer(set, dmg.playerID, dmg.playerName)
+local function LogDamage(set, damage)
+    local player = GetPlayer(set, damage.playerID, damage.playerName)
     if player then
-        local amount = dmg.amount
+        local amount = damage.amount
         set.damage = set.damage + amount
         player.damage = player.damage + amount
 
-        if not player.spells[dmg.spellName] then
-            player.spells[dmg.spellName] = { id = dmg.spellID, totalHits = 0, damage = 0, school = dmg.school }
+        if not player.spells[damage.spellName] then
+            player.spells[damage.spellName] = { id = damage.spellID, totalHits = 0, damage = 0, school = damage.school }
         end
-        local spell = player.spells[dmg.spellName]
+        local spell = player.spells[damage.spellName]
         spell.damage = spell.damage + amount
         spell.totalHits = spell.totalHits + 1
         if spell.max == nil or amount > spell.max then
             spell.max = amount
         end
-        if (spell.min == nil or amount < spell.min) and not dmg.missed then
+        if (spell.min == nil or amount < spell.min) and not damage.missed then
             spell.min = amount
         end
 
-        if dmg.critical then
+        if damage.critical then
             spell.critical = (spell.critical or 0) + 1
             spell.criticalAmount = (spell.criticalAmount or 0) + amount
             if not spell.criticalMax or amount > spell.criticalMax then
@@ -714,11 +714,11 @@ local function LogDamage(set, dmg)
             if not spell.criticalMin or amount < spell.criticalMin then
                 spell.criticalMin = amount
             end
-        elseif dmg.missed ~= nil then
-            spell[dmg.missed] = (spell[dmg.missed] or 0) + 1
-        elseif dmg.glancing then
+        elseif damage.missed ~= nil then
+            spell[damage.missed] = (spell[damage.missed] or 0) + 1
+        elseif damage.glancing then
             spell.glancing = (spell.glancing or 0) + 1
-        elseif dmg.crushing then
+        elseif damage.crushing then
             spell.crushing = (spell.crushing or 0) + 1
         else
             spell.hit = (spell.hit or 0) + 1
@@ -731,35 +731,35 @@ local function LogDamage(set, dmg)
             end
         end
 
-        if set == current and dmg.dstName and amount > 0 then
-            if not player.targets[dmg.dstName] then
-                player.targets[dmg.dstName] = 0
+        if set == current and damage.dstName and amount > 0 then
+            if not player.targets[damage.dstName] then
+                player.targets[damage.dstName] = 0
             end
 
-            player.targets[dmg.dstName] = player.targets[dmg.dstName] + amount
+            player.targets[damage.dstName] = player.targets[damage.dstName] + amount
         end
     end
 end
 
-local function FixPets(dmg)
-    if dmg and dmg.playerName then
-        local pet = pets[dmg.playerID]
+local function FixPets(damage)
+    if damage and damage.playerName then
+        local pet = pets[damage.playerID]
         if pet then
-            if dmg.spellName then
-                dmg.spellName = dmg.playerName .. ": " .. dmg.spellName
+            if damage.spellName then
+                damage.spellName = damage.playerName .. ": " .. damage.spellName
             end
-            dmg.playerName = pet.name
-            dmg.playerID = pet.id
+            damage.playerName = pet.name
+            damage.playerID = pet.id
         else
-            if dmg.playerFlags and bit.band(dmg.playerFlags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
-                if bit.band(dmg.playerFlags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~= 0 then
-                    if dmg.spellName then
-                        dmg.spellName = dmg.playerName .. ": " .. dmg.spellName
+            if damage.playerFlags and bit.band(damage.playerFlags, COMBATLOG_OBJECT_TYPE_GUARDIAN) ~= 0 then
+                if bit.band(damage.playerFlags, COMBATLOG_OBJECT_AFFILIATION_MINE) ~= 0 then
+                    if damage.spellName then
+                        damage.spellName = damage.playerName .. ": " .. damage.spellName
                     end
-                    dmg.playerName = UnitName("player")
-                    dmg.playerID = UnitGUID("player")
+                    damage.playerName = UnitName("player")
+                    damage.playerID = UnitGUID("player")
                 else
-                    dmg.playerID = dmg.playerName
+                    damage.playerID = damage.playerName
                 end
             end
         end

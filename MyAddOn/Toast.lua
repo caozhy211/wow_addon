@@ -893,7 +893,7 @@ local function LootCommonToast(event, link, quantity)
 end
 
 local function LootCurrencyToast(event, link, quantity)
-    local sanitizedLink, originalLink = SanitizeLink(link)
+    local sanitizedLink = SanitizeLink(link)
     local toast, isNew, isQueued = GetToast(event, "link", sanitizedLink)
 
     if isNew then
@@ -1464,7 +1464,7 @@ toasts:SetScript("OnEvent", function(_, event, ...)
         local followerID, name, _, level, quality, isUpgraded, texPrefix, followerTypeID = ...
         FollowerToast(event, followerTypeID, followerID, name, texPrefix, level, quality, isUpgraded)
     elseif event == "GARRISON_MISSION_FINISHED" then
-        local followerTypeID, missionID = ...
+        local _, missionID = ...
         local _, instanceType = GetInstanceInfo()
         local validInstance = false
 
@@ -1476,7 +1476,7 @@ toasts:SetScript("OnEvent", function(_, event, ...)
             MissionToast(event, missionID)
         end
     elseif event == "GARRISON_RANDOM_MISSION_ADDED" then
-        local followerTypeID, missionID = ...
+        local _, missionID = ...
         MissionToast(event, missionID, true)
     elseif event == "GARRISON_BUILDING_ACTIVATABLE" then
         local buildingName = ...

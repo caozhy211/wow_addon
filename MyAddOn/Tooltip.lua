@@ -176,8 +176,8 @@ listener:SetScript("OnEvent", function(self, event, guid)
     end
 end)
 
-hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
-    tooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 30, -30)
+hooksecurefunc("GameTooltip_SetDefaultAnchor", function(gameTooltip, parent)
+    gameTooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 30, -30)
 end)
 
 local function UnitClassColor(unit)

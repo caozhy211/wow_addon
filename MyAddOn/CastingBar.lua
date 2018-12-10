@@ -208,22 +208,22 @@ local function ShowShieldBorder(castingBar, size)
     end)
 end
 
-local function CreateCastingBar(config)
-    local bar = CreateFrame("StatusBar", config.name, UIParent, "CastingBarFrameTemplate")
+local function CreateCastingBar(cfg)
+    local bar = CreateFrame("StatusBar", cfg.name, UIParent, "CastingBarFrameTemplate")
     bar:Hide()
-    bar:SetSize(config.width - config.height, config.height)
+    bar:SetSize(cfg.width - cfg.height, cfg.height)
 
-    CastingBarFrame_OnLoad(bar, config.unit, config.showTradeSkills, config.showShield)
+    CastingBarFrame_OnLoad(bar, cfg.unit, cfg.showTradeSkills, cfg.showShield)
 
     bar.BorderShield:SetTexture(nil)
     HideLayers(bar)
     ShowIcon(bar)
-    ShowShieldBorder(bar, config.border)
+    ShowShieldBorder(bar, cfg.border)
 
-    bar:RegisterEvent(config.event)
+    bar:RegisterEvent(cfg.event)
 
     bar:SetScript("OnEvent", function(self, event, unit, castID)
-        if event == config.event then
+        if event == cfg.event then
             event, unit = self:UpdateEventAndUnit(event, unit)
         end
         CastingBarFrame_OnEvent(self, event, unit, castID)
@@ -329,18 +329,18 @@ local function ShowChannelTicks()
     }
     local channelEndTime, channelDuration, numTicks, tickTime, ticks
 
-    function barTicks:Update(numTicks, duration, ticks)
-        if numTicks and numTicks > 0 then
+    function barTicks:Update(num, duration, total)
+        if num and num > 0 then
             local width = CastingBarFrame:GetWidth()
-            for i = 1, numTicks do
+            for i = 1, num do
                 local tick = self[i]
                 tick:ClearAllPoints()
-                local xOffset = ticks[i] / duration
+                local xOffset = total[i] / duration
                 tick:SetPoint("Center", CastingBarFrame, "Right", -width * xOffset, 0)
                 tick:Show()
             end
 
-            for i = numTicks + 1, #self do
+            for i = num + 1, #self do
                 self[i]:Hide()
             end
         else
@@ -569,7 +569,7 @@ local function ShowSwing()
     swing:RegisterEvent("UNIT_SPELLCAST_SUCCEEDED")
     swing:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 
-    local extraAttacks, extraInhibit, duration, startTime, ticker
+    local extraAttacks, extraInhibit, duration, startTime
 
     swing:SetScript("OnEvent", function(self, event, unit, _, _, _, spellID)
         if event == "COMBAT_LOG_EVENT_UNFILTERED" then

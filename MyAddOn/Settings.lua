@@ -263,14 +263,14 @@ local function UnbindButton(action, isButton2)
     end
 end
 
-local function UnbindButtons(unbinds)
-    for action, id in pairs(unbinds) do
+local function UnbindButtons(unbindKeys)
+    for action, id in pairs(unbindKeys) do
         UnbindButton(action, id == 2)
     end
 end
 
-local function BindButtons(binds)
-    for action, key in pairs(binds) do
+local function BindButtons(bindKeys)
+    for action, key in pairs(bindKeys) do
         KeyBindingFrame_AttemptKeybind(KeyBindingFrame, key, action, 1, 1, true)
     end
 end

@@ -15,12 +15,11 @@ listener:SetScript("OnEvent", function(self, event, ...)
                 },
                 ["overridelist"] = {
                     ["buff"] = {
-                        ["嗜血術"] = true,
-                        ["上古狂亂"] = true,
-                        ["靈風"] = true,
-                        ["野性之怒"] = true,
-                        ["英勇氣概"] = true,
-                        ["時間扭曲"] = true,
+                        ["2825"] = true,
+                        ["32185"] = true,
+                        ["80353"] = true,
+                        ["160452"] = true,
+                        ["90355"] = true,
                     },
                     ["debuff"] = {},
                 },
@@ -119,7 +118,7 @@ local function CreatePortrait(frame)
     return portrait
 end
 
-local function CreateIndicators(frame, config)
+local function CreateIndicators(frame, cfg)
     local size = frame:GetHeight()
 
     local indicators = CreateFrame("Frame", nil, frame)
@@ -139,7 +138,7 @@ local function CreateIndicators(frame, config)
 
     indicators.events = {}
 
-    if config.raidTarget then
+    if cfg.raidTarget then
         indicators.raidTarget = indicators:CreateTexture(nil, "Overlay")
         indicators.raidTarget:SetTexture("Interface\\TargetingFrame\\UI-RaidTargetingIcons")
         if frame.unit == "player" or frame.unit == "target" then
@@ -152,7 +151,7 @@ local function CreateIndicators(frame, config)
         AddToFullUpdates(indicators, "UpdateRaidTarget")
     end
 
-    if config.pvp then
+    if cfg.pvp then
         indicators.pvp = indicators:CreateTexture(nil, "Overlay")
         indicators.pvp:SetSize(35, 35)
         indicators.pvp:SetPoint("BottomRight", 14, -14)
@@ -161,7 +160,7 @@ local function CreateIndicators(frame, config)
         AddToFullUpdates(indicators, "UpdatePVPFlag")
     end
 
-    if config.leader then
+    if cfg.leader then
         indicators.leader = indicators:CreateTexture(nil, "Overlay")
         indicators.leader:SetSize(16, 16)
         indicators.leader:SetPoint("TopLeft")
@@ -170,7 +169,7 @@ local function CreateIndicators(frame, config)
         AddToFullUpdates(indicators, "UpdateLeader")
     end
 
-    if config.status then
+    if cfg.status then
         indicators.status = indicators:CreateTexture(nil, "Overlay")
         indicators.status:SetTexture("Interface\\CharacterFrame\\UI-StateIcon")
         indicators.status:SetSize(18, 18)
@@ -182,7 +181,7 @@ local function CreateIndicators(frame, config)
         AddToFullUpdates(indicators, "UpdateStatus")
     end
 
-    if config.questBoss then
+    if cfg.questBoss then
         indicators.questBoss = indicators:CreateTexture(nil, "Overlay")
         indicators.questBoss:SetTexture("Interface\\TargetingFrame\\PortraitQuestBadge")
         indicators.questBoss:SetSize(20, 20)
@@ -364,7 +363,7 @@ local function CreatePower(frame)
 
     function power:UpdateColor()
         local color = {}
-        local powerID, currentType, altR, altG, altB = UnitPowerType(frame.unit)
+        local _, currentType, altR, altG, altB = UnitPowerType(frame.unit)
         if not UnitIsConnected(frame.unit) then
             color.r, color.g, color.b = 0.5, 0.5, 0.5
         elseif PowerBarColor[currentType] then
@@ -400,7 +399,7 @@ local function FormatNumber(number)
     return number
 end
 
-local function CreateTags(frame, config)
+local function CreateTags(frame, cfg)
     local offset = 9
 
     local tags = CreateFrame("Frame", nil, frame)
@@ -408,7 +407,7 @@ local function CreateTags(frame, config)
 
     tags.events = {}
 
-    if config.percentHealth then
+    if cfg.percentHealth then
         tags.percentHealth = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.percentHealth:SetPoint("Right", frame.health, "BottomRight", 0, offset)
@@ -423,7 +422,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdatePercentHealth")
     end
 
-    if config.health then
+    if cfg.health then
         tags.health = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.health:SetPoint("Left", frame.health, "BottomLeft", 0, offset)
@@ -438,7 +437,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdateHealth")
     end
 
-    if config.absorb then
+    if cfg.absorb then
         tags.absorb = CreateTextFont(tags)
         if frame.unit == "player" or frame.unit == "pet" then
             tags.absorb:SetPoint("Left", tags.health, "Right")
@@ -453,7 +452,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdateAbsorb")
     end
 
-    if config.percentPower then
+    if cfg.percentPower then
         tags.percentPower = CreateTextFont(tags)
         if frame.unit == "player" or frame.unit == "pet" then
             tags.percentPower:SetPoint("Right", frame.power)
@@ -465,7 +464,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdatePercentPower")
     end
 
-    if config.name then
+    if cfg.name then
         tags.name = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.name:SetPoint("Right", frame.health, "TopRight", 0, -offset)
@@ -478,7 +477,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdateName")
     end
 
-    if config.power then
+    if cfg.power then
         tags.power = CreateTextFont(tags)
         tags.power:SetPoint(frame.unit == "player" and "Left" or "Right", frame.power)
         AddToEvents(tags, "UNIT_POWER_FREQUENT", true, "UpdatePower")
@@ -486,7 +485,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdatePower")
     end
 
-    if config.group then
+    if cfg.group then
         tags.group = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.group:SetPoint("Right", tags.name, "Left")
@@ -497,7 +496,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdateGroup")
     end
 
-    if config.afk then
+    if cfg.afk then
         tags.afk = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.afk:SetPoint("Right", tags.group, "Left")
@@ -508,7 +507,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdateAFK")
     end
 
-    if config.race then
+    if cfg.race then
         tags.race = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.race:SetPoint("Left", frame.health, "TopLeft", 0, -offset)
@@ -519,7 +518,7 @@ local function CreateTags(frame, config)
         AddToFullUpdates(tags, "UpdateRace")
     end
 
-    if config.level then
+    if cfg.level then
         tags.level = CreateTextFont(tags)
         if frame.unit == "player" then
             tags.level:SetPoint("Left", tags.race, "Right")
@@ -831,7 +830,7 @@ local function CreateAltPower(frame)
         "UNIT_DISPLAYPOWER", true, "Update",
     }
 
-    altPower:SetScript("OnShow", function(self)
+    altPower:SetScript("OnShow", function()
         local powerHeight = frame.power:GetHeight()
         powerHeight = max(powerHeight - 4, 11)
         frame.power:SetHeight(powerHeight)
@@ -844,7 +843,7 @@ local function CreateAltPower(frame)
     end)
 
     function altPower:UpdateVisibility()
-        local barType, minPower, _, _, _, hideFromOthers, showOnRaid = UnitAlternatePowerInfo(frame.unit)
+        local barType, _, _, _, _, hideFromOthers, showOnRaid = UnitAlternatePowerInfo(frame.unit)
         local visible = false
         if barType and (not hideFromOthers or (showOnRaid and (UnitInRaid(frame.unit) or UnitInParty(frame.unit)))) then
             visible = true
@@ -887,7 +886,7 @@ end
 local function AuraButtonOnEnter(self)
     GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
     GameTooltip:SetUnitAura(self.unit, self.auraID, self.filter)
-    self:SetScript("OnUpdate", function(self, elapsed)
+    self:SetScript("OnUpdate", function(_, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
         if self.elapsed < 0.01 then
             return
@@ -966,26 +965,26 @@ local function CreateAuraButtons(frame, size, spacing, direction, numPerLine)
     return buttons
 end
 
-local function CreateAuraFrame(auras, config)
-    local name = config.name
-    local size = config.size
-    local spacing = config.spacing
-    local numPerLine = config.numPerLine
-    local numLine = ceil(config.maxAuras / numPerLine)
+local function CreateAuraFrame(auras, cfg)
+    local name = cfg.name
+    local size = cfg.size
+    local spacing = cfg.spacing
+    local numPerLine = cfg.numPerLine
+    local numLine = ceil(cfg.maxAuras / numPerLine)
     local width = numPerLine * size + spacing * (numPerLine - 1)
     local height = numLine * size + numLine - 1
     local frame = CreateFrame("Frame", name, auras)
     frame:SetSize(width, height)
-    frame.maxAuras = config.maxAuras
-    frame.onlyPlayerCast = config.onlyPlayerCast
-    frame.blacklist = config.blacklist
-    frame.overridelist = config.overridelist
-    local direction = config.direction
+    frame.maxAuras = cfg.maxAuras
+    frame.onlyPlayerCast = cfg.onlyPlayerCast
+    frame.blacklist = cfg.blacklist
+    frame.overridelist = cfg.overridelist
+    local direction = cfg.direction
     frame.buttons = CreateAuraButtons(frame, size, spacing, direction, numPerLine)
     return frame
 end
 
-local function CreateAuras(frame, config)
+local function CreateAuras(frame, cfg)
     local auras = CreateFrame("Frame", nil, frame)
 
     auras.events = {
@@ -993,8 +992,8 @@ local function CreateAuras(frame, config)
         "UNIT_AURA", true, "Update",
     }
 
-    if config.debuff then
-        auras.debuffs = CreateAuraFrame(auras, config.debuff)
+    if cfg.debuff then
+        auras.debuffs = CreateAuraFrame(auras, cfg.debuff)
         if frame.unit == "player" then
             auras.debuffs:SetPoint("Top", frame, "Bottom", 0, -1)
         elseif frame.unit == "target" then
@@ -1004,8 +1003,8 @@ local function CreateAuras(frame, config)
         end
     end
 
-    if config.buff then
-        auras.buffs = CreateAuraFrame(auras, config.buff)
+    if cfg.buff then
+        auras.buffs = CreateAuraFrame(auras, cfg.buff)
         if frame.unit == "player" then
             auras.buffs:SetPoint("Bottom", frame, "Top", 0, 1)
         elseif frame.unit == "target" then
@@ -1126,63 +1125,63 @@ local function CreateHighlight(frame, size)
     return highlight
 end
 
-local function CreateModules(frame, config)
-    if config.portrait then
+local function CreateModules(frame, cfg)
+    if cfg.portrait then
         frame.portrait = CreatePortrait(frame)
     end
-    if config.indicators then
-        frame.indicators = CreateIndicators(frame, config.indicators)
+    if cfg.indicators then
+        frame.indicators = CreateIndicators(frame, cfg.indicators)
     end
-    if config.health then
+    if cfg.health then
         frame.health = CreateHealth(frame)
     end
-    if config.power then
+    if cfg.power then
         frame.power = CreatePower(frame)
     end
-    if config.tags then
-        frame.tags = CreateTags(frame, config.tags)
+    if cfg.tags then
+        frame.tags = CreateTags(frame, cfg.tags)
     end
-    if config.healAbsorb then
+    if cfg.healAbsorb then
         frame.healAbsorb = CreateHealAbsorb(frame)
     end
-    if config.healPrediction then
+    if cfg.healPrediction then
         frame.healPrediction = CreateHealPrediction(frame)
     end
-    if config.totalAbsorb then
+    if cfg.totalAbsorb then
         frame.totalAbsorb = CreateTotalAbsorb(frame)
     end
-    if config.comboPoints then
+    if cfg.comboPoints then
         frame.comboPoints = CreateComboPoints(frame)
     end
-    if config.altPower then
+    if cfg.altPower then
         frame.altPower = CreateAltPower(frame)
     end
-    if config.auras then
-        frame.auras = CreateAuras(frame, config.auras)
+    if cfg.auras then
+        frame.auras = CreateAuras(frame, cfg.auras)
     end
-    if config.highlight then
-        frame.highlight = CreateHighlight(frame, config.highlight)
+    if cfg.highlight then
+        frame.highlight = CreateHighlight(frame, cfg.highlight)
     end
 end
 
-local function CreateUnitFrame(config)
-    local frame = CreateFrame("Button", config.name, UIParent, "SecureUnitButtonTemplate")
-    frame:SetSize(config.width, config.height)
+local function CreateUnitFrame(cfg)
+    local frame = CreateFrame("Button", cfg.name, UIParent, "SecureUnitButtonTemplate")
+    frame:SetSize(cfg.width, cfg.height)
     frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
     frame:SetBackdropColor(0, 0, 0, 0.8)
 
-    frame.unit = config.unit
-    frame.otherUnit = config.otherUnit
+    frame.unit = cfg.unit
+    frame.otherUnit = cfg.otherUnit
     frame.fullUpdates = {}
 
-    frame:SetAttribute("unit", config.unit)
+    frame:SetAttribute("unit", cfg.unit)
     RegisterUnitWatch(frame, false)
     frame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-    if config.unit ~= "target" then
+    if cfg.unit ~= "target" then
         frame:SetAttribute("*type1", "target")
     end
     frame:SetAttribute("*type2", "togglemenu")
-    if config.otherUnit then
+    if cfg.otherUnit then
         frame:SetAttribute("toggleForVehicle", true)
     end
 
@@ -1194,7 +1193,7 @@ local function CreateUnitFrame(config)
         UnitFrame_OnLeave(self)
     end)
 
-    if config.checkRange then
+    if cfg.checkRange then
         frame:SetScript("OnUpdate", function(self, elapsed)
             self.elapsed = (self.elapsed or 0) + elapsed
             if self.elapsed < 0.05 then
@@ -1217,9 +1216,9 @@ local function CreateUnitFrame(config)
         end)
     end
 
-    for event, isUnitEvent in pairs(config.events) do
+    for event, isUnitEvent in pairs(cfg.events) do
         if isUnitEvent then
-            frame:RegisterUnitEvent(event, config.unit, config.otherUnit)
+            frame:RegisterUnitEvent(event, cfg.unit, cfg.otherUnit)
         else
             frame:RegisterEvent(event)
         end
@@ -1234,8 +1233,8 @@ local function CreateUnitFrame(config)
                     self.otherUnit = temp
                 end
             elseif event == "UNIT_EXITED_VEHICLE" or event == "UNIT_EXITING_VEHICLE" then
-                self.unit = config.unit
-                self.otherUnit = config.otherUnit
+                self.unit = cfg.unit
+                self.otherUnit = cfg.otherUnit
             end
         end
 
@@ -1246,7 +1245,7 @@ local function CreateUnitFrame(config)
         end
     end)
 
-    CreateModules(frame, config.modules)
+    CreateModules(frame, cfg.modules)
 
     return frame
 end

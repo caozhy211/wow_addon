@@ -1,6 +1,6 @@
 local font = GameFontNormal:GetFont()
-local cooldown = CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")
-local table = getmetatable(cooldown).__index
+local cd = CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")
+local table = getmetatable(cd).__index
 local timers = {}
 
 local function GetCooldownName(cooldown)

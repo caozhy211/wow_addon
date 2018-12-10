@@ -76,7 +76,7 @@ bar:SetScript("OnEnter", function(self)
     GameTooltip:ClearLines()
     GameTooltip:AddLine(FormatMemory(self.currentTotal))
     GameTooltip:Show()
-    self:SetScript("OnUpdate", function(self, elapsed)
+    self:SetScript("OnUpdate", function(_, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
         if self.elapsed < 1 then
             return

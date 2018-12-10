@@ -346,9 +346,11 @@ local function GetItemGemInfo(itemLink)
     local stats = GetItemStats(itemLink)
     for key, num in pairs(stats) do
         if strfind(key, "EMPTY_SOCKET_") then
-            for i = 1, num do
+            local i = 1
+            while i <= num do
                 total = total + 1
                 info[#info + 1] = { name = _G[key] or EMPTY, link = nil }
+                i = i + 1
             end
         end
     end
@@ -356,8 +358,10 @@ local function GetItemGemInfo(itemLink)
     local _, _, quality = GetItemInfo(itemLink)
     if quality > 6 and total > 0 then
         total = 3
-        for i = 1, total - #info do
+        local i = 1
+        while i <= total - #info do
             info[#info + 1] = { name = RELICSLOT or EMPTY, link = nil }
+            i = i + 1
         end
     end
 
@@ -374,7 +378,7 @@ local function GetItemGemInfo(itemLink)
         end
     end
 
-    return total, info
+    return total
 end
 
 local function ChatItemInfo(hyperlink)
@@ -399,9 +403,11 @@ local function ChatItemInfo(hyperlink)
 
         if checkGem then
             local gem = ""
-            local num, info = GetItemGemInfo(link)
-            for i = 1, num do
+            local num = GetItemGemInfo(link)
+            local i = 1
+            while i <= num do
                 gem = gem .. "|TInterface\\ItemSocketingFrame\\UI-EmptySocket-Prismatic:0|t"
+                i = i + 1
             end
             if gem ~= "" then
                 gem = gem .. " "
