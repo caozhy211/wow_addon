@@ -26,6 +26,7 @@ Mover.lua
 NamePlate.lua
 PerformanceBar.lua
 PetBattle.lua
+RaidMarker.lua
 Settings.lua
 SimulationProfile.lua
 SoulShard.lua
