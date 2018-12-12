@@ -106,7 +106,7 @@ bar:SetScript("OnMouseDown", function()
     local minTotal = 0
     local total = 0
     local maxTotal = 0
-    print("-----------------------------------------------------------------")
+    print("------------------------------------------------------------")
     for i = 1, #data do
         local name = data[i].name
         local memory = FormatMemory(data[i].memory)
@@ -120,7 +120,7 @@ bar:SetScript("OnMouseDown", function()
     total = FormatMemory(total)
     minTotal = FormatMemory(minTotal, "min")
     maxTotal = FormatMemory(maxTotal, "max")
-    print("-----------------------------------------------------------------")
+    print("------------------------------------------------------------")
     print("Total (" .. #data .. "): " .. total .. " (" .. minTotal .. ", " .. maxTotal .. ")")
-    print("-----------------------------------------------------------------")
+    print("------------------------------------------------------------")
 end)
