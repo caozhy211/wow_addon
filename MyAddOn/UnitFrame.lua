@@ -1346,6 +1346,7 @@ config = {
 }
 pet = CreateUnitFrame(config)
 pet:SetPoint("BottomLeft", 567, 110)
+pet:SetFrameStrata("High")
 
 config = {
     name = "MyUnitTarget",
@@ -1439,6 +1440,7 @@ config = {
 }
 targetTarget = CreateUnitFrame(config)
 targetTarget:SetPoint("BottomRight", -567, 110)
+targetTarget:SetFrameStrata("High")
 
 config = {
     name = "MyUnitFocus",
