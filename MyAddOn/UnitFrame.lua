@@ -16,7 +16,7 @@ listener:SetScript("OnEvent", function(self, event, ...)
                 ["overridelist"] = {
                     ["buff"] = {
                         ["2825"] = true,
-                        ["32185"] = true,
+                        ["32182"] = true,
                         ["80353"] = true,
                         ["160452"] = true,
                         ["90355"] = true,
