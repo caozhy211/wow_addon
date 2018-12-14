@@ -30,6 +30,7 @@ RaidMarker.lua
 Settings.lua
 SimulationProfile.lua
 SoulShard.lua
+SummonButton.lua
 Toast.lua
 Tooltip.lua
 UnitFrame.lua
