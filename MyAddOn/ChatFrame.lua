@@ -68,8 +68,8 @@ local function PositionEditBox()
     for i = 1, NUM_CHAT_WINDOWS do
         local editBox = _G["ChatFrame" .. i].editBox
         editBox:ClearAllPoints()
-        editBox:SetPoint("BottomLeft", rightTab, "BottomRight")
-        editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, 3)
+        editBox:SetPoint("BottomLeft", rightTab, "BottomRight", 0, -3)
+        editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, 0)
     end
 end
 
