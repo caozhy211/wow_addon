@@ -1,7 +1,7 @@
 local names = { "綜合", "交易", "本地防務", "尋求組隊", "組隊頻道", }
 local abbrevNames = { "綜合", "交易", "防務", "尋組", "組隊", }
 local dockedChatFrames = GeneralDockManager.DOCKED_CHAT_FRAMES
-local numActiveFrames = FCF_GetNumActiveChatFrames()
+local dockedIDs = {}
 
 ChatFrame1:ClearAllPoints()
 ChatFrame1:SetPoint("TopLeft", UIParent, "BottomLeft", 2 + 29 + 3 + 2, 330 - 32 - 24 - 3)
@@ -57,23 +57,19 @@ for i = 1, #names do
     end
 end
 
-local function IsNewChatFrame()
-    local count = FCF_GetNumActiveChatFrames()
-    return count > numActiveFrames
-end
-
-local function PositionEditBox()
+local function MoveEditBox()
     local index = #dockedChatFrames
     local rightTab = _G[dockedChatFrames[index]:GetName() .. "Tab"]
-    for i = 1, NUM_CHAT_WINDOWS do
-        local editBox = _G["ChatFrame" .. i].editBox
+    for i = 1, #dockedIDs do
+        local id = dockedIDs[i]
+        local editBox = _G["ChatFrame" .. id].editBox
         editBox:ClearAllPoints()
         editBox:SetPoint("BottomLeft", rightTab, "BottomRight", 0, -3)
         editBox:SetPoint("BottomRight", ChatFrame1, "TopRight", 5, 0)
     end
 end
 
-local function HandleNewChatFrame(chatFrame)
+local function HandleEditBox(chatFrame)
     local name = chatFrame:GetName()
     _G[name .. "EditBoxLeft"]:Hide()
     _G[name .. "EditBoxMid"]:Hide()
@@ -83,21 +79,19 @@ local function HandleNewChatFrame(chatFrame)
     editBox:SetAltArrowKeyMode(false)
 end
 
-for i = 1, NUM_CHAT_WINDOWS do
-    local chatFrame = _G["ChatFrame" .. i]
-    HandleNewChatFrame(chatFrame)
+for i = 1, #dockedChatFrames do
+    local chatFrame = dockedChatFrames[i]
+    dockedIDs[#dockedIDs + 1] = chatFrame:GetID()
+    HandleEditBox(chatFrame)
 end
-PositionEditBox()
+MoveEditBox()
 
 hooksecurefunc("FCFDock_AddChatFrame", function(_, chatFrame)
-    if IsNewChatFrame() then
-        HandleNewChatFrame(chatFrame)
-        numActiveFrames = numActiveFrames + 1
-    end
-    PositionEditBox()
+    dockedIDs[#dockedIDs + 1] = chatFrame:GetID()
+    HandleEditBox(chatFrame)
+    MoveEditBox()
 end)
 
 hooksecurefunc("FCFDock_RemoveChatFrame", function()
-    numActiveFrames = numActiveFrames - 1
-    PositionEditBox()
+    MoveEditBox()
 end)
