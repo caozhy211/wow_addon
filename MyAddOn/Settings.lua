@@ -206,19 +206,23 @@ local function ApplyDefaultSettings()
     if ChatConfigFrame:IsShown() then
         ChatConfig_UpdateChatSettings()
     end
+end
 
+local function SetDefaultMiniMapTracking()
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
         SetTracking(i, defaultMiniMapTracking[tostring(texture)])
     end
 end
 
-local function SetBagFilterToDefault(self, elapsed)
+local function SetDefaultOnUpdate(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
     if self.elapsed < 1 then
         return
     end
     self.elapsed = 0
+
+    SetDefaultMiniMapTracking()
 
     local flag = false
     if GetBackpackAutosortDisabled() then
@@ -243,7 +247,7 @@ default:SetScript("OnClick", function(self)
     self:SetScript("OnClick", nil)
     my:SetScript("OnClick", nil)
 
-    self:SetScript("OnUpdate", SetBagFilterToDefault)
+    self:SetScript("OnUpdate", SetDefaultOnUpdate)
 
     ApplyDefaultSettings()
 
@@ -313,7 +317,9 @@ local function ApplyMySettings()
         end
     end
     ChatFrame_AddChannel(ChatFrame1, "尋求組隊")
+end
 
+local function SetMyMiniMapTracking()
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
         if texture == 136458 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
@@ -322,12 +328,14 @@ local function ApplyMySettings()
     end
 end
 
-local function SetBagFilter(self, elapsed)
+local function SetMyOnUpdate(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
     if self.elapsed < 1 then
         return
     end
     self.elapsed = 0
+
+    SetMyMiniMapTracking()
 
     local flag = false
     if GetBackpackAutosortDisabled() then
@@ -354,7 +362,7 @@ my:SetScript("OnClick", function(self)
     self:SetScript("OnClick", nil)
     default:SetScript("OnClick", nil)
 
-    self:SetScript("OnUpdate", SetBagFilter)
+    self:SetScript("OnUpdate", SetMyOnUpdate)
 
     ApplyDefaultSettings()
     ApplyMySettings()
