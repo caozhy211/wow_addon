@@ -1502,7 +1502,7 @@ toasts:SetScript("OnEvent", function(_, event, ...)
         end
     elseif event == "CHAT_MSG_LOOT" then
         local message, _, _, _, target = ...
-        if target ~= UnitName("player") then
+        if strsplit("-", target) ~= UnitName("player") then
             return
         end
 
