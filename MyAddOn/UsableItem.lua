@@ -133,12 +133,13 @@ local function UpdateBar()
     UpdateCooldown()
 end
 
-bar:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 bar:RegisterEvent("BAG_UPDATE")
 bar:RegisterEvent("QUEST_ACCEPTED")
+bar:RegisterEvent("PLAYER_DEAD")
+bar:RegisterEvent("PLAYER_UNGHOST")
 
 bar:SetScript("OnEvent", function(_, event)
     if event == "ACTIONBAR_UPDATE_COOLDOWN" then
