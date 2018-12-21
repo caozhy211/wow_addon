@@ -22,6 +22,36 @@ local function CreateSummonButton(id)
     button:SetAttribute("spell", spell)
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
+    C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
+        local isUsable, notEnoughMana = IsUsableSpell(spell)
+        if isUsable then
+            button.icon:SetVertexColor(1, 1, 1)
+        elseif notEnoughMana then
+            button.icon:SetVertexColor(0.5, 0.5, 1)
+        else
+            button.icon:SetVertexColor(0.4, 0.4, 0.4)
+        end
+    end)
+
+    button:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+        GameTooltip:SetSpellByID(spell)
+        self:SetScript("OnUpdate", function(_, elapsed)
+            self.elapsed = (self.elapsed or 0) + elapsed
+            if self.elapsed < 0.01 then
+                return
+            end
+            self.elapsed = 0
+
+            GameTooltip:SetSpellByID(spell)
+        end)
+    end)
+
+    button:SetScript("OnLeave", function(self)
+        self:SetScript("OnUpdate", nil)
+        GameTooltip:Hide()
+    end)
+
     return button
 end
 
