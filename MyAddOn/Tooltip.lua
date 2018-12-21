@@ -1,5 +1,5 @@
 local listener = CreateFrame("Frame")
-local tooltip = CreateFrame("GameTooltip", "MyTooltip", UIParent, "GameTooltipTemplate")
+local scanTooltip = CreateFrame("GameTooltip", "MyScanTooltip", UIParent, "GameTooltipTemplate")
 local iLevelCaches = {}
 local specCaches = {}
 local currentUnit, currentGUID
@@ -93,9 +93,9 @@ local function GetUnitItemLevel(unit)
     local mQuality, mSlot, oQuality, oSlot
     for i = 1, 17 do
         if i ~= 4 then
-            tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-            tooltip:SetInventoryItem(unit, i)
-            local link = GetInventoryItemLink(unit, i) or select(2, tooltip:GetItem())
+            scanTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+            scanTooltip:SetInventoryItem(unit, i)
+            local link = GetInventoryItemLink(unit, i) or select(2, scanTooltip:GetItem())
             if link then
                 local level
                 local _, _, quality, _, _, _, _, _, slot = GetItemInfo(link)
@@ -103,7 +103,7 @@ local function GetUnitItemLevel(unit)
                     delay = true
                 else
                     for j = 2, 5 do
-                        local text = _G["MyTooltipTextLeft" .. j]:GetText() or ""
+                        local text = _G[scanTooltip:GetName() .. "TextLeft" .. j]:GetText() or ""
                         level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
                         if level then
                             level = tonumber(level)
@@ -263,21 +263,42 @@ hooksecurefunc(GameTooltip, "SetUnitAura", function(self, ...)
     end
 end)
 
-GameTooltip:HookScript("OnTooltipSetSpell", function(self)
-    local _, id = self:GetSpell()
-    if id then
-        local find = false
-        for i = 2, self:NumLines() do
-            local text = _G[self:GetName() .. "TextLeft" .. i]:GetText() or ""
-            if strfind(text, "Spell ID:") then
-                find = true
-                break
-            end
-        end
-        if not find then
-            self:AddLine(" ")
-            self:AddLine("|cff00ffccSpell ID:|r " .. id)
-            self:Show()
+local function IDLineIsExisted(tooltip, name)
+    for i = 2, tooltip:NumLines() do
+        local text = _G[tooltip:GetName() .. "TextLeft" .. i]:GetText() or ""
+        if strfind(text, name) then
+            return true
         end
     end
+end
+
+GameTooltip:HookScript("OnTooltipSetSpell", function(self)
+    local _, id = self:GetSpell()
+    if id and not IDLineIsExisted(self, "Spell ID:") then
+        self:AddLine(" ")
+        self:AddLine("|cff00ffccSpell ID:|r " .. id)
+        self:Show()
+    end
 end)
+
+local function ShowItemID(tooltip, link)
+    local _, backupLink = tooltip:GetItem()
+    local _, id = strmatch(link or backupLink or "", "|?H?(%a+):(%d+):")
+    if id and not IDLineIsExisted(tooltip, "Item ID:") then
+        tooltip:AddLine(" ")
+        tooltip:AddLine("|cff00ffccItem ID:|r " .. id)
+        tooltip:Show()
+    end
+end
+
+hooksecurefunc(GameTooltip, "SetHyperlink", ShowItemID)
+hooksecurefunc(ItemRefTooltip, "SetHyperlink", ShowItemID)
+hooksecurefunc("SetItemRef", function(link)
+    ShowItemID(ItemRefTooltip, link)
+end)
+GameTooltip:HookScript("OnTooltipSetItem", ShowItemID)
+ItemRefTooltip:HookScript("OnTooltipSetItem", ShowItemID)
+ShoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
+ShoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
+ItemRefShoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
+ItemRefShoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
