@@ -80,28 +80,28 @@ local function ShowTargetArrow(frame)
         local width = 2
         local height = 45
         local rotation = PI / 4
-        local xOffset = height / 2 * math.sin(rotation) - 9
+        local xOffset = height / 2 * math.sin(rotation) + 2
         local yOffset = height / 2 - height / 2 * math.cos(rotation) + width / 2 * math.sin(rotation)
 
         frame.leftArrowTop = frame:CreateTexture()
         frame.leftArrowTop:SetSize(width, height)
-        frame.leftArrowTop:SetPoint("Bottom", frame, "Left", -xOffset, -yOffset)
+        frame.leftArrowTop:SetPoint("Bottom", frame.healthBar, "Left", -xOffset, -yOffset)
         frame.leftArrowTop:SetRotation(rotation)
         frame.leftArrowTop:SetColorTexture(1, 1, 1)
         frame.leftArrowBottom = frame:CreateTexture()
         frame.leftArrowBottom:SetSize(width, height)
-        frame.leftArrowBottom:SetPoint("Top", frame, "Left", -xOffset, yOffset)
+        frame.leftArrowBottom:SetPoint("Top", frame.healthBar, "Left", -xOffset, yOffset)
         frame.leftArrowBottom:SetRotation(-rotation)
         frame.leftArrowBottom:SetColorTexture(1, 1, 1)
 
         frame.rightArrowTop = frame:CreateTexture()
         frame.rightArrowTop:SetSize(width, height)
-        frame.rightArrowTop:SetPoint("Bottom", frame, "Right", xOffset, -yOffset)
+        frame.rightArrowTop:SetPoint("Bottom", frame.healthBar, "Right", xOffset, -yOffset)
         frame.rightArrowTop:SetRotation(-rotation)
         frame.rightArrowTop:SetColorTexture(1, 1, 1)
         frame.rightArrowBottom = frame:CreateTexture()
         frame.rightArrowBottom:SetSize(width, height)
-        frame.rightArrowBottom:SetPoint("Top", frame, "Right", xOffset, yOffset)
+        frame.rightArrowBottom:SetPoint("Top", frame.healthBar, "Right", xOffset, yOffset)
         frame.rightArrowBottom:SetRotation(rotation)
         frame.rightArrowBottom:SetColorTexture(1, 1, 1)
     else
