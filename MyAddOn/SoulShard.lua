@@ -1,6 +1,6 @@
 local _, class = UnitClass("player")
 if class == "WARLOCK" then
-    local soulShard = CreateFrame("Frame", "MySoulShard", UIParent)
+    local soulShard = CreateFrame("Frame", "MySoulShardFrame", UIParent)
     soulShard:SetSize(228, 20)
     soulShard:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 3 + 2)
     local level = UnitLevel("player")

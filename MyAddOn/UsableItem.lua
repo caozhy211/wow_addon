@@ -1,12 +1,9 @@
-local tooltip = CreateFrame("GameTooltip", "MyExtraButtonTooltip", UIParent, "GameTooltipTemplate")
-local questItems = {}
-local numQuestItems = 0
-local numCheckedQuest = 0
+local tooltip = CreateFrame("GameTooltip", "MyUsableItemTooltip", UIParent, "GameTooltipTemplate")
 local buttons = {}
 local maxButtons = 6
 local numButtons = 0
 local bindKeys = { "ALT-Q", "ALT-W", "ALT-A", "ALT-R", "ALT-T", "ALT-G", }
-local bar = CreateFrame("Frame", "MyExtraButtonBar", UIParent)
+local bar = CreateFrame("Frame", "MyUsableItemBar", UIParent)
 bar:SetSize(228, 33)
 bar:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 3 + 2 + 20)
 local height = bar:GetHeight()
@@ -46,7 +43,7 @@ local function OnUpdate(self, elapsed)
 end
 
 for i = 1, maxButtons do
-    local button = CreateFrame("Button", "MyExtraButton" .. i, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
+    local button = CreateFrame("Button", "MyUsableItemButton" .. i, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
     button:SetSize(width, height)
     button:SetPoint("Left", (i - 1) * (width + spacing), 0)
 
@@ -114,9 +111,12 @@ local function UpdateBar()
             if index > maxButtons then
                 return
             end
-            local texture, count, _, _, _, _, _, _, _, itemID = GetContainerItemInfo(bag, slot)
-            for i = 1, #questItems do
-                if itemID == questItems[i] then
+            local link = GetContainerItemLink(bag, slot)
+            local itemID = link and tonumber(strmatch(link, "item:(%d+)"))
+            if itemID then
+                local isQuestItem, questID, isActive = GetContainerItemQuestInfo(bag, slot)
+                if (isQuestItem or questID and not isActive) and IsUsableItem(itemID) then
+                    local texture, count = GetContainerItemInfo(bag, slot)
                     UpdateButton(index, bag, slot, itemID, texture, count)
                     index = index + 1
                     break
@@ -137,6 +137,8 @@ bar:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+bar:RegisterEvent("BAG_UPDATE")
+bar:RegisterEvent("QUEST_ACCEPTED")
 
 bar:SetScript("OnEvent", function(_, event)
     if event == "ACTIONBAR_UPDATE_COOLDOWN" then
@@ -146,25 +148,5 @@ bar:SetScript("OnEvent", function(_, event)
         UpdateBar()
     else
         UpdateBar()
-    end
-end)
-
-hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
-    local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
-    local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
-    if shouldShowItem then
-        local questItemID = tonumber(strmatch(link, "item:(%d+)"))
-        numQuestItems = numQuestItems + 1
-        questItems[numQuestItems] = questItemID
-    end
-    numCheckedQuest = numCheckedQuest + 1
-
-    if numCheckedQuest == GetNumQuestWatches() then
-        for i = numQuestItems + 1, #questItems do
-            tremove(questItems, i)
-        end
-        UpdateBar()
-        numQuestItems = 0
-        numCheckedQuest = 0
     end
 end)

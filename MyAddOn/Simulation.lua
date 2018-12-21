@@ -58,7 +58,7 @@ local simSlots = { "head", "neck", "shoulder", nil, "chest", "waist", "legs", "f
                    "finger2", "trinket1", "trinket2", "back", "main_hand", "off_hand" }
 local profile = ""
 local tooltip = CreateFrame("GameTooltip", "MySimulationTooltip", UIParent, "GameTooltipTemplate")
-local simulation = CreateFrame("Frame", "MySimulation", UIParent, "DialogBoxFrame")
+local simulation = CreateFrame("Frame", "MySimulationFrame", UIParent, "DialogBoxFrame")
 local scroll = CreateFrame("ScrollFrame", nil, simulation, "UIPanelScrollFrameTemplate")
 local editBox = CreateFrame("EditBox", nil, scroll)
 
@@ -68,7 +68,7 @@ simulation:SetBackdrop({ bgFile = "Interface\\DialogFrame\\UI-DialogBox-Backgrou
 
 scroll:SetSize(650, 420)
 scroll:SetPoint("Top", 0, -30)
-scroll:SetPoint("Bottom", MySimulationButton, "Top", 0, 5)
+scroll:SetPoint("Bottom", MySimulationFrameButton, "Top", 0, 5)
 
 editBox:SetSize(630, 380)
 editBox:SetAllPoints()

@@ -22,14 +22,14 @@ local worldRaidMarkerMacroValues = {
     "/cwm 0",
 }
 
-local raidMarkers = CreateFrame("Frame", "MyRaidMarkers", UIParent)
+local raidMarkers = CreateFrame("Frame", "MyRaidMarkerFrame", UIParent)
 raidMarkers:SetSize(240, 24)
 raidMarkers:SetPoint("BottomLeft", 1380 + 1, 257 + 1)
 raidMarkers:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
 raidMarkers:SetBackdropColor(0, 0, 0, 0.2)
 raidMarkers:SetAlpha(0)
 
-local worldRaidMarkers = CreateFrame("Frame", "MyWorldRaidMarkers", UIParent)
+local worldRaidMarkers = CreateFrame("Frame", "MyWorldRaidMarkerFrame", UIParent)
 worldRaidMarkers:SetSize(240, 24)
 worldRaidMarkers:SetPoint("BottomLeft", 1380 + 1, 257 + 1)
 worldRaidMarkers:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })

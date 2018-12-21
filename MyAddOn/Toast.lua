@@ -26,7 +26,7 @@ local lootItemMultiplePattern = gsub(gsub(LOOT_ITEM_SELF_MULTIPLE, "%%s", "(.+)"
 local lootItemPushedMultiplePattern = gsub(gsub(LOOT_ITEM_PUSHED_SELF_MULTIPLE, "%%s", "(.+)"), "%%d", "(%%d+)")
 local currencyGainedPattern = gsub(CURRENCY_GAINED, "%%s", "(.+)")
 local currencyGainedMultiplePattern = gsub(gsub(CURRENCY_GAINED_MULTIPLE, "%%s", "(.+)"), "%%d", "(%%d+)")
-local toasts = CreateFrame("Frame", "MyToast", UIParent)
+local toasts = CreateFrame("Frame", "MyToastFrame", UIParent)
 toasts:SetSize(240, 130)
 toasts:SetPoint("BottomLeft", 1380, 0)
 

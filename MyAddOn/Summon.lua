@@ -1,4 +1,4 @@
-local bar = CreateFrame("Frame", "MySummonsBar", UIParent)
+local bar = CreateFrame("Frame", "MySummonBar", UIParent)
 bar:SetSize(150, 30)
 bar:SetPoint("BottomLeft", 390, 300)
 

@@ -1,36 +1,36 @@
 local font = GameFontNormal:GetFont()
 local fontHeight = 13
 local offset = 2
-local bar = CreateFrame("Frame", "MyPerformanceBar", UIParent)
-bar:SetSize(119, 45)
-bar:SetPoint("BottomRight", -(298 - bar:GetWidth()), 88 - bar:GetHeight())
-bar:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
-bar:SetBackdropColor(0, 0, 0, 0.2)
+local frame = CreateFrame("Frame", "MyPerformanceFrame", UIParent)
+frame:SetSize(119, 45)
+frame:SetPoint("BottomRight", -(298 - frame:GetWidth()), 88 - frame:GetHeight())
+frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
+frame:SetBackdropColor(0, 0, 0, 0.2)
 
-local latencyHomeLabel = bar:CreateFontString()
+local latencyHomeLabel = frame:CreateFontString()
 latencyHomeLabel:SetFont(font, fontHeight, "Outline")
 latencyHomeLabel:SetPoint("TopLeft", offset, -offset)
 latencyHomeLabel:SetText("本地延遲:")
 
-local latencyWorldLabel = bar:CreateFontString()
+local latencyWorldLabel = frame:CreateFontString()
 latencyWorldLabel:SetFont(font, fontHeight, "Outline")
 latencyWorldLabel:SetPoint("Left", offset, 0)
 latencyWorldLabel:SetText("世界延遲:")
 
-local fpsLabel = bar:CreateFontString()
+local fpsLabel = frame:CreateFontString()
 fpsLabel:SetFont(font, fontHeight, "Outline")
 fpsLabel:SetPoint("BottomLeft", offset, offset)
 fpsLabel:SetText("幀數:")
 
-local latencyHomeValue = bar:CreateFontString()
+local latencyHomeValue = frame:CreateFontString()
 latencyHomeValue:SetFont(font, fontHeight, "Outline")
 latencyHomeValue:SetPoint("TopRight", -offset, -offset)
 
-local latencyWorldValue = bar:CreateFontString()
+local latencyWorldValue = frame:CreateFontString()
 latencyWorldValue:SetFont(font, fontHeight, "Outline")
 latencyWorldValue:SetPoint("Right", -offset, 0)
 
-local fpsValue = bar:CreateFontString()
+local fpsValue = frame:CreateFontString()
 fpsValue:SetFont(font, fontHeight, "Outline")
 fpsValue:SetPoint("BottomRight", -offset, offset)
 
@@ -45,7 +45,7 @@ local function FormatLatency(latency)
     return "|cffff0000%.2fs|r", latency / 1000
 end
 
-bar:SetScript("OnUpdate", function(self, elapsed)
+frame:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
     if self.elapsed < 1 then
         return

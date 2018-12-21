@@ -1,4 +1,4 @@
-local stats = CreateFrame("Frame", "MyCharacterStats", UIParent)
+local stats = CreateFrame("Frame", "MyCharacterStatsFrame", UIParent)
 
 stats:SetFrameStrata("Background")
 stats:SetSize(295 - 180, 330 - 25)

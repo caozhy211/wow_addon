@@ -16,16 +16,19 @@ local rows = 4
 local columns = 3
 local height = 116
 local width = height / rows * columns
-local box = CreateFrame("Frame", "MyChannelBox", UIParent)
-box:SetFrameStrata("Dialog")
-box:SetSize(width, height)
-box:SetPoint("TopRight", ChatFrame1ResizeButton, "BottomRight")
-box:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
-box:SetBackdropColor(0, 0, 0, 0.2)
+local frame = CreateFrame("Frame", "MyChannelFrame", UIParent)
+frame:SetFrameStrata("Dialog")
+frame:SetSize(width, height)
+frame:SetPoint("TopRight", ChatFrame1ResizeButton, "BottomRight")
+frame:SetBackdrop({ bgFile = "Interface\\ChatFrame\\ChatFrameBackground" })
+frame:SetBackdropColor(0, 0, 0, 0.2)
 local buttonWidth = width / columns
 local buttonHeight = height / rows
 
 local function Click(arg, mouse)
+    local chatFrame = SELECTED_DOCK_FRAME
+    local editBoxText = chatFrame.editBox:GetText()
+
     if arg == "/roll" then
         RandomRoll(1, 100)
     elseif arg == "/clear" then
@@ -33,7 +36,7 @@ local function Click(arg, mouse)
     elseif arg == "/reload" then
         ReloadUI()
     elseif strfind(arg, "/") then
-        ChatFrame_OpenChat(arg .. SELECTED_DOCK_FRAME.editBox:GetText(), SELECTED_DOCK_FRAME)
+        ChatFrame_OpenChat(arg .. editBoxText, chatFrame)
     else
         local channelIndex
         local channelList = { GetChannelList() }
@@ -54,7 +57,7 @@ local function Click(arg, mouse)
             end
         else
             if channelIndex then
-                ChatFrame_OpenChat("/" .. channelIndex .. " " .. SELECTED_DOCK_FRAME.editBox:GetText(), SELECTED_DOCK_FRAME)
+                ChatFrame_OpenChat("/" .. channelIndex .. " " .. editBoxText, chatFrame)
             else
                 print("|cffff0000未加入" .. arg .. "|r")
             end
@@ -63,7 +66,7 @@ local function Click(arg, mouse)
 end
 
 local function CreateChannelButton(row, column)
-    local button = CreateFrame("Button", nil, box)
+    local button = CreateFrame("Button", nil, frame)
     button:SetSize(buttonWidth, buttonHeight)
     button:SetPoint("TopLeft", (column - 1) * buttonWidth, (1 - row) * buttonHeight)
 
