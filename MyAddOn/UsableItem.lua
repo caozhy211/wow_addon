@@ -10,42 +10,10 @@ local height = bar:GetHeight()
 local width = height
 local spacing = (bar:GetWidth() - width * maxButtons) / (maxButtons - 1)
 
-local function OnEnter(self)
-    tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
-    local bag = self:GetAttribute("bag")
-    local slot = self:GetAttribute("slot")
-    if bag then
-        tooltip:SetBagItem(bag, slot)
-    else
-        tooltip:SetInventoryItem("player", slot)
-    end
-end
-
-local function OnLeave()
-    tooltip:Hide()
-end
-
-local function OnUpdate(self, elapsed)
-    self.elapsed = (self.elapsed or 0) + elapsed
-    if self.elapsed < 0.2 then
-        return
-    end
-    self.elapsed = 0
-
-    local hasRange = ItemHasRange(self.itemID)
-    local inRange = IsItemInRange(self.itemID, "target")
-
-    if not hasRange or (hasRange and (inRange == nil or inRange)) then
-        self.icon:SetVertexColor(1, 1, 1)
-    else
-        self.icon:SetVertexColor(1, 0, 0)
-    end
-end
-
-for i = 1, maxButtons do
-    local button = CreateFrame("Button", "MyUsableItemButton" .. i, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
+local function CreateItemButton(id)
+    local button = CreateFrame("Button", "MyUsableItemButton" .. id, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
     button:SetSize(width, height)
-    button:SetPoint("Left", (i - 1) * (width + spacing), 0)
+    button:SetPoint("Left", (id - 1) * (width + spacing), 0)
 
     button.NormalTexture:SetTexture(nil)
     button.cooldown = CreateFrame("Cooldown", nil, button, "CooldownFrameTemplate")
@@ -54,11 +22,50 @@ for i = 1, maxButtons do
     button:SetAttribute("type*", "item")
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
-    button:SetScript("OnEnter", OnEnter)
-    button:SetScript("OnLeave", OnLeave)
-    button:SetScript("OnUpdate", OnUpdate)
+    button:SetScript("OnEnter", function (self)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+        local bag = self:GetAttribute("bag")
+        local slot = self:GetAttribute("slot")
+        if bag then
+            tooltip:SetBagItem(bag, slot)
+        else
+            tooltip:SetInventoryItem("player", slot)
+        end
+        self:SetScript("OnUpdate", function(_, elapsed)
+            self.elapsed = (self.elapsed or 0) + elapsed
+            if self.elapsed < 0.01 then
+                return
+            end
+            self.elapsed = 0
+            if bag then
+                tooltip:SetBagItem(bag, slot)
+            else
+                tooltip:SetInventoryItem("player", slot)
+            end
+        end)
+    end)
 
-    buttons[i] = button
+    button:SetScript("OnLeave", function (self)
+        self:SetScript("OnUpdate", nil)
+        tooltip:Hide()
+    end)
+
+    C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
+        local hasRange = ItemHasRange(button.itemID)
+        local inRange = IsItemInRange(button.itemID, "target")
+
+        if not hasRange or (hasRange and (inRange == nil or inRange)) then
+            button.icon:SetVertexColor(1, 1, 1)
+        else
+            button.icon:SetVertexColor(1, 0, 0)
+        end
+    end)
+
+    return button
+end
+
+for i = 1, maxButtons do
+    buttons[i] = CreateItemButton(i)
 end
 
 local function SetBindingKey()
@@ -94,14 +101,14 @@ local function UpdateBar()
 
     local index = 1
 
-    for i = 1, 18 do
+    for slot = 1, 18 do
         if index > maxButtons then
             return
         end
-        local itemID = GetInventoryItemID("player", i)
+        local itemID = GetInventoryItemID("player", slot)
         if itemID and IsUsableItem(itemID) then
-            local texture = GetInventoryItemTexture("player", i)
-            UpdateButton(index, nil, i, itemID, texture)
+            local texture = GetInventoryItemTexture("player", slot)
+            UpdateButton(index, nil, slot, itemID, texture)
             index = index + 1
         end
     end
