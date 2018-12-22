@@ -78,27 +78,31 @@ local function SetSlotString(fontString, class, equipSlot, link)
     fontString:SetText(text)
 end
 
-local function SetBindString(fontString, bind)
-    fontString:SetText((bind == 2 or bind == 3) and "裝" or "")
+local function SetBindString(fontString, bind, isBound)
+    fontString:SetText((bind == 2 or bind == 3) and not isBound and "裝" or "")
 end
 
-local function GetItemLevel(link, bagID, unit, slotID, category, quality)
+local function ScanItemTooltip(link, bagID, unit, slotID, category)
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-    if (bagID and slotID and (category == "Bag" or category == "AltEquipment")) and (quality == 6 or quality == 7) then
+    if bagID and slotID and (category == "Bag" or category == "AltEquipment") then
         tooltip:SetBagItem(bagID, slotID)
-    elseif unit and slotID then
+    elseif unit and slotID or category == "Bank" then
         tooltip:SetInventoryItem(unit, slotID)
     else
         tooltip:SetHyperlink(link)
     end
 
+    local level, isBound
     for i = 2, 5 do
-        local text = _G["MyItemInfoTooltipTextLeft" .. i]:GetText() or ""
-        local level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-        if level then
-            return tonumber(level)
+        local text = _G[tooltip:GetName() .. "TextLeft" .. i]:GetText() or ""
+        if not level then
+            level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+        end
+        if not isBound then
+            isBound = strfind(text, ITEM_SOULBOUND)
         end
     end
+    return level and tonumber(level), isBound
 end
 
 local function SetItemInfo(button, link, category, bagID, slotID)
@@ -106,15 +110,15 @@ local function SetItemInfo(button, link, category, bagID, slotID)
     if button.origLink == link then
         SetLevelString(info.level, button.origLevel)
         SetSlotString(info.slot, button.origClass, button.origEquipSlot, button.origLink)
-        SetBindString(info.bind, button.origBind)
+        SetBindString(info.bind, button.origBind, button.origIsBound)
     else
-        local level, class, equipSlot, bind, quality, _
+        local level, class, equipSlot, bind, isBound, _
         if link and strmatch(link, "item:(%d+):") then
-            _, _, quality, _, _, class, _, _, equipSlot, _, _, _, _, bind = GetItemInfo(link)
-            level = GetItemLevel(link, bagID, nil, slotID, category, quality)
+            _, _, _, _, _, class, _, _, equipSlot, _, _, _, _, bind = GetItemInfo(link)
+            level, isBound = ScanItemTooltip(link, bagID, "player", slotID, category)
             SetLevelString(info.level, level or "")
             SetSlotString(info.slot, class, equipSlot, link)
-            SetBindString(info.bind, bind)
+            SetBindString(info.bind, bind, isBound)
         else
             SetLevelString(info.level, "")
             SetSlotString(info.slot)
@@ -125,6 +129,7 @@ local function SetItemInfo(button, link, category, bagID, slotID)
         button.origClass = class
         button.origEquipSlot = equipSlot
         button.origBind = bind
+        button.origIsBound = isBound
     end
 end
 
@@ -147,7 +152,7 @@ hooksecurefunc("BankFrameItemButton_Update", function(self)
     local bag = self:GetParent():GetID()
     local slot = self:GetID()
     local link = GetContainerItemLink(bag, slot)
-    SetItemInfo(self, link, "Bank")
+    SetItemInfo(self, link, "Bank", nil, self:GetInventorySlot())
 end)
 
 hooksecurefunc("MerchantFrameItem_UpdateQuality", function(self, link)
@@ -268,7 +273,7 @@ if LoadAddOn("Blizzard_GuildUI") then
         if text2 and type(text2) == "string" then
             local link = strmatch(text2, "|H(item:%d+:.-)|h.-|h")
             if link then
-                local level = GuildNewsItemCache[link] or GetItemLevel(link)
+                local level = GuildNewsItemCache[link] or ScanItemTooltip(link)
                 if level then
                     GuildNewsItemCache[link] = level
                     text2 = gsub(text2, "(%|Hitem:%d+:.-%|h%[)(.-)(%]%|h)", "%1" .. level .. ":%2%3")
@@ -285,7 +290,7 @@ local function SetPaperDollItemLevel(button, unit)
     end
     local slotID = button:GetID()
     local info = GetInfoFrame(button)
-    local level = GetItemLevel(nil, nil, unit, slotID)
+    local level = ScanItemTooltip(nil, nil, unit, slotID)
     if not button.hasItem then
         level = ""
     end
@@ -301,7 +306,7 @@ local function SetPaperDollItemLevel(button, unit)
             self.elapsed = 0
 
             SetLevelString(self.level, "...")
-            level = GetItemLevel(nil, nil, unit, slotID)
+            level = ScanItemTooltip(nil, nil, unit, slotID)
             iterations = iterations + 1
             if level then
                 SetLevelString(self.level, level)
