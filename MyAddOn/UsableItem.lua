@@ -22,7 +22,7 @@ local function CreateItemButton(id)
     button:SetAttribute("type*", "item")
     button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
-    button:SetScript("OnEnter", function (self)
+    button:SetScript("OnEnter", function(self)
         tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
         local bag = self:GetAttribute("bag")
         local slot = self:GetAttribute("slot")
@@ -45,7 +45,7 @@ local function CreateItemButton(id)
         end)
     end)
 
-    button:SetScript("OnLeave", function (self)
+    button:SetScript("OnLeave", function(self)
         self:SetScript("OnUpdate", nil)
         tooltip:Hide()
     end)
@@ -126,7 +126,6 @@ local function UpdateBar()
                     local texture, count = GetContainerItemInfo(bag, slot)
                     UpdateButton(index, bag, slot, itemID, texture, count)
                     index = index + 1
-                    break
                 end
             end
         end
