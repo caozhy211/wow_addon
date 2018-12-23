@@ -1,4 +1,27 @@
 local font = GameFontNormal:GetFont()
+local subClassNames = {
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_AXE1H)] = "斧",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_MACE1H)] = "錘",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_SWORD1H)] = "劍",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_WARGLAIVE)] = "刃",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_DAGGER)] = "匕",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_UNARMED)] = "拳",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_WAND)] = "魔",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_AXE2H)] = "斧",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_MACE2H)] = "錘",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_SWORD2H)] = "劍",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_POLEARM)] = "柄",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_STAFF)] = "法",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_BOWS)] = "弓",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_CROSSBOW)] = "弩",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_GUNS)] = "槍",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_WEAPON, LE_ITEM_WEAPON_THROWN)] = "擲",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_PLATE)] = "鎧",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_MAIL)] = "鎖",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_LEATHER)] = "皮",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_CLOTH)] = "布",
+    [GetItemSubClassInfo(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_SHIELD)] = "盾",
+}
 local slotNames = {
     INVTYPE_HEAD = "頭",
     INVTYPE_NECK = "頸",
@@ -23,7 +46,7 @@ local slotNames = {
     INVTYPE_WEAPONOFFHAND = "副",
     INVTYPE_THROWN = "擲",
     INVTYPE_HOLDABLE = "副",
-    INVTYPE_SHIELD = "盾",
+    INVTYPE_SHIELD = "副",
     ARMOR = "甲",
     ARTIFACT_POWER = "神",
     RELICSLOT = "聖",
@@ -55,6 +78,11 @@ local function GetInfoFrame(button)
         bind:SetTextColor(1, 0, 0)
         info.bind = bind
 
+        local subClass = info:CreateFontString()
+        subClass:SetFont(font, 12, "Outline")
+        subClass:SetPoint("TopRight", 5, 2)
+        info.subClass = subClass
+
         button.info = info
     end
     return button.info
@@ -80,6 +108,10 @@ end
 
 local function SetBindString(fontString, bind, isBound)
     fontString:SetText((bind == 2 or bind == 3) and not isBound and "裝" or "")
+end
+
+local function SetSubClassString(fontString, subClass)
+    fontString:SetText(subClassNames[subClass] or "")
 end
 
 local function ScanItemTooltip(link, bagID, unit, slotID, category)
@@ -111,18 +143,21 @@ local function SetItemInfo(button, link, category, bagID, slotID)
         SetLevelString(info.level, button.origLevel)
         SetSlotString(info.slot, button.origClass, button.origEquipSlot, button.origLink)
         SetBindString(info.bind, button.origBind, button.origIsBound)
+        SetSubClassString(info.subClass, _G[button.origEquipSlot] ~= INVTYPE_CLOAK and button.origSubClass)
     else
-        local level, class, equipSlot, bind, isBound, _
+        local level, class, subClass, equipSlot, bind, isBound, _
         if link and strmatch(link, "item:(%d+):") then
-            _, _, _, _, _, class, _, _, equipSlot, _, _, _, _, bind = GetItemInfo(link)
+            _, _, _, _, _, class, subClass, _, equipSlot, _, _, _, _, bind = GetItemInfo(link)
             level, isBound = ScanItemTooltip(link, bagID, "player", slotID, category)
             SetLevelString(info.level, level or "")
             SetSlotString(info.slot, class, equipSlot, link)
             SetBindString(info.bind, bind, isBound)
+            SetSubClassString(info.subClass, _G[equipSlot] ~= INVTYPE_CLOAK and subClass)
         else
             SetLevelString(info.level, "")
             SetSlotString(info.slot)
             SetBindString(info.bind)
+            SetBindString(info.subClass)
         end
         button.origLink = link
         button.origLevel = level or ""
@@ -130,6 +165,7 @@ local function SetItemInfo(button, link, category, bagID, slotID)
         button.origEquipSlot = equipSlot
         button.origBind = bind
         button.origIsBound = isBound
+        button.origSubClass = subClass
     end
 end
 
