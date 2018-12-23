@@ -54,6 +54,7 @@ local slotNames = {
 
 local listener = CreateFrame("Frame")
 local tooltip = CreateFrame("GameToolTip", "MyItemInfoTooltip", UIParent, "GameTooltipTemplate")
+local canUseItemTable = {}
 local chatItemCache = {}
 
 local function GetInfoFrame(button)
@@ -63,24 +64,24 @@ local function GetInfoFrame(button)
 
         local level = info:CreateFontString()
         level:SetFont(font, 12, "Outline")
-        level:SetPoint("TopLeft", -3, 2)
+        level:SetPoint("TopLeft", -3, 1)
         level:SetTextColor(1, 1, 0)
         info.level = level
 
         local slot = info:CreateFontString()
         slot:SetFont(font, 12, "Outline")
-        slot:SetPoint("BottomRight", 5, -2)
+        slot:SetPoint("BottomRight", 3, -1)
         info.slot = slot
 
         local bind = info:CreateFontString()
         bind:SetFont(font, 12, "Outline")
-        bind:SetPoint("BottomLeft", -3, -2)
+        bind:SetPoint("BottomLeft", -3, -1)
         bind:SetTextColor(1, 0, 0)
         info.bind = bind
 
         local subClass = info:CreateFontString()
         subClass:SetFont(font, 12, "Outline")
-        subClass:SetPoint("TopRight", 5, 2)
+        subClass:SetPoint("TopRight", 3, 1)
         info.subClass = subClass
 
         button.info = info
@@ -110,7 +111,25 @@ local function SetBindString(fontString, bind, isBound)
     fontString:SetText((bind == 2 or bind == 3) and not isBound and "裝" or "")
 end
 
-local function SetSubClassString(fontString, subClass)
+local function CanUseItem(itemID)
+    for _, id in next, canUseItemTable do
+        if id == itemID then
+            return true
+        end
+    end
+end
+
+local function SetSubClassString(fontString, subClass, id)
+    for i = 1, 18 do
+        GetInventoryItemsForSlot(i, canUseItemTable)
+    end
+
+    if CanUseItem(id) then
+        fontString:SetTextColor(1, 1, 1)
+    else
+        fontString:SetTextColor(1, 0, 0)
+    end
+
     fontString:SetText(subClassNames[subClass] or "")
 end
 
@@ -143,16 +162,17 @@ local function SetItemInfo(button, link, category, bagID, slotID)
         SetLevelString(info.level, button.origLevel)
         SetSlotString(info.slot, button.origClass, button.origEquipSlot, button.origLink)
         SetBindString(info.bind, button.origBind, button.origIsBound)
-        SetSubClassString(info.subClass, _G[button.origEquipSlot] ~= INVTYPE_CLOAK and button.origSubClass)
+        SetSubClassString(info.subClass, _G[button.origEquipSlot] ~= INVTYPE_CLOAK and button.origSubClass, button.origID)
     else
-        local level, class, subClass, equipSlot, bind, isBound, _
-        if link and strmatch(link, "item:(%d+):") then
+        local level, class, subClass, equipSlot, bind, isBound, itemID, _
+        itemID = link and tonumber(strmatch(link, "item:(%d+):"))
+        if itemID then
             _, _, _, _, _, class, subClass, _, equipSlot, _, _, _, _, bind = GetItemInfo(link)
             level, isBound = ScanItemTooltip(link, bagID, "player", slotID, category)
             SetLevelString(info.level, level or "")
             SetSlotString(info.slot, class, equipSlot, link)
             SetBindString(info.bind, bind, isBound)
-            SetSubClassString(info.subClass, _G[equipSlot] ~= INVTYPE_CLOAK and subClass)
+            SetSubClassString(info.subClass, _G[equipSlot] ~= INVTYPE_CLOAK and subClass, itemID)
         else
             SetLevelString(info.level, "")
             SetSlotString(info.slot)
@@ -166,6 +186,7 @@ local function SetItemInfo(button, link, category, bagID, slotID)
         button.origBind = bind
         button.origIsBound = isBound
         button.origSubClass = subClass
+        button.origID = itemID
     end
 end
 
@@ -370,9 +391,7 @@ listener:RegisterEvent("INSPECT_READY")
 listener:SetScript("OnEvent", function()
     if InspectFrame and InspectFrame.unit then
         local inspectSlots = {
-            InspectHeadSlot, InspectNeckSlot, InspectShoulderSlot, InspectBackSlot, InspectChestSlot, InspectWristSlot,
-            InspectHandsSlot, InspectWaistSlot, InspectLegsSlot, InspectFeetSlot, InspectFinger0Slot, InspectFinger1Slot,
-            InspectTrinket0Slot, InspectTrinket1Slot, InspectMainHandSlot, InspectSecondaryHandSlot
+            InspectHeadSlot, InspectNeckSlot, InspectShoulderSlot, InspectBackSlot, InspectChestSlot, InspectWristSlot, InspectHandsSlot, InspectWaistSlot, InspectLegsSlot, InspectFeetSlot, InspectFinger0Slot, InspectFinger1Slot, InspectTrinket0Slot, InspectTrinket1Slot, InspectMainHandSlot, InspectSecondaryHandSlot
         }
 
         for i = 1, #inspectSlots do
