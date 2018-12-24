@@ -143,7 +143,7 @@ local function GetItem(link)
     if itemStrings[13] ~= "" then
         local bonuses = {}
         local numBonuses = tonumber(itemStrings[13])
-        for i = 14, 14 + numBonuses do
+        for i = 14, 13 + numBonuses do
             local bonus = itemStrings[i]
             if bonus ~= "" then
                 bonuses[i - 13] = bonus
