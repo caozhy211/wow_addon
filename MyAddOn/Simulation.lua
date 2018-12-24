@@ -116,19 +116,19 @@ end
 local function GetItem(link)
     local text = ""
     local itemString = strmatch(link, "item:([%-?%d:]+)")
-    local itemStrings = { strsplit(":", itemString) }
+    local itemStringTable = { strsplit(":", itemString) }
 
-    local id = itemStrings[1]
+    local id = itemStringTable[1]
     text = ",id=" .. id
 
-    local enchant = itemStrings[2]
+    local enchant = itemStringTable[2]
     if enchant ~= "" then
         text = text .. ",enchant_id=", enchant
     end
 
     local gems = {}
     for i = 3, 6 do
-        local gem = itemStrings[i]
+        local gem = itemStringTable[i]
         if gem ~= "" then
             local gemID = GetGemID(link, i - 2)
             if gemID then
@@ -140,11 +140,14 @@ local function GetItem(link)
         text = text .. ",gem_id=" .. table.concat(gems, "/")
     end
 
-    if itemStrings[13] ~= "" then
+    local flag = itemStringTable[11] == "" and 0 or tonumber(itemStringTable[11])
+    local offset = 14
+
+    if itemStringTable[13] ~= "" then
         local bonuses = {}
-        local numBonuses = tonumber(itemStrings[13])
+        local numBonuses = tonumber(itemStringTable[13])
         for i = 14, 13 + numBonuses do
-            local bonus = itemStrings[i]
+            local bonus = itemStringTable[i]
             if bonus ~= "" then
                 bonuses[i - 13] = bonus
             end
@@ -152,6 +155,19 @@ local function GetItem(link)
         if #bonuses > 0 then
             text = text .. ",bonus_id=" .. table.concat(bonuses, "/")
         end
+        offset = offset + #bonuses
+    end
+
+    if bit.band(flag, 0x4) == 0x4 then
+        offset = offset + 1
+    end
+
+    if bit.band(flag, 0x200) == 0x200 then
+        text = text .. ",drop_level=" .. itemStringTable[offset]
+    end
+
+    if itemStringTable[12] ~= "" then
+        text = text .. ",context=" .. itemStringTable[12]
     end
 
     return text
@@ -242,5 +258,6 @@ SLASH_SIM1 = "/sim"
 SlashCmdList["SIM"] = function()
     GetProfiles()
     editBox:SetText(profile)
+    editBox:HighlightText()
     simulation:Show()
 end
