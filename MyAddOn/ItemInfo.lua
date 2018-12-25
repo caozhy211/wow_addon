@@ -119,12 +119,12 @@ local function CanUseItem(itemID)
     end
 end
 
-local function SetSubClassString(fontString, subClass, id)
+local function SetSubClassString(fontString, subClass, id, category)
     for i = 1, 18 do
         GetInventoryItemsForSlot(i, canUseItemTable)
     end
 
-    if CanUseItem(id) then
+    if CanUseItem(id) or category ~= "Bag" and category ~= "Bank" then
         fontString:SetTextColor(1, 1, 1)
     else
         fontString:SetTextColor(1, 0, 0)
@@ -162,7 +162,7 @@ local function SetItemInfo(button, link, category, bagID, slotID)
         SetLevelString(info.level, button.origLevel)
         SetSlotString(info.slot, button.origClass, button.origEquipSlot, button.origLink)
         SetBindString(info.bind, button.origBind, button.origIsBound)
-        SetSubClassString(info.subClass, _G[button.origEquipSlot] ~= INVTYPE_CLOAK and button.origSubClass, button.origID)
+        SetSubClassString(info.subClass, _G[button.origEquipSlot] ~= INVTYPE_CLOAK and button.origSubClass, button.origID, category)
     else
         local level, class, subClass, equipSlot, bind, isBound, itemID, _
         itemID = link and tonumber(strmatch(link, "item:(%d+):"))
@@ -172,7 +172,7 @@ local function SetItemInfo(button, link, category, bagID, slotID)
             SetLevelString(info.level, level or "")
             SetSlotString(info.slot, class, equipSlot, link)
             SetBindString(info.bind, bind, isBound)
-            SetSubClassString(info.subClass, _G[equipSlot] ~= INVTYPE_CLOAK and subClass, itemID)
+            SetSubClassString(info.subClass, _G[equipSlot] ~= INVTYPE_CLOAK and subClass, itemID, category)
         else
             SetLevelString(info.level, "")
             SetSlotString(info.slot)
