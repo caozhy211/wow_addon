@@ -113,7 +113,7 @@ local function GetGemID(link, index)
     end
 end
 
-local function GetItem(link)
+local function GetItem(link, itemLoc)
     local text = ""
     local itemString = strmatch(link, "item:([%-?%d:]+)")
     local itemStringTable = { strsplit(":", itemString) }
@@ -170,6 +170,27 @@ local function GetItem(link)
         text = text .. ",context=" .. itemStringTable[12]
     end
 
+    if itemLoc and C_AzeriteEmpoweredItem then
+        if C_AzeriteEmpoweredItem.IsAzeriteEmpoweredItem(itemLoc) then
+            local azeritePowers = {}
+            local tierInfo = C_AzeriteEmpoweredItem.GetAllTierInfo(itemLoc)
+            for i = 1, #tierInfo do
+                local tier = tierInfo[i]
+                for j = 1, #tier.azeritePowerIDs do
+                    local powerID = tier.azeritePowerIDs[j]
+                    if C_AzeriteEmpoweredItem.IsPowerSelected(itemLoc, powerID) then
+                        azeritePowers[#azeritePowers + 1] = powerID
+                    end
+                end
+            end
+            text = text .. ",azerite_powers=" .. table.concat(azeritePowers, "/")
+        end
+
+        if C_AzeriteItem.IsAzeriteItem(itemLoc) then
+            text = text .. ",azerite_level=" .. C_AzeriteItem.GetPowerLevel(itemLoc)
+        end
+    end
+
     return text
 end
 
@@ -179,7 +200,8 @@ local function GetEquippedItems()
         if i ~= 4 then
             local link = GetInventoryItemLink("player", i)
             if link then
-                text = text .. simSlots[i] .. "=" .. GetItem(link) .. "\n"
+                local itemLoc = ItemLocation and ItemLocation:CreateFromEquipmentSlot(i)
+                text = text .. simSlots[i] .. "=" .. GetItem(link, itemLoc) .. "\n"
             end
         end
     end
@@ -194,6 +216,16 @@ local function GetBagItems()
             GetInventoryItemsForSlot(i, slotItems)
             for bitString, _ in pairs(slotItems) do
                 local _, bank, bags, _, slot, bag = EquipmentManager_UnpackLocation(bitString)
+
+                local itemLoc
+                if ItemLocation then
+                    if bag == nil then
+                        itemLoc = ItemLocation:CreateFromEquipmentSlot(slot)
+                    else
+                        itemLoc = ItemLocation:CreateFromBagAndSlot(bag, slot)
+                    end
+                end
+
                 if bags or bank then
                     local container
                     if bags then
@@ -202,6 +234,7 @@ local function GetBagItems()
                         container = BANK_CONTAINER
                         slot = slot - 47
                     end
+
                     local _, _, _, _, _, _, itemLink = GetContainerItemInfo(container, slot)
                     if itemLink then
                         local name, link, quality = GetItemInfo(itemLink)
@@ -210,7 +243,7 @@ local function GetBagItems()
                             tooltip:SetOwner(UIParent, "ANCHOR_NONE")
                             tooltip:SetBagItem(container, slot)
                             for j = 2, 5 do
-                                local lineText = _G["MySimulationTooltipTextLeft" .. j]:GetText() or ""
+                                local lineText = _G[tooltip:GetName() .. "TextLeft" .. j]:GetText() or ""
                                 level = strmatch(lineText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
                                 if level then
                                     level = tonumber(level)
@@ -219,7 +252,7 @@ local function GetBagItems()
                             end
 
                             text = text .. "# " .. name .. " (" .. (level or 0) .. ")" .. "\n"
-                            text = text .. "# " .. simSlots[i] .. "=" .. GetItem(link) .. "\n#\n"
+                            text = text .. "# " .. simSlots[i] .. "=" .. GetItem(link, itemLoc) .. "\n#\n"
                         end
                     end
                 end
