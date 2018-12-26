@@ -1,7 +1,7 @@
 local tooltip = CreateFrame("GameTooltip", "MyUsableItemTooltip", UIParent, "GameTooltipTemplate")
 local buttons = {}
 local maxButtons = 6
-local numButtons = 0
+local numHasItemButtons = 0
 local bindKeys = { "ALT-Q", "ALT-W", "ALT-A", "ALT-R", "ALT-T", "ALT-G", }
 local bar = CreateFrame("Frame", "MyUsableItemBar", UIParent)
 bar:SetSize(228, 33)
@@ -9,6 +9,7 @@ bar:SetPoint("BottomRight", CastingBarFrame, "TopRight", 0, 3 + 2 + 20)
 local height = bar:GetHeight()
 local width = height
 local spacing = (bar:GetWidth() - width * maxButtons) / (maxButtons - 1)
+local questObjectiveItems = {}
 
 local function CreateItemButton(id)
     local button = CreateFrame("Button", "MyUsableItemButton" .. id, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
@@ -75,7 +76,7 @@ local function SetBindingKey()
 end
 
 local function UpdateCooldown()
-    for i = 1, numButtons do
+    for i = 1, numHasItemButtons do
         CooldownFrame_Set(buttons[i].cooldown, GetItemCooldown(buttons[i].itemID))
     end
 end
@@ -92,6 +93,14 @@ local function UpdateButton(index, bag, slot, itemID, texture, count)
     button:SetAttribute("slot", slot)
 
     button:Show()
+end
+
+local function FindInQuestObjectiveItems(id)
+    for i = 1, #questObjectiveItems do
+        if id == questObjectiveItems[i] then
+            return true
+        end
+    end
 end
 
 local function UpdateBar()
@@ -122,7 +131,7 @@ local function UpdateBar()
             local itemID = link and tonumber(strmatch(link, "item:(%d+)"))
             if itemID then
                 local isQuestItem, questID, isActive = GetContainerItemQuestInfo(bag, slot)
-                if (isQuestItem or questID and not isActive) and IsUsableItem(itemID) then
+                if (isQuestItem or questID and not isActive) and (IsUsableItem(itemID) or FindInQuestObjectiveItems(itemID)) then
                     local texture, count = GetContainerItemInfo(bag, slot)
                     UpdateButton(index, bag, slot, itemID, texture, count)
                     index = index + 1
@@ -131,7 +140,7 @@ local function UpdateBar()
         end
     end
 
-    numButtons = index - 1
+    numHasItemButtons = index - 1
     for i = index, maxButtons do
         buttons[i]:Hide()
     end
@@ -155,5 +164,17 @@ bar:SetScript("OnEvent", function(_, event)
         UpdateBar()
     else
         UpdateBar()
+    end
+end)
+
+hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
+    local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
+    local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
+    if shouldShowItem then
+        local itemID = tonumber(strmatch(link, "item:(%d+)"))
+        if not FindInQuestObjectiveItems(itemID) then
+            questObjectiveItems[#questObjectiveItems + 1] = itemID
+            UpdateBar()
+        end
     end
 end)
