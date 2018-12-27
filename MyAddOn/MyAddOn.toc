@@ -25,11 +25,11 @@ Mover.lua
 NamePlate.lua
 Performance.lua
 PetBattle.lua
+PVPTalent.lua
 RaidMarker.lua
 Setting.lua
 Simulation.lua
 SoulShard.lua
-Summon.lua
 Toast.lua
 Tooltip.lua
 UnitFrame.lua
