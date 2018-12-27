@@ -85,10 +85,44 @@ local function ShowToast(toast)
     toast:Show()
 end
 
+local function SlotOnEnter(self)
+    local toast = self:GetParent()
+    toast.animOut:Stop()
+    toast:SetAlpha(1)
+    GameTooltip:Hide()
+    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+end
+
+local function SlotOnLeave(self)
+    local toast = self:GetParent()
+    toast.animOut:Play()
+    GameTooltip:Hide()
+end
+
+local function ToastOnEnter(self)
+    self.animOut:Stop()
+    self:SetAlpha(1)
+    GameTooltip:Hide()
+    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
+end
+
+local function ToastOnLeave(self)
+    BattlePetTooltip:Hide()
+    GameTooltip:Hide()
+    GarrisonFollowerTooltip:Hide()
+    GarrisonShipyardFollowerTooltip:Hide()
+    ShoppingTooltip1:Hide()
+    ShoppingTooltip2:Hide()
+    self.animOut:Play()
+end
+
 local function RecycleToast(toast)
     toast:ClearAllPoints()
     toast:SetAlpha(1)
     toast:Hide()
+
+    toast:SetScript("OnEnter", ToastOnEnter)
+
     toast.data = nil
     toast.animArrows:Stop()
     toast.animIn:Stop()
@@ -105,6 +139,7 @@ local function RecycleToast(toast)
     toast.text.PostSetAnimatedValue = nil
     for i = 1, 5 do
         toast["slot" .. i]:Hide()
+        toast["slot" .. i]:SetScript("OnEnter", SlotOnEnter)
         toast["slot" .. i].data = nil
         toast["arrow" .. i]:SetAlpha(0)
     end
@@ -390,6 +425,10 @@ local function CreateSlots(toast)
         local slot = CreateFrame("Frame", nil, toast)
         slot:SetSize(size, size)
         slot:Hide()
+
+        slot:SetScript("OnEnter", SlotOnEnter)
+        slot:SetScript("OnLeave", SlotOnLeave)
+
         toast["slot" .. i] = slot
 
         local slotIcon = slot:CreateTexture()
@@ -430,6 +469,9 @@ local function CreateToast()
         self.animIn:Play()
         self.animOut:Play()
     end)
+
+    toast:SetScript("OnEnter", ToastOnEnter)
+    toast:SetScript("OnLeave", ToastOnLeave)
 
     return toast
 end
@@ -619,6 +661,55 @@ local function MissionToast(event, missionID, isAdded)
     ShowToast(toast)
 end
 
+local function FollowerToastOnEnter(self)
+    if self.data then
+        local isOK, link = pcall(C_Garrison.GetFollowerLink, self.data.followerID)
+        if not isOK then
+            isOK, link = pcall(C_Garrison.GetFollowerLinkByID, self.data.followerID)
+        end
+        if isOK and link then
+            local _, garrisonFollowerID, quality, level, itemLevel, ability1, ability2, ability3, ability4, trait1, trait2, trait3, trait4, spec1 = strsplit(":", link)
+            garrisonFollowerID = tonumber(garrisonFollowerID)
+            local data = {
+                garrisonFollowerID = garrisonFollowerID,
+                followerTypeID = C_Garrison.GetFollowerTypeByID(garrisonFollowerID),
+                collected = false,
+                hyperlink = false,
+                name = C_Garrison.GetFollowerNameByID(garrisonFollowerID),
+                spec = C_Garrison.GetFollowerClassSpecByID(garrisonFollowerID),
+                portraitIconID = C_Garrison.GetFollowerPortraitIconIDByID(garrisonFollowerID),
+                quality = tonumber(quality),
+                level = tonumber(level),
+                xp = 0,
+                levelxp = 0,
+                iLevel = tonumber(itemLevel),
+                spec1 = tonumber(spec1),
+                ability1 = tonumber(ability1),
+                ability2 = tonumber(ability2),
+                ability3 = tonumber(ability3),
+                ability4 = tonumber(ability4),
+                trait1 = tonumber(trait1),
+                trait2 = tonumber(trait2),
+                trait3 = tonumber(trait3),
+                trait4 = tonumber(trait4),
+                isTroop = C_Garrison.GetFollowerIsTroop(garrisonFollowerID),
+            }
+            local tooltip
+            if data.followerTypeID == LE_FOLLOWER_TYPE_SHIPYARD_6_2 then
+                tooltip = GarrisonShipyardFollowerTooltip
+                GarrisonFollowerTooltipTemplate_SetShipyardFollower(tooltip, data)
+            else
+                tooltip = GarrisonFollowerTooltip
+                GarrisonFollowerTooltipTemplate_SetGarrisonFollower(tooltip, data)
+            end
+
+            tooltip:Show()
+            tooltip:ClearAllPoints()
+            tooltip:SetPoint(GameTooltip:GetPoint())
+        end
+    end
+end
+
 local function FollowerToast(event, followerTypeID, followerID, name, texPrefix, level, quality, isUpgraded)
     local followerInfo = C_Garrison.GetFollowerInfo(followerID)
     local followerStrings = GarrisonFollowerOptions[followerTypeID].strings
@@ -663,6 +754,7 @@ local function FollowerToast(event, followerTypeID, followerID, name, texPrefix,
         sound = 44296,
     }
 
+    toast:HookScript("OnEnter", FollowerToastOnEnter)
     ShowToast(toast)
 end
 
@@ -698,6 +790,22 @@ local function TalentToast(event, talentID)
     ShowToast(toast)
 end
 
+local function InstanceToastSlotOnEnter(self)
+    local data = self.data
+    if data then
+        if data.type == "item" then
+            GameTooltip:SetHyperlink(data.link)
+        elseif data.type == "xp" then
+            GameTooltip:AddLine(YOU_RECEIVED_LABEL)
+            GameTooltip:AddLine(format(BONUS_OBJECTIVE_EXPERIENCE_FORMAT, data.count), 1, 1, 1)
+        elseif data.type == "money" then
+            GameTooltip:AddLine(YOU_RECEIVED_LABEL)
+            GameTooltip:AddLine(GetMoneyString(data.count), 1, 1, 1)
+        end
+        GameTooltip:Show()
+    end
+end
+
 local function InstanceToast(event, name, subTypeID, textureFile, moneyReward, xpReward, numItemRewards, isScenario, isScenarioBonusComplete)
     local toast = GetToast()
     local usedSlots = 0
@@ -715,6 +823,7 @@ local function InstanceToast(event, name, subTypeID, textureFile, moneyReward, x
                 count = moneyReward,
             }
 
+            slot:HookScript("OnEnter", InstanceToastSlotOnEnter)
             slot:Show()
         end
     end
@@ -731,6 +840,7 @@ local function InstanceToast(event, name, subTypeID, textureFile, moneyReward, x
                 count = xpReward,
             }
 
+            slot:HookScript("OnEnter", InstanceToastSlotOnEnter)
             slot:Show()
         end
     end
@@ -753,6 +863,7 @@ local function InstanceToast(event, name, subTypeID, textureFile, moneyReward, x
                     link = link,
                 }
 
+                slot:HookScript("OnEnter", InstanceToastSlotOnEnter)
                 slot:Show()
             end
         end
@@ -820,6 +931,16 @@ local function GetItemLevel(itemLink)
     return 0
 end
 
+local function LootCommonToastOnEnter(self)
+    if strfind(self.data.tooltipLink, "item") then
+        GameTooltip:SetHyperlink(self.data.tooltipLink)
+        GameTooltip:Show()
+    elseif strfind(self.data.tooltipLink, "battlepet") then
+        local _, speciesID, level, breedQuality, maxHealth, power, speed = strsplit(":", self.data.tooltipLink)
+        BattlePetToolTip_Show(tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed))
+    end
+end
+
 local function LootCommonToast(event, link, quantity)
     local sanitizedLink, originalLink, linkType, itemID = SanitizeLink(link)
     local toast, isNew, isQueued
@@ -866,10 +987,12 @@ local function LootCommonToast(event, link, quantity)
                 count = quantity,
                 event = event,
                 link = sanitizedLink,
+                tooltipLink = originalLink,
                 itemID = itemID,
                 sound = 31578,
             }
 
+            toast:HookScript("OnEnter", LootCommonToastOnEnter)
             ShowToast(toast)
         else
             RecycleToast(toast)
@@ -892,8 +1015,13 @@ local function LootCommonToast(event, link, quantity)
     end
 end
 
+local function LootCurrencyToastOnEnter(self)
+    GameTooltip:SetHyperlink(self.data.tooltipLink)
+    GameTooltip:Show()
+end
+
 local function LootCurrencyToast(event, link, quantity)
-    local sanitizedLink = SanitizeLink(link)
+    local sanitizedLink, originalLink = SanitizeLink(link)
     local toast, isNew, isQueued = GetToast(event, "link", sanitizedLink)
 
     if isNew then
@@ -911,9 +1039,11 @@ local function LootCurrencyToast(event, link, quantity)
             event = event,
             count = quantity,
             link = sanitizedLink,
+            tooltipLink = originalLink,
             sound = 31578,
         }
 
+        toast:HookScript("OnEnter", LootCurrencyToastOnEnter)
         ShowToast(toast)
     else
         if isQueued then
@@ -963,6 +1093,18 @@ local function LootGoldToast(event, quantity)
 
             toast.animOut:Stop()
             toast.animOut:Play()
+        end
+    end
+end
+
+local function LootSpecialToastOnEnter(self)
+    if self.data then
+        if strfind(self.data.tooltipLink, "item") then
+            GameTooltip:SetHyperlink(self.data.tooltipLink)
+            GameTooltip:Show()
+        elseif strfind(self.data.tooltipLink, "battlepet") then
+            local _, speciesID, level, breedQuality, maxHealth, power, speed = strsplit(":", self.data.tooltipLink)
+            BattlePetToolTip_Show(tonumber(speciesID), tonumber(level), tonumber(breedQuality), tonumber(maxHealth), tonumber(power), tonumber(speed))
         end
     end
 end
@@ -1047,10 +1189,12 @@ local function LootSpecialToast(event, link, quantity, rollType, roll, isItem, i
                         event = event,
                         itemID = itemID,
                         link = sanitizedLink,
+                        tooltipLink = originalLink,
                         showArrows = isUpgraded,
                         sound = sound,
                     }
 
+                    toast:HookScript("OnEnter", LootSpecialToastOnEnter)
                     ShowToast(toast)
                 else
                     RecycleToast(toast)
@@ -1130,6 +1274,13 @@ local function StoreProductDelivered(event, payloadID)
     end
 end
 
+local function RecipeToastOnEnter(self)
+    if self.data then
+        GameTooltip:SetSpellByID(self.data.recipeID)
+        GameTooltip:Show()
+    end
+end
+
 local function RecipeToast(event, recipeID)
     local tradeSkillID = C_TradeSkillUI.GetTradeSkillLineForRecipe(recipeID)
 
@@ -1161,6 +1312,7 @@ local function RecipeToast(event, recipeID)
                 sound = 73919,
             }
 
+            toast:HookScript("OnEnter", RecipeToastOnEnter)
             ShowToast(toast)
         end
     end
@@ -1264,6 +1416,25 @@ local function TransmogCollectionSourceRemoved(event, sourceID, attempt)
     end
 end
 
+local function WorldToastSlotOnEnter(self)
+    local data = self.data
+    if data then
+        if data.type == "item" then
+            GameTooltip:SetHyperlink(data.link)
+        elseif data.type == "xp" then
+            GameTooltip:AddLine(YOU_RECEIVED_LABEL)
+            GameTooltip:AddLine(format(BONUS_OBJECTIVE_EXPERIENCE_FORMAT, data.count), 1, 1, 1)
+        elseif data.type == "money" then
+            GameTooltip:AddLine(YOU_RECEIVED_LABEL)
+            GameTooltip:AddLine(GetMoneyString(data.count), 1, 1, 1)
+        elseif data.type == "currency" then
+            GameTooltip:AddLine(YOU_RECEIVED_LABEL)
+            GameTooltip:AddLine(format("%s|T%s:0|t", data.count, data.texture))
+        end
+        GameTooltip:Show()
+    end
+end
+
 local function WorldToast(event, isUpdate, questID, name, moneyReward, xpReward, numCurrencyRewards, itemReward, isInvasion, isInvasionBonusComplete)
     local toast, isNew, isQueued = GetToast(nil, "questID", questID)
 
@@ -1288,6 +1459,7 @@ local function WorldToast(event, isUpdate, questID, name, moneyReward, xpReward,
                     count = moneyReward,
                 }
 
+                slot:HookScript("OnEnter", WorldToastSlotOnEnter)
                 slot:Show()
             end
         end
@@ -1304,6 +1476,7 @@ local function WorldToast(event, isUpdate, questID, name, moneyReward, xpReward,
                     count = xpReward,
                 }
 
+                slot:HookScript("OnEnter", WorldToastSlotOnEnter)
                 slot:Show()
             end
         end
@@ -1324,6 +1497,7 @@ local function WorldToast(event, isUpdate, questID, name, moneyReward, xpReward,
                     texture = texture,
                 }
 
+                slot:HookScript("OnEnter", WorldToastSlotOnEnter)
                 slot:Show()
             end
         end
@@ -1389,6 +1563,7 @@ local function WorldToast(event, isUpdate, questID, name, moneyReward, xpReward,
                     link = itemReward,
                 }
 
+                slot:HookScript("OnEnter", WorldToastSlotOnEnter)
                 slot:Show()
             end
         end
