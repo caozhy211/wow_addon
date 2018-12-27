@@ -145,6 +145,7 @@ local function RecycleToast(toast)
     toast.text:SetText("")
     toast.text.PostSetAnimatedValue = nil
     ColorBorder(toast, { r = 0, g = 0, b = 0 })
+    toast.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     for i = 1, 5 do
         toast["slot" .. i]:Hide()
         toast["slot" .. i]:SetScript("OnEnter", SlotOnEnter)
