@@ -116,6 +116,13 @@ local function ToastOnLeave(self)
     self.animOut:Play()
 end
 
+local function ColorBorder(toast, color)
+    toast.top:SetColorTexture(color.r, color.g, color.b)
+    toast.bottom:SetColorTexture(color.r, color.g, color.b)
+    toast.left:SetColorTexture(color.r, color.g, color.b)
+    toast.right:SetColorTexture(color.r, color.g, color.b)
+end
+
 local function RecycleToast(toast)
     toast:ClearAllPoints()
     toast:SetAlpha(1)
@@ -137,6 +144,7 @@ local function RecycleToast(toast)
     toast.title:SetText("")
     toast.text:SetText("")
     toast.text.PostSetAnimatedValue = nil
+    ColorBorder(toast, { r = 0, g = 0, b = 0 })
     for i = 1, 5 do
         toast["slot" .. i]:Hide()
         toast["slot" .. i]:SetScript("OnEnter", SlotOnEnter)
@@ -193,13 +201,8 @@ local function CreateBorder(toast)
     toast.right = toast:CreateTexture(nil, "Overlay")
     toast.right:SetSize(size, height)
     toast.right:SetPoint("Right")
-end
 
-local function ColorBorder(toast, color)
-    toast.top:SetColorTexture(color.r, color.g, color.b)
-    toast.bottom:SetColorTexture(color.r, color.g, color.b)
-    toast.left:SetColorTexture(color.r, color.g, color.b)
-    toast.right:SetColorTexture(color.r, color.g, color.b)
+    ColorBorder(toast, { r = 0, g = 0, b = 0 })
 end
 
 local function CreateIconFrame(toast)
