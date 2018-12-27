@@ -125,6 +125,21 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
     end
 end)
 
+local function DisableAutoAddSpells()
+    IconIntroTracker.RegisterEvent = nop
+    IconIntroTracker:UnregisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
+
+    local listener = CreateFrame("Frame")
+    listener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
+    listener:SetScript("OnEvent", function(_, _, _, slotIndex)
+        if not InCombatLockdown() then
+            ClearCursor()
+            PickupAction(slotIndex)
+            ClearCursor()
+        end
+    end)
+end
+
 SetSlideOutDuration()
 ResizeMultiBarRightButton()
 ResizeOverrideExpBar()
@@ -135,3 +150,4 @@ MoveVehicleLeaveButton()
 RightClickSelfCast()
 HideMacroName()
 HideLayers()
+DisableAutoAddSpells()
