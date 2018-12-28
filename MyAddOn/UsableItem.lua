@@ -1,4 +1,7 @@
+local questToken = (GetItemClassInfo and GetItemClassInfo(LE_ITEM_CLASS_QUESTITEM or 12)) or LOOT_JOURNAL_LEGENDARIES_SOURCE_QUEST or "Quest"
 local tooltip = CreateFrame("GameTooltip", "MyUsableItemTooltip", UIParent, "GameTooltipTemplate")
+local scanTooltip = CreateFrame("GameTooltip", "MyScanUsableItemTooltip", UIParent, "GameTooltipTemplate")
+scanTooltip:SetOwner(UIParent, "ANCHOR_NONE")
 local buttons = {}
 local maxButtons = 6
 local numHasItemButtons = 0
@@ -95,12 +98,20 @@ local function UpdateButton(index, bag, slot, itemID, texture, count)
     button:Show()
 end
 
+local function IsQuestItem(link)
+    local _, _, _, _, _, class, subClass = GetItemInfo(link)
+    scanTooltip:SetHyperlink(link)
+    local text = _G[scanTooltip:GetName() .. "TextLeft2"]:GetText() or ""
+    return class == questToken or subClass == questToken or text == ITEM_BIND_QUEST or text == GetZoneText()
+end
+
 local function FindInQuestObjectiveItems(id)
     for i = 1, #questObjectiveItems do
         if id == questObjectiveItems[i] then
             return true
         end
     end
+    return false
 end
 
 local function UpdateBar()
@@ -130,8 +141,7 @@ local function UpdateBar()
             local link = GetContainerItemLink(bag, slot)
             local itemID = link and tonumber(strmatch(link, "item:(%d+)"))
             if itemID then
-                local isQuestItem, questID, isActive = GetContainerItemQuestInfo(bag, slot)
-                if (isQuestItem or questID and not isActive) and (IsUsableItem(itemID) or FindInQuestObjectiveItems(itemID)) then
+                if IsQuestItem(link) and (IsUsableItem(itemID) or FindInQuestObjectiveItems(itemID)) then
                     local texture, count = GetContainerItemInfo(bag, slot)
                     UpdateButton(index, bag, slot, itemID, texture, count)
                     index = index + 1
