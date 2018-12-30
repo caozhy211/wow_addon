@@ -7,18 +7,15 @@ local bindKeys = { "F1", "F2", "F3", "F4" }
 local trinketButtonIndex = 1
 local generalPVPSpell = 195710
 
-local function CanUsePVPSpell()
-    return IsUsableSpell(generalPVPSpell)
-end
-
 local function SetTrinketButton()
-    if UnitLevel("player") >= SHOW_PVP_LEVEL then
+    if UnitLevel("player") >= SHOW_PVP_LEVEL and not InCombatLockdown() then
         local trinketButton = buttons[trinketButtonIndex]
         trinketButton:SetAttribute("spell", generalPVPSpell)
         local _, _, texture = GetSpellInfo(generalPVPSpell)
         trinketButton.icon:SetTexture(texture)
 
         bar:UnregisterEvent("PLAYER_LEVEL_CHANGED")
+        bar:UnregisterEvent("PLAYER_REGEN_ENABLED")
     end
 end
 
@@ -65,8 +62,26 @@ local function UpdateIcon(button, spellID)
     end
 end
 
+local function OnEnter(button)
+    GameTooltip:SetOwner(button, "ANCHOR_CURSOR_RIGHT", 30, -12)
+    local spell = GetButtonSpellID(button.id)
+    if spell then
+        GameTooltip:SetSpellByID(spell)
+        button:SetScript("OnUpdate", function(self, elapsed)
+            self.elapsed = (self.elapsed or 0) + elapsed
+            if self.elapsed < 0.01 then
+                return
+            end
+            self.elapsed = 0
+
+            GameTooltip:SetSpellByID(spell)
+        end)
+    end
+end
+
 local function CreatePVPTalentButton(id)
     local button = CreateFrame("Button", "MyPVPTalentButton" .. id, bar, "SecureActionButtonTemplate, ActionButtonTemplate")
+    button.id = id
     buttons[id] = button
     button:SetSize(30, 30)
     button:SetPoint("Left", (id - 1) * (30 + 10), 0)
@@ -84,40 +99,20 @@ local function CreatePVPTalentButton(id)
     button.HotKey:SetText(bindKeys[id])
 
     C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
-        if not CanUsePVPSpell() then
-            return
-        end
-        local spell = GetButtonSpellID(id)
-        if spell then
-            UpdateIcon(button, spell)
+        if bar:GetAlpha() == 1 then
+            local spell = GetButtonSpellID(id)
+            if spell then
+                UpdateIcon(button, spell)
+            end
         end
     end)
 
-    button:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -12)
-        local spell = GetButtonSpellID(id)
-        if spell then
-            GameTooltip:SetSpellByID(spell)
-            self:SetScript("OnUpdate", function(_, elapsed)
-                self.elapsed = (self.elapsed or 0) + elapsed
-                if self.elapsed < 0.01 then
-                    return
-                end
-                self.elapsed = 0
-
-                GameTooltip:SetSpellByID(spell)
-            end)
-        end
-    end)
+    button:SetScript("OnEnter", OnEnter)
 
     button:SetScript("OnLeave", function(self)
         self:SetScript("OnUpdate", nil)
         GameTooltip:Hide()
     end)
-end
-
-for i = 1, 4 do
-    CreatePVPTalentButton(i)
 end
 
 local function SetBindingKey()
@@ -150,41 +145,60 @@ local function UpdatePVPTalentButtons()
             button:SetAttribute("spell", spellID)
         end
     end
-    UpdateCooldown()
+end
+
+local function ShowBar()
+    bar:SetAlpha(1)
+    for i = 1, #buttons do
+        local button = buttons[i]
+        button:SetAlpha(1)
+        button:SetScript("OnEnter", OnEnter)
+        button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+    end
+end
+
+local function HideBar()
+    bar:SetAlpha(0)
+    for i = 1, #buttons do
+        local button = buttons[i]
+        button:SetAlpha(0)
+        button:SetScript("OnEnter", nil)
+        button:RegisterForClicks()
+    end
 end
 
 local function TogglePVPTalentBar()
-    if CanUsePVPSpell() then
-        bar:Show()
-        UpdatePVPTalentButtons()
-    else
-        bar:Hide()
+    if IsUsableSpell(generalPVPSpell) and bar:GetAlpha() == 0 then
+        ShowBar()
+    elseif not IsUsableSpell(generalPVPSpell) and bar:GetAlpha() == 1 then
+        HideBar()
     end
 end
 
 bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("PLAYER_PVP_TALENT_UPDATE")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-bar:RegisterEvent("PLAYER_LEVEL_CHANGED")
 bar:RegisterEvent("SPELLS_CHANGED")
+bar:RegisterEvent("PLAYER_LEVEL_CHANGED")
+bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 bar:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
         SetBindingKey()
         TogglePVPTalentBar()
-    elseif event == "PLAYER_LEVEL_CHANGED" then
+    elseif event == "PLAYER_LEVEL_CHANGED" or event == "PLAYER_REGEN_ENABLE" then
         SetTrinketButton()
     elseif event == "ACTIONBAR_UPDATE_COOLDOWN" then
-        if not CanUsePVPSpell() then
-            return
+        if bar:GetAlpha() == 1 then
+            UpdateCooldown()
         end
-        UpdateCooldown()
     elseif event == "PLAYER_PVP_TALENT_UPDATE" then
-        if not CanUsePVPSpell() then
-            return
-        end
         UpdatePVPTalentButtons()
     else
         TogglePVPTalentBar()
     end
 end)
+
+for i = 1, 4 do
+    CreatePVPTalentButton(i)
+end
