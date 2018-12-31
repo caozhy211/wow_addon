@@ -358,6 +358,30 @@ local function SetMyOnUpdate(self, elapsed)
     end
 end
 
+local function GetCompactUnitFrameProfilesSize()
+    local resizeVerticalOutsets = 7
+    local titleHeight = 14
+
+    local spacing = 2
+    local rows = 2
+    local columns = ceil(MAX_RAID_GROUPS / rows)
+
+    local containerResizeFrameHeight = GetScreenHeight() - 135 - 330
+    local containerMaxHeight = containerResizeFrameHeight - resizeVerticalOutsets * 2
+    local height
+    local arg = 1
+    while arg >= 1 do
+        height = floor(containerMaxHeight / (MEMBERS_PER_RAID_GROUP * rows + ceil(arg)))
+        arg = (titleHeight * rows + spacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1)) / (height * ceil(arg))
+    end
+
+    local maxRight = 570
+    local left = 22
+    local width = floor((maxRight - spacing * columns - left) / columns)
+
+    return height, width
+end
+
 my:SetScript("OnClick", function(self)
     self:SetScript("OnClick", nil)
     default:SetScript("OnClick", nil)
@@ -377,11 +401,12 @@ my:SetScript("OnClick", function(self)
 
     InterfaceOptionsNamesPanelUnitNameplatesMakeLarger.setFunc("1")
 
+    local height, width = GetCompactUnitFrameProfilesSize()
     SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "keepGroupsTogether", true)
     SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "useClassColors", true)
     SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "displayBorder", false)
-    SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameHeight", 54, 54)
-    SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameWidth", 137, 137)
+    SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameHeight", height, height)
+    SetRaidProfileOption(CompactUnitFrameProfiles.selectedProfile, "frameWidth", width, width)
 
     StaticPopup_Show("RELOAD_UI")
 end)

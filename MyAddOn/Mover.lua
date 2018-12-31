@@ -98,7 +98,61 @@ local function MoveTrackerFrame()
     end)
 end
 
+local function MoveCompactRaidGroups()
+    local spacing = 2
+    local rows = 2
+
+    hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
+        if InCombatLockdown() then
+            return
+        end
+
+        local totalHeight = frame.title:GetHeight()
+        local totalWidth = 0
+        local frame1 = _G[frame:GetName() .. "Member1"]
+        frame1:ClearAllPoints()
+
+        if CUF_HORIZONTAL_GROUPS then
+            frame1:SetPoint("TopLeft", 0, -totalHeight - spacing)
+
+            for i = 2, MEMBERS_PER_RAID_GROUP do
+                local unitFrame = _G[frame:GetName() .. "Member" .. i]
+                unitFrame:ClearAllPoints()
+                unitFrame:SetPoint("Left", _G[frame:GetName() .. "Member" .. (i - 1)], "Right", spacing, 0)
+            end
+
+            totalHeight = totalHeight + spacing + frame1:GetHeight()
+            totalWidth = totalWidth + frame1:GetWidth() * MEMBERS_PER_RAID_GROUP + spacing * (MEMBERS_PER_RAID_GROUP - 1)
+        else
+            local id = frame:GetID()
+            if id ~= 0 and id % rows ~= 1 then
+                frame.title:ClearAllPoints()
+                frame.title:SetPoint("Top", 0, -spacing)
+                totalHeight = totalHeight + spacing
+            end
+            frame1:SetPoint("TopRight", 0, -totalHeight - spacing)
+
+            for i = 2, MEMBERS_PER_RAID_GROUP do
+                local unitFrame = _G[frame:GetName() .. "Member" .. i]
+                unitFrame:ClearAllPoints()
+                unitFrame:SetPoint("Top", _G[frame:GetName() .. "Member" .. (i - 1)], "Bottom", 0, -spacing)
+            end
+
+            totalHeight = totalHeight + (frame1:GetHeight() + spacing) * MEMBERS_PER_RAID_GROUP
+            totalWidth = totalWidth + frame1:GetWidth() + spacing
+        end
+
+        if frame.borderFrame:IsShown() then
+            totalWidth = totalWidth + 12
+            totalHeight = totalHeight + 4
+        end
+
+        frame:SetSize(totalWidth, totalHeight)
+    end)
+end
+
 MoveBuffFrame()
 MoveLossOfControlFrame()
 MoveZoneAbilityFrame()
 MoveTrackerFrame()
+MoveCompactRaidGroups()
