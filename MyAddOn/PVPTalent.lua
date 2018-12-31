@@ -73,7 +73,7 @@ local function OnEnter(button)
         GameTooltip:SetSpellByID(spell)
         button:SetScript("OnUpdate", function(self, elapsed)
             self.elapsed = (self.elapsed or 0) + elapsed
-            if self.elapsed < 0.01 then
+            if self.elapsed < TOOLTIP_UPDATE_TIME then
                 return
             end
             self.elapsed = 0

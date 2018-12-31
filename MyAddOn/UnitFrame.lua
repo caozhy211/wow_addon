@@ -889,7 +889,7 @@ local function AuraButtonOnEnter(self)
     GameTooltip:SetUnitAura(self.unit, self.auraID, self.filter)
     self:SetScript("OnUpdate", function(_, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
-        if self.elapsed < 0.01 then
+        if self.elapsed < TOOLTIP_UPDATE_TIME then
             return
         end
         self.elapsed = 0
