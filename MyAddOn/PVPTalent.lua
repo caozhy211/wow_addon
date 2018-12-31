@@ -8,14 +8,18 @@ local trinketButtonIndex = 1
 local generalPVPSpell = 195710
 
 local function SetTrinketButton()
-    if UnitLevel("player") >= SHOW_PVP_LEVEL and not InCombatLockdown() then
+    if UnitLevel("player") >= SHOW_PVP_LEVEL then
+        if InCombatLockdown() then
+            bar:RegisterEvent("PLAYER_REGEN_ENABLED")
+            return
+        end
+        bar:UnregisterEvent("PLAYER_REGEN_ENABLED")
+        bar:UnregisterEvent("PLAYER_LEVEL_CHANGED")
+
         local trinketButton = buttons[trinketButtonIndex]
         trinketButton:SetAttribute("spell", generalPVPSpell)
         local _, _, texture = GetSpellInfo(generalPVPSpell)
         trinketButton.icon:SetTexture(texture)
-
-        bar:UnregisterEvent("PLAYER_LEVEL_CHANGED")
-        bar:UnregisterEvent("PLAYER_REGEN_ENABLED")
     end
 end
 
@@ -180,7 +184,6 @@ bar:RegisterEvent("PLAYER_PVP_TALENT_UPDATE")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 bar:RegisterEvent("SPELLS_CHANGED")
 bar:RegisterEvent("PLAYER_LEVEL_CHANGED")
-bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 
 bar:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then

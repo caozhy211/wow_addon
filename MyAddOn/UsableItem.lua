@@ -116,8 +116,10 @@ end
 
 local function UpdateBar()
     if InCombatLockdown() then
+        bar:RegisterEvent("PLAYER_REGEN_ENABLED")
         return
     end
+    bar:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
     local index = 1
 
@@ -158,7 +160,6 @@ local function UpdateBar()
     UpdateCooldown()
 end
 
-bar:RegisterEvent("PLAYER_REGEN_ENABLED")
 bar:RegisterEvent("PLAYER_LOGIN")
 bar:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
 bar:RegisterEvent("BAG_UPDATE")
