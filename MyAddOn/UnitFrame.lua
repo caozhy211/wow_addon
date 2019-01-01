@@ -362,18 +362,22 @@ local function CreatePower(frame)
     end
 
     function power:UpdateColor()
-        local color = {}
+        local r, g, b
         local powerType, powerToken, altR, altG, altB = UnitPowerType(frame.unit)
         if not UnitIsConnected(frame.unit) then
-            color.r, color.g, color.b = 0.5, 0.5, 0.5
+            r, g, b = 0.5, 0.5, 0.5
+        elseif UnitPower(frame.unit) == 0 then
+            r, g, b = 0, 0, 0
         elseif PowerBarColor[powerToken] then
-            color = PowerBarColor[powerToken]
+            local color = PowerBarColor[powerToken]
+            r, g, b = color.r, color.g, color.b
         elseif altR then
-            color.r, color.g, color.b = altR, altG, altB
+            r, g, b = altR, altG, altB
         else
-            color = PowerBarColor[powerType] or PowerBarColor["MANA"]
+            local color = PowerBarColor[powerType] or PowerBarColor["MANA"]
+            r, g, b = color.r, color.g, color.b
         end
-        self:SetStatusBarColor(color.r, color.g, color.b)
+        self:SetStatusBarColor(r, g, b)
     end
 
     ModuleOnEvent(power)
