@@ -286,7 +286,7 @@ local function CreateHealth(frame)
         "UNIT_HEALTH", true, "Update",
         "UNIT_MAXHEALTH", true, "Update",
         "UNIT_CONNECTION", true, "UpdateColor",
-        "UNIT_FACTION", true, "Update",
+        "UNIT_FACTION", true, "UpdateColor",
         "UNIT_HEALTH_FREQUENT", true, "Update",
         "UNIT_TARGETABLE_CHANGED", true, "Update",
     }
@@ -300,26 +300,24 @@ local function CreateHealth(frame)
     end
 
     function health:UpdateColor()
-        local r, g, b = 1, 0, 0
+        local r, g, b
         if not UnitIsConnected(frame.unit) then
             r, g, b = 0.5, 0.5, 0.5
         elseif frame.unit == "vehicle" then
             r, g, b = 0.23, 0.41, 0.23
-        elseif not UnitPlayerControlled(frame.unit) and UnitIsTapDenied(frame.unit) then
-            r, g, b = 0.5, 0.5, 0.5
         elseif UnitIsPlayer(frame.unit) then
             local _, class = UnitClass(frame.unit)
             r, g, b = GetClassColor(class)
+        elseif not UnitPlayerControlled(frame.unit) and UnitIsTapDenied(frame.unit) then
+            r, g, b = 0.7, 0.7, 0.7
         else
-            local reaction = UnitReaction(frame.unit, "player")
-            if reaction then
-                if (reaction > 4) then
-                    r, g, b = 0, 1, 0
-                elseif (reaction == 4) then
-                    r, g, b = 1, 1, 0
-                else
-                    r, g, b = 1, 0, 0
-                end
+            local _, threatStatus = UnitDetailedThreatSituation("player", frame.unit)
+            if threatStatus ~= nil then
+                r, g, b = 1, 0, 0
+            elseif UnitIsPlayer(frame.unit) and UnitIsFriend("player", frame.unit) then
+                r, g, b = 0.667, 0.667, 1
+            else
+                r, g, b = UnitSelectionColor(frame.unit)
             end
         end
         self:SetStatusBarColor(r, g, b)
@@ -364,15 +362,15 @@ local function CreatePower(frame)
 
     function power:UpdateColor()
         local color = {}
-        local _, currentType, altR, altG, altB = UnitPowerType(frame.unit)
+        local powerType, powerToken, altR, altG, altB = UnitPowerType(frame.unit)
         if not UnitIsConnected(frame.unit) then
             color.r, color.g, color.b = 0.5, 0.5, 0.5
-        elseif PowerBarColor[currentType] then
-            color = PowerBarColor[currentType]
+        elseif PowerBarColor[powerToken] then
+            color = PowerBarColor[powerToken]
         elseif altR then
             color.r, color.g, color.b = altR, altG, altB
         else
-            color = PowerBarColor["MANA"]
+            color = PowerBarColor[powerType] or PowerBarColor["MANA"]
         end
         self:SetStatusBarColor(color.r, color.g, color.b)
     end
