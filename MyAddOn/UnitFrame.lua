@@ -289,6 +289,7 @@ local function CreateHealth(frame)
         "UNIT_FACTION", true, "UpdateColor",
         "UNIT_HEALTH_FREQUENT", true, "Update",
         "UNIT_TARGETABLE_CHANGED", true, "Update",
+        "UNIT_THREAT_LIST_UPDATE", true, "UpdateColor",
     }
     if frame.unit == "pet" then
         AddToEvents(health, "UNIT_POWER_UPDATE", true, "UpdateColor")
