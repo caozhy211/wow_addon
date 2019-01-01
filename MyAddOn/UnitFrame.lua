@@ -312,7 +312,10 @@ local function CreateHealth(frame)
         elseif not UnitPlayerControlled(frame.unit) and UnitIsTapDenied(frame.unit) then
             r, g, b = 0.7, 0.7, 0.7
         else
-            local _, threatStatus = UnitDetailedThreatSituation("player", frame.unit)
+            local _, threatStatus
+            if UnitExists(frame.unit) then
+                _, threatStatus = UnitDetailedThreatSituation("player", frame.unit)
+            end
             if threatStatus ~= nil then
                 r, g, b = 1, 0, 0
             elseif UnitIsPlayer(frame.unit) and UnitIsFriend("player", frame.unit) then
