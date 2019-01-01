@@ -244,6 +244,11 @@ local function SetDefaultOnUpdate(self, elapsed)
 end
 
 default:SetScript("OnClick", function(self)
+    if InCombatLockdown() then
+        UIErrorsFrame:AddMessage(ERR_NOT_IN_COMBAT, 1.0, 0.1, 0.1, 1.0)
+        return
+    end
+
     self:SetScript("OnClick", nil)
     my:SetScript("OnClick", nil)
 
@@ -383,6 +388,11 @@ local function GetCompactUnitFrameProfilesSize()
 end
 
 my:SetScript("OnClick", function(self)
+    if InCombatLockdown() then
+        UIErrorsFrame:AddMessage(ERR_NOT_IN_COMBAT, 1.0, 0.1, 0.1, 1.0)
+        return
+    end
+
     self:SetScript("OnClick", nil)
     default:SetScript("OnClick", nil)
 
