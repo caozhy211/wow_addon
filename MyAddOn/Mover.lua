@@ -102,11 +102,10 @@ local function MoveCompactRaidGroups()
     local spacing = 2
     local rows = 2
 
-    hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
-        if InCombatLockdown() then
-            return
-        end
+    local listener = CreateFrame("Frame")
+    local frames = {}
 
+    local function MoveFrame(frame)
         local totalHeight = frame.title:GetHeight()
         local totalWidth = 0
         local frame1 = _G[frame:GetName() .. "Member1"]
@@ -148,6 +147,25 @@ local function MoveCompactRaidGroups()
         end
 
         frame:SetSize(totalWidth, totalHeight)
+    end
+
+    listener:SetScript("OnEvent", function(self, event)
+        for i = 1, #frames do
+            MoveFrame(frames[i])
+        end
+        wipe(frames)
+        self:UnregisterEvent(event)
+    end)
+
+    hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
+        if InCombatLockdown() then
+            frames[#frames + 1] = frame
+            if not listener:IsEventRegistered("PLAYER_REGEN_ENABLED") then
+                listener:RegisterEvent("PLAYER_REGEN_ENABLED")
+            end
+        else
+            MoveFrame(frame)
+        end
     end)
 end
 
