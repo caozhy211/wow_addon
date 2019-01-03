@@ -318,10 +318,17 @@ local function CreateHealth(frame)
             end
             if threatStatus ~= nil then
                 r, g, b = 1, 0, 0
-            elseif UnitIsPlayer(frame.unit) and UnitIsFriend("player", frame.unit) then
-                r, g, b = 0.667, 0.667, 1
             else
-                r, g, b = UnitSelectionColor(frame.unit)
+                local reaction = UnitReaction(frame.unit, "player")
+                if reaction then
+                    if (reaction > 4) then
+                        r, g, b = 0, 1, 0
+                    elseif (reaction == 4) then
+                        r, g, b = 1, 1, 0
+                    else
+                        r, g, b = 1, 0, 0
+                    end
+                end
             end
         end
         self:SetStatusBarColor(r, g, b)
