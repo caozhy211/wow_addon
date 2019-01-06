@@ -1373,7 +1373,7 @@ local function CreateWindow()
                 self:DisplaySets()
             elseif self.selectedModule == damageModule then
                 self:DisplaySummary(self.selectedSet)
-            else
+            elseif self.selectedModule then
                 self:DisplayModule(self.selectedModule.previous)
             end
         elseif bar then
