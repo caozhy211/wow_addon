@@ -244,7 +244,7 @@ local function GetBagItems()
                             tooltip:SetBagItem(container, slot)
                             for j = 2, 5 do
                                 local lineText = _G[tooltip:GetName() .. "TextLeft" .. j]:GetText() or ""
-                                level = strmatch(lineText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+                                level = strmatch(lineText, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)")) or strmatch(lineText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
                                 if level then
                                     level = tonumber(level)
                                     break

@@ -147,7 +147,7 @@ local function ScanItemTooltip(link, bagID, unit, slotID, category)
     for i = 2, 5 do
         local text = _G[tooltip:GetName() .. "TextLeft" .. i]:GetText() or ""
         if not level then
-            level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+            level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)")) or strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
         end
         if not isBound then
             isBound = strfind(text, ITEM_SOULBOUND)

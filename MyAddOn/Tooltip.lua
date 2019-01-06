@@ -104,7 +104,7 @@ local function GetUnitItemLevel(unit)
                 else
                     for j = 2, 5 do
                         local text = _G[scanTooltip:GetName() .. "TextLeft" .. j]:GetText() or ""
-                        level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+                        level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)")) or strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
                         if level then
                             level = tonumber(level)
                             break
