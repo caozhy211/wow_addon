@@ -1,6 +1,7 @@
 local font = GameFontNormal:GetFont()
 local verticalSpacing = 2
 local tooltip = CreateFrame("GameTooltip", "MyNamePlateTooltip", UIParent, "GameTooltipTemplate")
+local listener = CreateFrame("Frame")
 
 local function FormatNumber(number)
     if number >= 1e8 then
@@ -75,6 +76,63 @@ local function IsQuestUnit(unit)
     return questType ~= false, questType
 end
 
+local function ShowQuestMark(frame)
+    if not frame.questMarkTop then
+        local width = 4
+        local height = 20
+        local spacing = 3
+        local xOffset = height / 2 * math.sin(PI / 4)
+
+        frame.questMarkTop = frame:CreateTexture()
+        frame.questMarkTop:SetSize(width, height - width - spacing)
+        frame.questMarkTop:SetPoint("Top", frame, "Right", xOffset, height / 2)
+        frame.questMarkTop:SetColorTexture(1, 1, 0)
+        frame.questMarkBottom = frame:CreateTexture()
+        frame.questMarkBottom:SetSize(width, width)
+        frame.questMarkBottom:SetPoint("Top", frame.questMarkTop, "Bottom", 0, -spacing)
+        frame.questMarkBottom:SetColorTexture(1, 1, 0)
+    else
+        frame.questMarkTop:Show()
+        frame.questMarkBottom:Show()
+    end
+end
+
+local function HideQuestMark(frame)
+    if not frame.questMarkTop then
+        return
+    end
+    frame.questMarkTop:Hide()
+    frame.questMarkBottom:Hide()
+end
+
+local function UpdateQuestMark(plate)
+    if plate then
+        local frame = plate.UnitFrame
+        if IsQuestUnit(frame.unit) then
+            ShowQuestMark(frame)
+        else
+            HideQuestMark(frame)
+        end
+    end
+end
+
+listener:RegisterEvent("PLAYER_LOGIN")
+listener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+listener:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
+
+listener:SetScript("OnEvent", function(_, event, unitToken)
+    if event == "PLAYER_LOGIN" or event == "UNIT_QUEST_LOG_CHANGED" then
+        local plates = C_NamePlate.GetNamePlates()
+        for i = 1, #plates do
+            local plate = plates[i]
+            UpdateQuestMark(plate)
+        end
+    else
+        local plate = C_NamePlate.GetNamePlateForUnit(unitToken)
+        UpdateQuestMark(plate)
+    end
+end)
+
 local function ShowTargetArrow(frame)
     if not frame.leftArrowTop then
         local width = 2
@@ -122,35 +180,6 @@ local function HideTargetArrow(frame)
     frame.rightArrowBottom:Hide()
 end
 
-local function ShowQuestMark(frame)
-    if not frame.questMarkTop then
-        local width = 4
-        local height = 20
-        local spacing = 3
-        local xOffset = height / 2 * math.sin(PI / 4)
-
-        frame.questMarkTop = frame:CreateTexture()
-        frame.questMarkTop:SetSize(width, height - width - spacing)
-        frame.questMarkTop:SetPoint("Top", frame, "Right", xOffset, height / 2)
-        frame.questMarkTop:SetColorTexture(1, 1, 0)
-        frame.questMarkBottom = frame:CreateTexture()
-        frame.questMarkBottom:SetSize(width, width)
-        frame.questMarkBottom:SetPoint("Top", frame.questMarkTop, "Bottom", 0, -spacing)
-        frame.questMarkBottom:SetColorTexture(1, 1, 0)
-    else
-        frame.questMarkTop:Show()
-        frame.questMarkBottom:Show()
-    end
-end
-
-local function HideQuestMark(frame)
-    if not frame.questMarkTop then
-        return
-    end
-    frame.questMarkTop:Hide()
-    frame.questMarkBottom:Hide()
-end
-
 hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
     if strfind(frame.unit, "nameplate") then
         local name = GetUnitName(frame.unit, true)
@@ -173,12 +202,6 @@ hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
         else
             frame.name:SetVertexColor(1, 1, 1)
             HideTargetArrow(frame)
-        end
-
-        if IsQuestUnit(frame.unit) then
-            ShowQuestMark(frame)
-        else
-            HideQuestMark(frame)
         end
     end
 end)
