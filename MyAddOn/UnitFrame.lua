@@ -43,7 +43,7 @@ local function ModuleOnEvent(module)
     end
 
     module:SetScript("OnEvent", function(self, event, unit)
-        if frame.otherUnit and unit and unit ~= frame.unit then
+        if frame.otherUnit and unit and unit ~= frame.unit or not UnitExists(frame.unit) then
             return
         end
 
@@ -312,10 +312,7 @@ local function CreateHealth(frame)
         elseif not UnitPlayerControlled(frame.unit) and UnitIsTapDenied(frame.unit) then
             r, g, b = 0.7, 0.7, 0.7
         else
-            local _, threatStatus
-            if UnitExists(frame.unit) then
-                _, threatStatus = UnitDetailedThreatSituation("player", frame.unit)
-            end
+            local _, threatStatus = UnitDetailedThreatSituation("player", frame.unit)
             if threatStatus ~= nil then
                 r, g, b = 1, 0, 0
             else
@@ -1250,6 +1247,10 @@ local function CreateUnitFrame(cfg)
                 self.unit = cfg.unit
                 self.otherUnit = cfg.otherUnit
             end
+        end
+
+        if not UnitExists(frame.unit) then
+            return
         end
 
         for i = 1, #self.fullUpdates, 2 do
