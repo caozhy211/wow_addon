@@ -21,6 +21,7 @@ listener:SetScript("OnEvent", function(self, event, ...)
                         ["160452"] = true,
                         ["90355"] = true,
                         ["264667"] = true,
+                        ["178207"] = true,
                     },
                     ["debuff"] = {},
                 },
