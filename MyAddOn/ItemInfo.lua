@@ -348,7 +348,8 @@ local function SetPaperDollItemLevel(button, unit)
     local slotID = button:GetID()
     local info = GetInfoFrame(button)
     local level = ScanItemTooltip(nil, nil, unit, slotID)
-    if not button.hasItem then
+    local hasItem = unit == "player" and GetInventoryItemTexture("player", slotID) ~= nil or button.hasItem
+    if not hasItem then
         level = ""
     end
     if level then
