@@ -1,4 +1,4 @@
-## Interface: 80100
+## Interface: 80205
 ## Title: MyAddOn
 ## SavedVariables: MyUnitAuraFilter
 ## SavedVariablesPerCharacter: MyDamageMeterDB
