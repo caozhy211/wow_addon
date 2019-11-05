@@ -145,12 +145,15 @@ local function ScanItemTooltip(link, bagID, unit, slotID, category)
 
     local level, isBound
     for i = 2, 5 do
-        local text = _G[tooltip:GetName() .. "TextLeft" .. i]:GetText() or ""
-        if not level then
-            level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)")) or strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-        end
-        if not isBound then
-            isBound = strfind(text, ITEM_SOULBOUND)
+        local line = _G[tooltip:GetName() .. "TextLeft" .. i]
+        if line then
+            local text = line:GetText() or ""
+            if not level then
+                level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)")) or strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+            end
+            if not isBound then
+                isBound = strfind(text, ITEM_SOULBOUND)
+            end
         end
     end
     return level and tonumber(level), isBound
