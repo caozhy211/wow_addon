@@ -1608,7 +1608,8 @@ toasts:RegisterEvent("SHOW_LOOT_TOAST_UPGRADE")
 toasts:RegisterEvent("SHOW_LOOT_TOAST")
 toasts:RegisterEvent("SHOW_PVP_FACTION_LOOT_TOAST")
 toasts:RegisterEvent("SHOW_RATED_PVP_REWARD_TOAST")
-toasts:RegisterEvent("STORE_PRODUCT_DELIVERED")
+toasts:RegisterEvent("ENTITLEMENT_DELIVERED")
+toasts:RegisterEvent("RAF_ENTITLEMENT_DELIVERED")
 toasts:RegisterEvent("NEW_RECIPE_LEARNED")
 toasts:RegisterEvent("TRANSMOG_COLLECTION_SOURCE_ADDED")
 toasts:RegisterEvent("TRANSMOG_COLLECTION_SOURCE_REMOVED")
@@ -1748,7 +1749,7 @@ toasts:SetScript("OnEvent", function(_, event, ...)
     elseif event == "SHOW_LOOT_TOAST_LEGENDARY_LOOTED" then
         local link = ...
         LootSpecialToast(event, link, 1, nil, nil, true, nil, nil, nil, nil, nil, true)
-    elseif event == "STORE_PRODUCT_DELIVERED" then
+    elseif event == "ENTITLEMENT_DELIVERED" or event == "RAF_ENTITLEMENT_DELIVERED" then
         local _, _, _, payloadID = ...
         StoreProductDelivered(event, payloadID)
     elseif event == "NEW_RECIPE_LEARNED" then
