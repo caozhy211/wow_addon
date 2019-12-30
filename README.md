@@ -19,7 +19,7 @@
 - Copy.lua：复制游戏内文字内容
 - （待完成）DamageStat.lua：伤害统计
 - （待完成）FastFocus.lua：设置焦点
-- （待完成）Grids.lua：网格线
+- Grid.lua：网格线
 - （待完成）Hidden.lua：隐藏框体
 - （待完成）ItemInfo.lua：在背包、角色、拍卖行等框体显示物品的等级、种类等信息
 - （待完成）Memory.lua：插件占用内存
