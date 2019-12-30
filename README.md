@@ -4,9 +4,9 @@
 
 ![image](https://github.com/czy211/picture-library/blob/master/images/WlkUI.jpg)
 
-2.0.0 版本主要是重构下代码
+2.0.0 版本主要是重构代码
 
-## lua 文件说明
+## lua 文件功能说明
 
 - （待完成）ActionBar.lua：主动作条、宠物动作条、经验条、额外动作条、区域技能条、备用能量条
 - （待完成）Auction.lua：拍卖行自动定价
@@ -16,6 +16,7 @@
 - （待完成）ChatFrame.lua：聊天框
 - （待完成）Cooldown.lua：冷却计时
 - （待完成）Coordinate.lua：世界地图坐标
+- Copy.lua：复制游戏内文字内容
 - （待完成）DamageStat.lua：伤害统计
 - （待完成）FastFocus.lua：设置焦点
 - （待完成）Grids.lua：网格线
