@@ -33,7 +33,7 @@
 - （待完成）Position.lua：框体位置
 - （待完成）PvpTalent.lua：pvp 天赋
 - （待完成）RaidMarker.lua：副本标记
-- （待完成）Settings.lua：界面、按键、声音等设置
+- Settings.lua：一键应用默认设置或自定义设置
 - （待完成）SimCText.lua：SimulationCraft 文本
 - （待完成）SoulShard.lua：灵魂碎片
 - （待完成）Tooltip.lua：鼠标提示
