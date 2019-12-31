@@ -4,11 +4,9 @@
 
 ![image](https://github.com/czy211/picture-library/blob/master/images/WlkUI.jpg)
 
-2.0.0 版本主要是重构代码
-
 ## lua 文件功能说明
 
-- （待完成）ActionBar.lua：主动作条、宠物动作条、经验条、额外动作条、区域技能条、备用能量条
+- ActionBar.lua：主动作条、宠物动作条、经验条、额外动作条、区域技能条、备用能量条
 - （待完成）Auction.lua：拍卖行自动定价
 - （待完成）CastingBar.lua：玩家、目标、焦点、BOSS 施法条
 - （待完成）CharacterStat.lua：人物统计

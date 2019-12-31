@@ -5,6 +5,7 @@
 ## Version: 2.0.0
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI
 
+ActionBar.lua
 ChatChannel.lua
 ChatFrame.lua
 Copy.lua
