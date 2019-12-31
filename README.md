@@ -12,7 +12,7 @@
 - （待完成）Auction.lua：拍卖行自动定价
 - （待完成）CastingBar.lua：玩家、目标、焦点、BOSS 施法条
 - （待完成）CharacterStat.lua：人物统计
-- （待完成）ChatChannel.lua：聊天频道
+- ChatChannel.lua：聊天频道
 - （待完成）ChatFrame.lua：聊天框
 - （待完成）Cooldown.lua：冷却计时
 - （待完成）Coordinate.lua：世界地图坐标

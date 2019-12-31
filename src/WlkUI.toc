@@ -5,6 +5,7 @@
 ## Version: 2.0.0
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI
 
-Grid.lua
+ChatChannel.lua
 Copy.lua
+Grid.lua
 Settings.lua
