@@ -13,7 +13,7 @@
 - （待完成）CastingBar.lua：玩家、目标、焦点、BOSS 施法条
 - （待完成）CharacterStat.lua：人物统计
 - ChatChannel.lua：聊天频道
-- （待完成）ChatFrame.lua：聊天框
+- ChatFrame.lua：聊天窗口
 - （待完成）Cooldown.lua：冷却计时
 - （待完成）Coordinate.lua：世界地图坐标
 - Copy.lua：复制游戏内文字内容

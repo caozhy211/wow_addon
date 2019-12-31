@@ -6,6 +6,7 @@
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI
 
 ChatChannel.lua
+ChatFrame.lua
 Copy.lua
 Grid.lua
 Settings.lua
