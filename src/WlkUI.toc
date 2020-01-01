@@ -8,6 +8,7 @@
 ActionBar.lua
 ChatChannel.lua
 ChatFrame.lua
+Coordinate.lua
 Copy.lua
 Grid.lua
 Settings.lua

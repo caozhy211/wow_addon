@@ -13,7 +13,7 @@
 - ChatChannel.lua：聊天频道
 - ChatFrame.lua：聊天窗口
 - （待完成）Cooldown.lua：冷却计时
-- （待完成）Coordinate.lua：世界地图坐标
+- Coordinate.lua：世界地图坐标
 - Copy.lua：复制游戏内文字内容
 - （待完成）DamageStat.lua：伤害统计
 - （待完成）FastFocus.lua：设置焦点
