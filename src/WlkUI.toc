@@ -11,4 +11,5 @@ ChatFrame.lua
 Coordinate.lua
 Copy.lua
 Grid.lua
+Minimap.lua
 Settings.lua

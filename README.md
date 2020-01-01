@@ -22,7 +22,7 @@
 - （待完成）ItemInfo.lua：在背包、角色、拍卖行等框体显示物品的等级、种类等信息
 - （待完成）Memory.lua：插件占用内存
 - （待完成）Merchant.lua：自动出售垃圾和修理
-- （待完成）Minimap.lua：小地图
+- Minimap.lua：小地图
 - （待完成）MirrorTimer.lua：镜像计时
 - （待完成）NamePlate.lua：姓名板
 - （待完成）Notice.lua：获得物品、完成成就等提示
