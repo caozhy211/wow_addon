@@ -16,7 +16,7 @@
 - Coordinate.lua：世界地图坐标
 - Copy.lua：复制游戏内文字内容
 - （待完成）DamageStat.lua：伤害统计
-- （待完成）FastFocus.lua：设置焦点
+- FastFocus.lua：快速设置焦点
 - Grid.lua：网格线
 - （待完成）Hidden.lua：隐藏框体
 - （待完成）ItemInfo.lua：在背包、角色、拍卖行等框体显示物品的等级、种类等信息

@@ -10,6 +10,7 @@ ChatChannel.lua
 ChatFrame.lua
 Coordinate.lua
 Copy.lua
+FastFocus.lua
 Grid.lua
 Minimap.lua
 Settings.lua
