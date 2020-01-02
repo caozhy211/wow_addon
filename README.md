@@ -23,7 +23,7 @@
 - （待完成）Memory.lua：插件占用内存
 - （待完成）Merchant.lua：自动出售垃圾和修理
 - Minimap.lua：小地图
-- （待完成）MirrorTimer.lua：镜像计时
+- MirrorTimer.lua：镜像计时条
 - （待完成）NamePlate.lua：姓名板
 - （待完成）Notice.lua：获得物品、完成成就等提示
 - （待完成）Performance.lua：延迟和帧数

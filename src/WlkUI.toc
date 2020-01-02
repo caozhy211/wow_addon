@@ -13,4 +13,5 @@ Copy.lua
 FastFocus.lua
 Grid.lua
 Minimap.lua
+MirrorTimer.lua
 Settings.lua
