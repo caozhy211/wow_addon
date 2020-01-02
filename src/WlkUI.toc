@@ -14,4 +14,5 @@ FastFocus.lua
 Grid.lua
 Minimap.lua
 MirrorTimer.lua
+Performance.lua
 Settings.lua

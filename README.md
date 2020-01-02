@@ -20,13 +20,12 @@
 - Grid.lua：网格线
 - （待完成）Hidden.lua：隐藏框体
 - （待完成）ItemInfo.lua：在背包、角色、拍卖行等框体显示物品的等级、种类等信息
-- （待完成）Memory.lua：插件占用内存
 - （待完成）Merchant.lua：自动出售垃圾和修理
 - Minimap.lua：小地图
 - MirrorTimer.lua：镜像计时条
 - （待完成）NamePlate.lua：姓名板
 - （待完成）Notice.lua：获得物品、完成成就等提示
-- （待完成）Performance.lua：延迟和帧数
+- Performance.lua：显示延迟、帧数和内存占用
 - （待完成）PetBattle.lua：宠物对战
 - （待完成）Position.lua：框体位置
 - （待完成）PvpTalent.lua：pvp 天赋
