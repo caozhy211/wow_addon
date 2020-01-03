@@ -10,7 +10,7 @@
 - （待完成）Auction.lua：拍卖行自动定价
 - （待完成）CastingBar.lua：玩家、目标、焦点、BOSS 施法条
 - （待完成）CharacterStat.lua：人物统计
-- ChatChannel.lua：聊天频道
+- ChatCommands.lua：聊天命令
 - ChatFrame.lua：聊天窗口
 - （待完成）Cooldown.lua：冷却计时
 - Coordinate.lua：世界地图坐标
@@ -20,7 +20,7 @@
 - Grid.lua：网格线
 - （待完成）Hidden.lua：隐藏框体
 - （待完成）ItemInfo.lua：在背包、角色、拍卖行等框体显示物品的等级、种类等信息
-- （待完成）Merchant.lua：自动出售垃圾和修理
+- Merchant.lua：自动出售垃圾物品和修理装备
 - Minimap.lua：小地图
 - MirrorTimer.lua：镜像计时条
 - （待完成）NamePlate.lua：姓名板

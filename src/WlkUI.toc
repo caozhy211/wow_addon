@@ -12,6 +12,7 @@ Coordinate.lua
 Copy.lua
 FastFocus.lua
 Grid.lua
+Merchant.lua
 Minimap.lua
 MirrorTimer.lua
 Performance.lua
