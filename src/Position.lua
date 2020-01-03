@@ -1,7 +1,7 @@
 ---@type Frame
 local UIParent = UIParent
---- WorldMapFrame 底部相对屏幕底部偏移 430px，下边界为 ExtraActionBarFrame 顶部相对屏幕底部偏移值 315px + 90px
---- 所有使用 TOP_OFFSET 属性设置位置的框架都将下移
+--- WorldMapFrame 底部相对屏幕底部偏移 430px，ExtraActionBarFrame（包括纹理）顶部相对屏幕底部偏移 405px，所有使用 TOP_OFFSET
+--- 属性设置位置的框架都将下移
 UIParent:SetAttribute("TOP_OFFSET", -116 - (430 - 315 - 90))
 ---@type Frame
 local talkingHeadFrame = TalkingHeadFrame
@@ -14,7 +14,8 @@ talkingHeadFrame.SetPoint = nop
 local orderHallCommandBar = OrderHallCommandBar
 ---@type Frame
 local buffFrame = BuffFrame
---- 调整 BuffFrame 的位置，即调整第一个 BuffButton 的位置
+
+--- 设置 BuffFrame 的位置
 hooksecurefunc("UIParent_UpdateTopFramePositions", function()
     local buffsAreaTopOffset = 13
     -- 职业大厅条显示时需要下移
@@ -32,7 +33,8 @@ local buffMaxRows = ceil((BUFF_MAX_DISPLAY + 3) / BUFFS_PER_ROW)
 local debuffMaxRows = ceil(DEBUFF_MAX_DISPLAY / BUFFS_PER_ROW)
 local buffRowSpacing = floor((330 - 13 - 25 - 50 - (buffMaxRows + debuffMaxRows) * BUFF_BUTTON_HEIGHT) / (buffMaxRows
         + debuffMaxRows - 1))
---- 调整 BuffButton 的垂直间距
+
+--- 设置 BuffButton 位置
 hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
     local aboveBuff, index
     local numBuffs = 0
@@ -56,7 +58,7 @@ hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
     end
 end)
 
---- 调整 DebuffButton 的垂直间距
+--- 设置 DebuffButton 位置
 hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
     local numBuffs = BUFF_ACTUAL_DISPLAY + BuffFrame.numEnchants
     local rows = ceil(numBuffs / BUFFS_PER_ROW)
@@ -75,7 +77,7 @@ hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
     end
 end)
 
---- 修改光环持续时间的字体和位置
+--- 设置光环持续时间的字体和位置
 hooksecurefunc("AuraButton_OnUpdate", function(self)
     ---@type FontString
     local duration = self.duration
@@ -89,8 +91,8 @@ hooksecurefunc("AuraButton_OnUpdate", function(self)
     duration:SetPoint("BOTTOM")
 end)
 
---- LossOfControlFrame 的高度是 58px，纹理 RedLineTop 和 RedLineBottom 的高度是 27px，下边界相对屏幕底部偏移 240px，上边界相对
---- 屏幕底部偏移 314px
+--- LossOfControlFrame 的高度是 58px，纹理 RedLineTop 和 RedLineBottom 的高度是 27px，下边界相对屏幕底部偏移 185 + 20 + 1 +
+--- 33 + 1 = 240px，上边界相对屏幕底部偏移 314px
 local scale = (314 - 240) / (58 + 27 * 2)
 --- 保留两位小数
 scale = scale - scale % 0.01
@@ -105,7 +107,8 @@ local needUpdateFrames = {}
 local spacing = 2
 --- 团队队伍的行数，Settings.lua 中自定义设置的值
 local rows = 2
---- 更新团队队伍框架位置
+
+--- 调整团队单位框架位置
 ---@param frame Frame 团队队伍框架
 local function UpdateCompactRaidGroupLayout(frame)
     local name = frame:GetName()
@@ -169,12 +172,11 @@ local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("PLAYER_LOGIN")
 
----@param self Frame
-eventListener:SetScript("OnEvent", function(self, event)
+eventListener:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
         objectiveTrackerFrame:ClearAllPoints()
-        -- MicroButtonAndBagsBar 左边相对屏幕右边偏移 -298px，poiButton 左边相对 objectiveTrackerFrame 左边偏移 -29px，上边界相对
-        -- 屏幕顶部偏移 -330px；MultiBarRightButton 的宽度是 32px，MultiBarRightButton 相对屏幕右边偏移 -2px，
+        -- MicroButtonAndBagsBar 左边相对屏幕右边偏移 -298px，PoiButton 左边相对 objectiveTrackerFrame 左边偏移 -29px，上边界
+        -- 相对屏幕顶部偏移 -330px；MultiBarRightButton 的宽度是 32px，MultiBarRightButton 右边相对屏幕右边偏移 -2px，
         -- MicroButtonAndBagsBar 顶部相对屏幕底部偏移 88px
         objectiveTrackerFrame:SetPoint("TOPLEFT", GetScreenWidth() - 298 + 29, -330)
         objectiveTrackerFrame:SetPoint("BOTTOMRIGHT", -(2 + 32), 88 + 2)
@@ -184,11 +186,11 @@ eventListener:SetScript("OnEvent", function(self, event)
             UpdateCompactRaidGroupLayout(needUpdateFrames[i])
         end
         wipe(needUpdateFrames)
-        self:UnregisterEvent(event)
     end
+    eventListener:UnregisterEvent(event)
 end)
 
---- 修改团队框架单位之间的间距
+--- 修改团队单位之间的间距
 hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
     if InCombatLockdown() then
         -- 处于战斗状态时，把 frame 添加到 needUpdateFrames 中，并注册 PLAYER_REGEN_ENABLED 事件，当离开战斗时再更新位置

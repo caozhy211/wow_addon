@@ -9,7 +9,7 @@ local modifierKey = "SHIFT"
 local button = 1
 SetOverrideBindingClick(focusButton, true, modifierKey .. "-BUTTON" .. button, focusButton:GetName())
 
---- 添加 “SHIFT + 鼠标左键” 框架将其设置为焦点的属性
+--- 添加 “SHIFT + 鼠标左键” 点击框架将其设置为焦点的属性
 ---@param frame Frame
 local function SetFocus(frame)
     frame:SetAttribute(modifierKey .. "-TYPE" .. button, "focus")

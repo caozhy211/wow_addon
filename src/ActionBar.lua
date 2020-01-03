@@ -35,15 +35,15 @@ possessButton2NormalTexture:SetTexture(nil)
 ---@type Frame
 local possessBarFrame = PossessBarFrame
 possessBarFrame:ClearAllPoints()
---- PossessButton 的大小是 30px，PossessButton1 左边相对 PossessBarFrame 左边偏移 10px，PossessButton2 左边相对
---- PossessButton1 右边偏移 8px；上边界为相对屏幕底部偏移 185 - 2 - 3 - 30 - 3 - 1 = 146px，MultiBarBottomLeftButton 顶部最大
---- 值为 108px，边框纹理 4px，即下边界相对屏幕底部偏移 112px，PossessButton 底部相对 PossessBarFrame 底部偏移 3px
+--- PossessButton 的大小是（30px，30px），PossessButton1 左边相对 PossessBarFrame 左边偏移 10px，PossessButton2 左边相对
+--- PossessButton1 右边偏移 8px；上边界相对屏幕底部偏移 185 - 2 - 3 - 30 - 3 - 1 = 146px，MultiBarBottomLeftButton 顶部最大
+--- 值是 108px，边框纹理是 4px，即下边界相对屏幕底部偏移 108 + 4 = 112px，PossessButton 底部相对 PossessBarFrame 底部偏移 3px
 possessBarFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -(30 + 10 + 8 / 2), 112 + (146 - 112) / 2 - 30 / 2 - 3)
 possessBarFrame.SetPoint = nop
 
 ---@type Frame
 local petActionBarFrame = CreateFrame("Frame", "WLK-PetActionBarFrame", UIParent)
---- PetActionButton 的大小是 30px，PetActionButton 之间的水平间隔是 8px
+--- PetActionButton 的大小是（30px，30px），PetActionButton 之间的水平间距是 8px
 petActionBarFrame:SetSize(30 * NUM_PET_ACTION_SLOTS + 8 * (NUM_PET_ACTION_SLOTS - 1), 30)
 petActionBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", 0, 112 + (146 - 112) / 2)
 for i = 1, NUM_PET_ACTION_SLOTS do
@@ -62,7 +62,8 @@ local right = rightButton:GetLeft();
 local xOffset = (right - left) / 2
 ---@type Button
 local vehicleLeaveButton = MainMenuBarVehicleLeaveButton
---- 在调用 MainMenuBarVehicleLeaveButton_Update 方法后，调整 MainMenuBarVehicleLeaveButton 位置
+
+--- 设置 MainMenuBarVehicleLeaveButton 位置
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     vehicleLeaveButton:ClearAllPoints()
     vehicleLeaveButton:SetPoint("CENTER", leftButton, "RIGHT", xOffset, 0)
@@ -80,17 +81,18 @@ iconIntroTracker.RegisterEvent = nop
 iconIntroTracker:UnregisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
 
 ---@type Frame
-local listener = CreateFrame("Frame")
+local eventListener = CreateFrame("Frame")
 
-listener:RegisterEvent("PLAYER_LOGIN")
-listener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
+eventListener:RegisterEvent("PLAYER_LOGIN")
+eventListener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
 
-listener:SetScript("OnEvent", function(_, event, ...)
+eventListener:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_LOGIN" then
-        -- 移动备用能量条
+        -- 设置 PlayerPowerBarAlt 位置
         playerPowerBarAlt:ClearAllPoints()
-        -- PlayerPowerBarAlt 的左边界为 1080px，右边界为 1350px，下边界为 314px + 1px
-        playerPowerBarAlt:SetPoint("BOTTOM", (1350 - 1080) / 2 + (1080 - 960), 315)
+        -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
+        playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
+        eventListener:UnregisterEvent(event)
     elseif event == "SPELL_PUSHED_TO_ACTIONBAR" then
         -- 阻止在不是第一页动作条学会新技能时技能图标自动添加到第一页动作条
         local _, slot = ...
@@ -102,16 +104,16 @@ listener:SetScript("OnEvent", function(_, event, ...)
     end
 end)
 
---- 左边界为 CollectionsJournal 右边框 719px + 1px，右边界最大值为 1080px，ExtraActionBarFrame 纹理宽度是 256px
-local scale = (1080 - 720) / 2 / 256
---- 保留一位小数，舍去多余的小数
-scale = scale - scale % 0.1
+--- CollectionsJournal 右边相对屏幕左边偏移 719px，右边界相对屏幕左边偏移 1080px，ExtraActionBarFrame（包括纹理）的宽度是 256px
+local scale = (1080 - 719 - 1) / 2 / 256
+--- 保留两位小数
+scale = scale - scale % 0.01
 ---@type Frame
 local extraActionBarFrame = ExtraActionBarFrame
 extraActionBarFrame:SetScale(scale)
 extraActionBarFrame:ClearAllPoints()
---- ExtraActionBarFrame 纹理高度为 128px，ExtraActionBarFrame 纹理中心相对 ExtraActionBarFrame 中心水平偏移 -2px
-extraActionBarFrame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", (720 + ceil(256 * scale) / 2 + 2) / scale,
+--- ExtraActionBarFrame（包括纹理）的高度是 128px，ExtraActionBarFrame 纹理中心相对 ExtraActionBarFrame 中心水平偏移 -2px
+extraActionBarFrame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", (719 + 1 + ceil(256 * scale) / 2 + 2) / scale,
         (315 + ceil(128 * scale) / 2) / scale)
 extraActionBarFrame.SetPoint = nop
 
@@ -124,7 +126,7 @@ zoneAbilityFrame:SetPoint("CENTER", UIParent, "BOTTOMLEFT", (1080 - ceil(256 * s
         (315 + ceil(128 * scale) / 2) / scale)
 zoneAbilityFrame.SetPoint = nop
 
---- 备用能量条更新文字数据
+--- 显示 UnitPowerBarAlt 的数值
 ---@param self StatusBar
 hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     if self.enabled then
@@ -133,7 +135,7 @@ hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
     end
 end)
 
---- 使右方动作条的滑入滑出动画时间和主动作条的滑入滑出动画时间一致
+--- 设置右方动作条的滑入滑出动画时间为主动作条的滑入滑出动画时间
 ---@type AnimationGroup
 local mainMenuBarSlideOut = MainMenuBar.slideOut
 ---@type Animation
@@ -160,7 +162,7 @@ local actionBars = {
     PossessBarFrame,
 }
 for i = 1, #actionBars do
-    -- 动作条右键点击自我施法
+    -- 右键点击动作条按钮自我施法
     actionBars[i]:SetAttribute("unit2", "player")
 end
 
@@ -188,7 +190,7 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
         if valid == false then
             ---@type Texture
             local icon = self.icon
-            icon:SetVertexColor(1, 0, 0)
+            icon:SetVertexColor(GetTableColor(DIM_RED_FONT_COLOR))
         else
             ActionButton_UpdateUsable(self)
         end
@@ -201,7 +203,8 @@ local width = 360
 local xpMid = OverrideActionBar.xpBar.XpMid
 ---@type Texture
 local xpBar = OverrideActionBar.xpBar
---- 调整载具经验条的宽度
+
+--- 设置 OverrideActionBar.xpBar
 hooksecurefunc("OverrideActionBar_CalcSize", function()
     xpMid:SetWidth(width - 16)
     xpBar:SetWidth(width)
@@ -216,15 +219,17 @@ hooksecurefunc("OverrideActionBar_CalcSize", function()
     end
 end)
 
---- 左边最大值相对屏幕右边偏移 -298px，动作条按钮右边相对屏幕右边偏移 -2px，ObjectiveTrackerBlocksFrame 的宽度为 235px，
---- poiButton 的大小为 20px，poiButton.Icon 的大小为 24px，poiButton.Icon 中心相对 poiButton 中心水平偏移 -1px，poiButton 右
---- 边相对 ObjectiveTrackerBlocksFrame 左边偏移 -6px
-local size = 298 - 2 - 235 - ((24 - 20) / 2 + 1 + 20 + 6)
+--- MicroButtonAndBagsBar 左边相对屏幕右边偏移 -298px，ObjectiveTrackerBlocksFrame 的宽度是 235px，MultiBarRightButton 右边
+--- 相对屏幕右边偏移 -2px，PoiButton 的大小是（20px，20px），PoiButton.Icon 的大小是（24px，24px），PoiButton.Icon 中心相对
+--- PoiButton 中心水平偏移 -1px，PoiButton 右边相对 ObjectiveTrackerBlocksFrame 左边偏移 -6px
+local size = 298 - 235 - 2 - ((24 - 20) / 2 + 1 + 20 + 6)
 local buttonNamePrefix = "MultiBarRightButton"
 for i = 1, NUM_ACTIONBAR_BUTTONS do
     ---@type Button
     local button = _G[buttonNamePrefix .. i]
+    -- 设置 MultiBarRightButton 大小
     button:SetSize(size, size)
+    -- 隐藏 MultiBarRightButton 纹理
     ---@type Texture
     local texture = _G[buttonNamePrefix .. i .. "NormalTexture"]
     texture:SetTexture(nil)

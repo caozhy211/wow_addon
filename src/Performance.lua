@@ -1,9 +1,9 @@
 ---@type Frame
 local performanceFrame = CreateFrame("Frame", "WLK-PerformanceFrame", UIParent)
---- MicroButtonAndBagsBar 的宽度是 298px，高度是 88px，MainMenuBarBackpackButton 右上角相对 MicroButtonAndBagsBar 右上角偏移
---- -4px，-4px，MainMenuBarBackpackButton 的大小是 40px，CharacterBagSlot 的大小是 30px，MainMenuBarBackpackButton 和
---- CharacterBagSlot 的水平间隔是 4px，CharacterBagSlot 之间的水平间隔是 2px
-performanceFrame:SetSize(298 - 4 - 40 - 30 * 4 - 2 * 3 - 4 * 2, 88 - 4 - 40)
+--- MicroButtonAndBagsBar 的大小是（298px，88px），MainMenuBarBackpackButton 右上角相对 MicroButtonAndBagsBar 右上角偏移
+--- （-4px，-4px），MainMenuBarBackpackButton 的大小是（40px，40px），CharacterBagSlot 的大小是（30px，30px），
+--- CharacterBag0Slot 右边相对 MainMenuBarBackpackButton 左边偏移 -4px，CharacterBagSlot 之间的水平间距是 2px
+performanceFrame:SetSize(298 - 4 - 40 - 30 * NUM_BAG_SLOTS - 2 * (NUM_BAG_SLOTS - 1) - 4 - 4, 88 - 4 - 40)
 performanceFrame:SetPoint("TOPLEFT", MicroButtonAndBagsBar)
 performanceFrame:SetBackdrop({ bgFile = "Interface/DialogFrame/UI-DialogBox-Background", })
 
@@ -31,9 +31,9 @@ latencyWorldValue:SetPoint("RIGHT", -offset, 0)
 local fpsValue = performanceFrame:CreateFontString(nil, "ARTWORK", "Tooltip_Small")
 fpsValue:SetPoint("BOTTOMRIGHT", -offset, offset)
 
---- 标签设置格式化的延迟值
----@param label FontString 标签
----@param latency number 延迟
+--- 显示格式化的延迟
+---@param label FontString
+---@param latency number
 local function SetFormattedLatency(label, latency)
     if latency < 100 then
         label:SetFormattedText(GREEN_FONT_COLOR_CODE .. "%dms" .. FONT_COLOR_CODE_CLOSE, latency)
@@ -49,30 +49,36 @@ end
 ---@type StatusBar
 local memoryBar = CreateFrame("StatusBar", "WLK-MemoryBar", UIParent)
 --- CharacterBagSlot 右边相对 MainMenuBarBackpackButton 左边垂直偏移 -4px
-memoryBar:SetSize(30 * 4 + 2 * 3 + 4 + 1, (40 - 30) / 2 - 2 + 4 + 4)
+memoryBar:SetSize(30 * NUM_BAG_SLOTS + 2 * (NUM_BAG_SLOTS - 1) + 4 + 1, (40 - 30) / 2 - 2 + 4 + 4)
 memoryBar:SetPoint("TOPLEFT", performanceFrame, "TOPRIGHT")
 memoryBar:SetBackdrop({ bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark", })
 memoryBar:SetStatusBarTexture("Interface/TargetingFrame/UI-StatusBar")
 memoryBar:SetStatusBarColor(GetTableColor(LIGHTBLUE_FONT_COLOR))
 
 ---@type FontString
-local usageLabel = memoryBar:CreateFontString(nil, "ARTWORK", "InvoiceFont_Small")
+local usageLabel = memoryBar:CreateFontString(nil, "ARTWORK", "SystemFont_Small")
 usageLabel:SetPoint("CENTER")
 
 memoryBar:RegisterEvent("PLAYER_LOGIN")
 
 local addons = {}
 --- 登录后初始化 addons 表
-memoryBar:SetScript("OnEvent", function()
-    for i = 1, GetNumAddOns() do
-        if not addons[i] and IsAddOnLoaded(i) then
-            local name = GetAddOnInfo(i)
-            local memory = GetAddOnMemoryUsage(i)
-            tinsert(addons, { name = name, memory = memory, min = 100000, max = 0, })
+memoryBar:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_LOGIN" then
+        for i = 1, GetNumAddOns() do
+            if not addons[i] and IsAddOnLoaded(i) then
+                local name = GetAddOnInfo(i)
+                local memory = GetAddOnMemoryUsage(i)
+                tinsert(addons, { name = name, memory = memory, min = 100000, max = 0, })
+            end
         end
+        memoryBar:UnregisterEvent(event)
     end
 end)
 
+--- 格式化内存占用
+---@param memory number
+---@param type string 类型
 local function FormattedMemoryUsage(memory, type)
     local prefix
     if type == "min" then

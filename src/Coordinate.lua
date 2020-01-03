@@ -25,7 +25,7 @@ worldMap:HookScript("OnUpdate", function(self, elapsed)
         playerLabel:SetText("")
     end
 
-    -- 区域地图才显示坐标
+    -- 区域地图才显示鼠标位置坐标
     if MapUtil.IsMapTypeZone(self:GetMapID()) then
         local cx, cy = GetCursorPosition()
         ---@type ScrollFrame

@@ -1,21 +1,21 @@
 ---@type MessageFrame
 local chatFrame1 = ChatFrame1
 chatFrame1:ClearAllPoints()
---- 把 ChatFrame1ButtonFrame 左边相对屏幕左边偏移 2px，ChatFrame1ButtonFrame 的宽度是 29px，ChatFrame1Background 左边相对
+--- ChatFrame1ButtonFrame 左边相对屏幕左边偏移 2px，ChatFrame1ButtonFrame 的宽度是 29px，ChatFrame1Background 左边相对
 --- ChatFrame1ButtonFrame 右边偏移 3px，ChatFrame1 左边相对 ChatFrame1Background 左边偏移 2px；
---- QuickJoinToastButton 顶部的最大值相对屏幕底部偏移 330px，QuickJoinToastButton 的高度是 32px，ChatFrame1Background 顶部相
+--- QuickJoinToastButton 顶部相对屏幕底部偏移 330px，QuickJoinToastButton 的高度是 32px，ChatFrame1Background 顶部相
 --- 对 QuickJoinToastButton 底部偏移 -24px，ChatFrame1 顶部相对 ChatFrame1Background 顶部偏移 -3px
 chatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 2 + 29 + 3 + 2, 330 - 32 - 24 - 3)
---- ChatFrame1Background 右边的最大值相对屏幕左边偏移 540px，ChatFrame1 右边相对 ChatFrame1Background 右边偏移 -24px，
---- ChatFrame1Background 底部的最大值相对屏幕底部偏移 116px，ChatFrame1 底部相对 ChatFrame1Background 底部偏移 6px
+--- ChatFrame1Background 右边相对屏幕左边偏移 540px，ChatFrame1 右边相对 ChatFrame1Background 右边偏移 -24px，
+--- ChatFrame1Background 底部相对屏幕底部偏移 116px，ChatFrame1 底部相对 ChatFrame1Background 底部偏移 6px
 chatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", 540 - 24, 116 + 6)
 chatFrame1.SetPoint = nop
 
 local abbrevs = {
-    ["綜合"] = "綜合",
-    ["交易"] = "交易",
+    [COMMUNITIES_DEFAULT_CHANNEL_NAME] = "綜合",
+    [TRADE] = "交易",
     ["本地防務"] = "防務",
-    ["尋求組隊"] = "尋組",
+    [LOOK_FOR_GROUP] = "尋組",
     ["組隊頻道"] = "組隊",
 }
 
@@ -81,10 +81,10 @@ local dockedChatFrames = GeneralDockManager.DOCKED_CHAT_FRAMES
 local dockedIDs = {}
 
 --- 设置聊天输入框
----@param editBox EditBox 输入框
+---@param editBox EditBox
 local function SetEditBox(editBox)
-    -- 隐藏边框
     local name = editBox:GetName()
+    -- 隐藏边框
     ---@type Texture
     local left = _G[name .. "Left"]
     left:Hide()
@@ -95,7 +95,7 @@ local function SetEditBox(editBox)
     local right = _G[name .. "Right"]
     right:Hide()
 
-    -- 使用方向键移动光标，不需要按住 Alt 键
+    -- 設置移动光标不需要按住 Alt 键
     editBox:SetAltArrowKeyMode(false)
 end
 
@@ -122,7 +122,7 @@ end
 
 MoveEditBox()
 
---- 新嵌入聊天窗口后，设置并移动聊天输入框
+--- 新嵌入聊天窗口后，设置聊天输入框
 ---@param chatFrame MessageFrame
 hooksecurefunc("FCFDock_AddChatFrame", function(_, chatFrame)
     tinsert(dockedIDs, chatFrame:GetID())

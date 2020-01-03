@@ -28,7 +28,7 @@ editBox:SetScript("OnEscapePressed", editBox.ClearFocus)
 scrollFrame:SetScrollChild(editBox)
 
 --- 显示复制窗口
----@param contents string 文字内容
+---@param contents string
 local function ShowCopyFrame(contents)
     copyFrame:Show()
     editBox:SetText(contents)
@@ -47,7 +47,7 @@ tinsert(FrameStackTooltip.commandKeys, KeyCommand_Create(function()
 end, KeyCommand.RUN_ON_DOWN, KeyCommand_CreateKey("F5")))
 
 local text
---- 显示全局变量中的枚举、数字和布尔类型的值
+--- 显示枚举值
 SlashCmdList["ENUMS"] = function()
     -- text 是 nil 则需要遍历
     if text == nil then

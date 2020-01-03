@@ -6,10 +6,11 @@ local columns = 3
 local channelFrame = CreateFrame("Frame", "WLK-ChatChannelFrame", UIParent)
 channelFrame:SetSize(size * columns, size * rows)
 channelFrame:SetPoint("TOPRIGHT", ChatFrame1ResizeButton, "BOTTOMRIGHT")
---- 设置较高的窗口层级，防止出现和动作条重叠导致按钮无法点击的问题
+--- 设置较高的层级，防止出现和动作条纹理重叠导致按钮无法点击的问题
 channelFrame:SetFrameStrata("Dialog")
 channelFrame:SetBackdrop({ bgFile = "Interface/ChatFrame/CHATFRAMEBACKGROUND", })
-channelFrame:SetBackdropColor(0, 0, 0, DEFAULT_CHATFRAME_ALPHA)
+local r, g, b = GetTableColor(DEFAULT_CHATFRAME_COLOR)
+channelFrame:SetBackdropColor(r, g, b, DEFAULT_CHATFRAME_ALPHA)
 
 local buttonTables = {
     { text = "說", color = "PRIEST", arg = "/s ", },
@@ -26,9 +27,9 @@ local buttonTables = {
     { text = "重", color = "MAGE", arg = "/reload", },
 }
 
---- 点击按钮调用的函数
----@param button string 点击按钮的按键
----@param arg string 按钮参数
+--- 点击按钮
+---@param button string 鼠标按键
+---@param arg string 参数
 local function ChannelButtonOnClick(button, arg)
     ---@type MessageFrame
     local chatFrame = SELECTED_DOCK_FRAME
@@ -48,7 +49,7 @@ local function ChannelButtonOnClick(button, arg)
         local channelIndex
         -- 获取频道列表
         local channelList = { GetChannelList() }
-        for i = 1, #channelList do
+        for i = 2, #channelList, 3 do
             -- 获取频道索引
             if channelList[i] == arg then
                 channelIndex = channelList[i - 1]
@@ -56,21 +57,21 @@ local function ChannelButtonOnClick(button, arg)
             end
         end
 
-        -- 鼠标右键点击时，加入或离开频道；左键点击时，聊天编辑框使用此频道
+        -- 鼠标右键点击时，加入或离开频道；左键点击时，使用此频道打开聊天输入框
         if button == "RightButton" then
             if channelIndex then
                 LeaveChannelByName(arg)
-                print("|cffffff00已離開" .. arg .. "|r")
+                chatFrame:AddMessage("已離開" .. arg, GetTableColor(YELLOW_FONT_COLOR))
             else
                 JoinPermanentChannel(arg, nil, chatFrame:GetID(), 1)
                 ChatFrame_AddChannel(chatFrame, arg)
-                print("|cff00ff00已加入" .. arg .. "|r")
+                chatFrame:AddMessage("已加入" .. arg, GetTableColor(GREEN_FONT_COLOR))
             end
         else
             if channelIndex then
                 ChatFrame_OpenChat("/" .. channelIndex .. " " .. text, chatFrame)
             else
-                print("|cffff0000未加入" .. arg .. "|r")
+                chatFrame:AddMessage("未加入" .. arg, GetTableColor(RED_FONT_COLOR))
             end
         end
     end

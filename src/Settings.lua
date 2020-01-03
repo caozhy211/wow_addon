@@ -43,13 +43,14 @@ local function InCombat()
     if InCombatLockdown() then
         ---@type MessageFrame
         local UIErrorsFrame = UIErrorsFrame
-        UIErrorsFrame:AddMessage(ERR_NOT_IN_COMBAT, 1, 0.1, 0.1, 1)
+        local r, g, b = GetTableColor(RED_FONT_COLOR)
+        UIErrorsFrame:AddMessage(ERR_NOT_IN_COMBAT, r, g, b, 1)
         return true
     end
     return false
 end
 
---- 使按钮无效
+--- 使按钮不可用
 local function DisableButtons()
     defaultButton:SetEnabled(false)
     wlkButton:SetEnabled(false)
@@ -124,7 +125,7 @@ local function ApplyDefaultSettings()
     -- 按键设置恢复为默认值
     KeyBindingFrame_ResetBindingsToDefault()
     -- 语音按键恢复为默认值
-    C_VoiceChat.SetPushToTalkBinding({ "`" })
+    C_VoiceChat.SetPushToTalkBinding({ "`", })
     -- 保存按键设置
     SaveBindings(ACCOUNT_BINDINGS)
 
@@ -146,7 +147,7 @@ end
 
 --- 应用默认设置对话框
 StaticPopupDialogs["APPLY_DEFAULT_SETTINGS"] = {
-    text = "你必須重新載入才能使默认設置生效",
+    text = "你必須重新載入才能使默認設置生效",
     button1 = RELOADUI,
     OnAccept = ReloadUI,
     OnCancel = ReloadUI,
@@ -237,20 +238,19 @@ local function ShowMultiActionBar()
     InterfaceOptions_UpdateMultiActionBars()
 end
 
---- 获取团队框架单位的大小
+--- 获取团队单位的大小
 local function GetCompactUnitFrameProfilesSize()
     local resizeVerticalOutsets = 7
     -- 队伍标题高度
     local titleHeight = 14
-    -- 单位之间的间隔
+    -- 单位之间的间距
     local spacing = 2
     -- 队伍的行数
     local rows = 2
     -- 队伍的列数
     local columns = ceil(MAX_RAID_GROUPS / rows)
 
-    -- containerResizeFrame 顶部应该最多在 TargetFrameSpellBar 的底部，即 135px；底部最多在 FriendsFrameMicroButton 的顶部，
-    -- 即 330px
+    -- TargetFrameSpellBar 底部相对屏幕顶部偏移 -135px，FriendsFrameMicroButton 顶部相对屏幕底部偏移 330px
     local containerResizeFrameHeight = GetScreenHeight() - 135 - 330
     -- container 的最大高度
     local containerMaxHeight = containerResizeFrameHeight - resizeVerticalOutsets * 2
@@ -261,7 +261,7 @@ local function GetCompactUnitFrameProfilesSize()
         arg = (titleHeight * rows + spacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1)) / (height * ceil(arg))
     end
 
-    -- 最右边界
+    -- TalkingHeadFrame 右边相对屏幕左边偏移 570px
     local maxRight = 570
     -- CompactRaidFrameManager 的宽度是 200px，左边相对屏幕左边偏移 -182px，containerResizeFrame 左边相对
     -- CompactRaidFrameManager 右边偏移 0px，container 左边相对 containerResizeFrame 左边偏移 4px
@@ -291,11 +291,11 @@ local function SetWlkInterfaceOptions()
     ShowMultiActionBar()
     SetRaidOptions(CompactUnitFrameProfiles.selectedProfile)
     -- 自动拾取键设置为 “无”
-    SetModifiedClick("AUTOLOOTTOGGLE", "None")
+    SetModifiedClick("AUTOLOOTTOGGLE", "NONE")
     -- 焦点施法键设置为 “Shift”
-    SetModifiedClick("FOCUSCAST", "Shift")
+    SetModifiedClick("FOCUSCAST", "SHIFT")
     -- 自我施法键设置为 “无”
-    SetModifiedClick("SELFCAST", "None")
+    SetModifiedClick("SELFCAST", "NONE")
     -- 阻止公会邀请
     SetAutoDeclineGuildInvites(true)
 end
@@ -336,7 +336,7 @@ local bindKeys = {
     MULTIACTIONBAR2BUTTON10 = "ALT-D", MULTIACTIONBAR2BUTTON11 = "ALT-S", MULTIACTIONBAR2BUTTON12 = "ALT-F",
 }
 
---- 绑定按键设置
+--- 按键设置
 local function SetWlkBindings()
     -- 解绑键位设定
     for action, keyButtonID in pairs(unbindKeys) do
@@ -349,7 +349,7 @@ local function SetWlkBindings()
         end
     end
     -- 解绑语音按键
-    C_VoiceChat.SetPushToTalkBinding({ "" })
+    C_VoiceChat.SetPushToTalkBinding({ "", })
     -- 绑定按键
     for action, key in pairs(bindKeys) do
         KeyBindingFrame_AttemptKeybind(KeyBindingFrame, key, action, KeyBindingFrame.mode, 1, true)
@@ -393,7 +393,7 @@ end
 
 --- 应用自定义设置对话框
 StaticPopupDialogs["APPLY_WLK_SETTINGS"] = {
-    text = "你必須重新載入才能使自定义設置生效",
+    text = "你必須重新載入才能使自定義設置生效",
     button1 = RELOADUI,
     OnAccept = ReloadForSettings,
     OnCancel = ReloadForSettings,
@@ -431,19 +431,19 @@ wlkButton:SetScript("OnClick", function()
 end)
 
 if not isPetTrainer then
-    -- 玩家不是宠物训练师时，注册 “SPELLS_CHANGED” 事件
+    -- 玩家不是宠物训练师时，注册 SPELLS_CHANGED 事件
     wlkButton:RegisterEvent("SPELLS_CHANGED")
 
     wlkButton:SetScript("OnEvent", function(_, event)
         -- 成为宠物训练师时，小地图追踪勾选 “宠物追踪” 和 “兽栏管理员”
-        if isPetTrainer then
+        if event == "SPELLS_CHANGED" and isPetTrainer then
             for i = 1, GetNumTrackingTypes() do
                 local _, texture = GetTrackingInfo(i)
                 if texture == 613074 or texture == 136466 then
                     SetTracking(i, true)
                 end
             end
-            -- 取消注册 “SPELLS_CHANGED” 事件
+            -- 取消注册 SPELLS_CHANGED 事件
             wlkButton:UnregisterEvent(event)
         end
     end)
