@@ -36,15 +36,16 @@ possessButton2NormalTexture:SetTexture(nil)
 local possessBarFrame = PossessBarFrame
 possessBarFrame:ClearAllPoints()
 --- PossessButton 的大小是 30px，PossessButton1 左边相对 PossessBarFrame 左边偏移 10px，PossessButton2 左边相对
---- PossessButton1 右边偏移 8px；顶部距离屏幕底部的最大值是 143px，PossessButton 底部相对 PossessBarFrame 底部偏移 3px
-possessBarFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -(30 + 10 + 8 / 2), 143 - 3 - 30 - 3)
+--- PossessButton1 右边偏移 8px；上边界为相对屏幕底部偏移 185 - 2 - 3 - 30 - 3 - 1 = 146px，MultiBarBottomLeftButton 顶部最大
+--- 值为 108px，边框纹理 4px，即下边界相对屏幕底部偏移 112px，PossessButton 底部相对 PossessBarFrame 底部偏移 3px
+possessBarFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -(30 + 10 + 8 / 2), 112 + (146 - 112) / 2 - 30 / 2 - 3)
 possessBarFrame.SetPoint = nop
 
 ---@type Frame
 local petActionBarFrame = CreateFrame("Frame", "WLK-PetActionBarFrame", UIParent)
 --- PetActionButton 的大小是 30px，PetActionButton 之间的水平间隔是 8px
 petActionBarFrame:SetSize(30 * NUM_PET_ACTION_SLOTS + 8 * (NUM_PET_ACTION_SLOTS - 1), 30)
-petActionBarFrame:SetPoint("BOTTOM", 0, 143 - 30)
+petActionBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", 0, 112 + (146 - 112) / 2)
 for i = 1, NUM_PET_ACTION_SLOTS do
     ---@type Button
     local petActionButton = _G["PetActionButton" .. i]
