@@ -3,7 +3,7 @@
 ## Notes: 自用魔兽世界插件
 ## Author: czy211
 ## Version: 2.0.0
-## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI
+## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI
 
 ActionBar.lua
 ChatChannel.lua
@@ -15,4 +15,5 @@ Grid.lua
 Minimap.lua
 MirrorTimer.lua
 Performance.lua
+Position.lua
 Settings.lua

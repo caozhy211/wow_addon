@@ -27,7 +27,7 @@
 - （待完成）Notice.lua：获得物品、完成成就等提示
 - Performance.lua：显示延迟、帧数和内存占用
 - （待完成）PetBattle.lua：宠物对战
-- （待完成）Position.lua：框体位置
+- Position.lua：调整框体位置
 - （待完成）PvpTalent.lua：pvp 天赋
 - （待完成）RaidMarker.lua：副本标记
 - Settings.lua：一键应用默认设置或自定义设置

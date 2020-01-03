@@ -266,7 +266,7 @@ local function GetCompactUnitFrameProfilesSize()
     -- CompactRaidFrameManager 的宽度是 200px，左边相对屏幕左边偏移 -182px，containerResizeFrame 左边相对
     -- CompactRaidFrameManager 右边偏移 0px，container 左边相对 containerResizeFrame 左边偏移 4px
     local left = 200 - 182 + 4
-    local width = floor((maxRight - left - spacing * (columns - 1)) / columns)
+    local width = floor((maxRight - left - spacing * columns) / columns)
 
     return height, width
 end
