@@ -1,6 +1,8 @@
 ---@type Frame
 local copyFrame = CreateFrame("Frame", "WLK-CopyFrame", UIParent, "DialogBoxFrame")
-copyFrame:SetSize(432, 330)
+--- DialogBoxButton 底部相对 DialogBoxFrame 底部偏移 16px，DialogBoxButton 的高度是 32px，ScrollBar 左边相对 ScrollFrame 右
+--- 边偏移 6px，ScrollBar 的宽度是 16px
+copyFrame:SetSize(350 + 16 * 2 + 6 + 16, 200 + 16 * 2 + 5 + 32)
 copyFrame:SetPoint("CENTER")
 copyFrame:SetBackdrop({
     bgFile = "Interface/DialogFrame/UI-DialogBox-Background",
@@ -8,14 +10,12 @@ copyFrame:SetBackdrop({
     edgeSize = 16,
     insets = { left = 8, right = 8, top = 8, bottom = 8, },
 })
-copyFrame:SetBackdropBorderColor(0, 0.4, 0.8, 0.8)
+copyFrame:SetBackdropBorderColor(GetClassColor("WARLOCK"), 0.8)
 
 ---@type ScrollFrame
 local scrollFrame = CreateFrame("ScrollFrame", nil, copyFrame, "UIPanelScrollFrameTemplate")
 scrollFrame:SetPoint("TOPLEFT", 16, -16)
---- ScrollFrame 和 ScrollBar 的水平间隔是 6，ScrollBar 的宽度是 16
---- DialogBoxFrame 和 DialogBoxButton 的垂直间隔是 16，DialogBoxButton 的高度是 32
-scrollFrame:SetPoint("BOTTOMRIGHT", -(16 + 6 + 16), 16 + 32 + 16)
+scrollFrame:SetPoint("BOTTOMRIGHT", -(16 + 6 + 16), 5 + 32 + 16)
 
 ---@type EditBox
 local editBox = CreateFrame("EditBox", nil, scrollFrame)
