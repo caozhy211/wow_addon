@@ -50,6 +50,7 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
 
     ---@type FontString
     local header = _G[editBox:GetName() .. "Header"]
+    ---@type FontString
     local headerSuffix = _G[editBox:GetName() .. "HeaderSuffix"]
     if not header then
         return
@@ -73,6 +74,14 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
         end
     end
 
+    local headerWidth = (header:GetRight() or 0) - (header:GetLeft() or 0)
+    local editBoxWidth = (editBox:GetRight() or 0) - (editBox:GetLeft() or 0)
+    if headerWidth > editBoxWidth / 2 then
+        header:SetWidth(editBoxWidth / 2)
+        headerSuffix:Show()
+    else
+        headerSuffix:Hide()
+    end
     editBox:SetTextInsets(15 + header:GetWidth() + (headerSuffix:IsShown() and headerSuffix:GetWidth() or 0), 13, 0, 0)
 end)
 
