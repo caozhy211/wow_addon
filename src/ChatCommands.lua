@@ -6,8 +6,8 @@ local columns = 3
 local chatCommandFrame = CreateFrame("Frame", "WLK_ChatCommandFrame", UIParent)
 chatCommandFrame:SetSize(size * columns, size * rows)
 chatCommandFrame:SetPoint("TOPRIGHT", ChatFrame1ResizeButton, "BOTTOMRIGHT")
---- 设置较高的层级，防止出现和动作条纹理重叠导致按钮无法点击的问题
-chatCommandFrame:SetFrameStrata("Dialog")
+--- 设置较高的层级，防止出现和 OverrideActionBar 重叠导致按钮无法点击的问题
+chatCommandFrame:SetFrameStrata("HIGH")
 chatCommandFrame:SetBackdrop({ bgFile = "Interface/ChatFrame/CHATFRAMEBACKGROUND", })
 local r, g, b = GetTableColor(DEFAULT_CHATFRAME_COLOR)
 chatCommandFrame:SetBackdropColor(r, g, b, DEFAULT_CHATFRAME_ALPHA)

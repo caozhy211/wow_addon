@@ -80,7 +80,7 @@ end)
 --- 格式化内存占用
 ---@param memory number
 ---@param type string 类型
-local function FormattedMemoryUsage(memory, type)
+local function FormatMemoryUsage(memory, type)
     local prefix
     if type == "min" then
         prefix = GREEN_FONT_COLOR_CODE .. MINIMUM .. "："
@@ -120,7 +120,7 @@ local function UpdateMemoryUsage()
     -- 更新数据条
     memoryBar:SetMinMaxValues(0, memoryBar.max)
     memoryBar:SetValue(memoryBar.memory)
-    usageLabel:SetText(FormattedMemoryUsage(memoryBar.memory))
+    usageLabel:SetText(FormatMemoryUsage(memoryBar.memory))
     collectgarbage()
 end
 
@@ -137,21 +137,21 @@ end)
 memoryBar:SetScript("OnEnter", function(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP", 0, offset)
     GameTooltip:ClearLines()
-    GameTooltip:AddLine(FormattedMemoryUsage(self.memory))
-    GameTooltip:AddLine(FormattedMemoryUsage(self.min, "min"))
-    GameTooltip:AddLine(FormattedMemoryUsage(self.max, "max"))
+    GameTooltip:AddLine(FormatMemoryUsage(self.memory))
+    GameTooltip:AddLine(FormatMemoryUsage(self.min, "min"))
+    GameTooltip:AddLine(FormatMemoryUsage(self.max, "max"))
     GameTooltip:Show()
     -- 更新鼠标提示显示数据
     self.ticker = C_Timer.NewTicker(PERFORMANCEBAR_UPDATE_INTERVAL, function()
         ---@type FontString
         local label1 = GameTooltipTextLeft1
-        label1:SetText(FormattedMemoryUsage(self.memory))
+        label1:SetText(FormatMemoryUsage(self.memory))
         ---@type FontString
         local label2 = GameTooltipTextLeft2
-        label2:SetText(FormattedMemoryUsage(self.min, "min"))
+        label2:SetText(FormatMemoryUsage(self.min, "min"))
         ---@type FontString
         local label3 = GameTooltipTextLeft3
-        label3:SetText(FormattedMemoryUsage(self.max, "max"))
+        label3:SetText(FormatMemoryUsage(self.max, "max"))
     end)
 end)
 
@@ -182,16 +182,16 @@ memoryBar:SetScript("OnMouseDown", function()
     for i = 1, #data do
         local addon = data[i]
         local name = addon.name
-        local memory = FormattedMemoryUsage(addon.memory)
-        local min = FormattedMemoryUsage(addon.min, "min")
-        local max = FormattedMemoryUsage(addon.max, "max")
+        local memory = FormatMemoryUsage(addon.memory)
+        local min = FormatMemoryUsage(addon.min, "min")
+        local max = FormatMemoryUsage(addon.max, "max")
         print(name .. "：" .. memory .. "，" .. min .. "，" .. max)
 
         minSum = minSum + addon.min
         sum = sum + addon.memory
         maxSum = maxSum + addon.max
     end
-    print("共計 " .. #data .. " 個插件：" .. FormattedMemoryUsage(sum) .. "，" .. FormattedMemoryUsage(minSum, "min")
-            .. "，" .. FormattedMemoryUsage(maxSum, "max"))
+    print("共計 " .. #data .. " 個插件：" .. FormatMemoryUsage(sum) .. "，" .. FormatMemoryUsage(minSum, "min")
+            .. "，" .. FormatMemoryUsage(maxSum, "max"))
     print("--------------------------------------------------------------------")
 end)

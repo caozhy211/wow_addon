@@ -11,12 +11,12 @@ cursorLabel:SetPoint("RIGHT", playerLabel, "LEFT", -10, 0)
 local worldMap = WorldMapFrame
 
 ---@param self POIFrame 世界地图
-worldMap:HookScript("OnUpdate", function(self, elapsed)
-    self.elapsed = (self.elapsed or 0) + elapsed
-    if self.elapsed < TOOLTIP_UPDATE_TIME then
+worldMap:HookScript("OnUpdate", function(_, elapsed)
+    worldMap.elapsed = (worldMap.elapsed or 0) + elapsed
+    if worldMap.elapsed < TOOLTIP_UPDATE_TIME then
         return
     end
-    self.elapsed = 0
+    worldMap.elapsed = 0
 
     local position = C_Map.GetPlayerMapPosition(MapUtil.GetDisplayableMapForPlayer(), "player")
     if position then
@@ -26,7 +26,7 @@ worldMap:HookScript("OnUpdate", function(self, elapsed)
     end
 
     -- 区域地图才显示鼠标位置坐标
-    if MapUtil.IsMapTypeZone(self:GetMapID()) then
+    if MapUtil.IsMapTypeZone(worldMap:GetMapID()) then
         local cx, cy = GetCursorPosition()
         ---@type ScrollFrame
         local container = worldMap.ScrollContainer
