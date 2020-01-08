@@ -10,7 +10,9 @@ copyFrame:SetBackdrop({
     edgeSize = 16,
     insets = { left = 8, right = 8, top = 8, bottom = 8, },
 })
-copyFrame:SetBackdropBorderColor(GetClassColor("WARLOCK"), 0.8)
+local _, class = UnitClass("player")
+local r, g, b = GetClassColor(class)
+copyFrame:SetBackdropBorderColor(r, g, b, 0.8)
 
 ---@type ScrollFrame
 local scrollFrame = CreateFrame("ScrollFrame", nil, copyFrame, "UIPanelScrollFrameTemplate")
