@@ -42,7 +42,7 @@ possessBarFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -(30 + 10 + 8 / 2), 1
 possessBarFrame.SetPoint = nop
 
 ---@type Frame
-local petActionBarFrame = CreateFrame("Frame", "WLK-PetActionBarFrame", UIParent)
+local petActionBarFrame = CreateFrame("Frame", "WLK_PetActionBarFrame", UIParent)
 --- PetActionButton 的大小是（30px，30px），PetActionButton 之间的水平间距是 8px
 petActionBarFrame:SetSize(30 * NUM_PET_ACTION_SLOTS + 8 * (NUM_PET_ACTION_SLOTS - 1), 30)
 petActionBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", 0, 112 + (146 - 112) / 2)

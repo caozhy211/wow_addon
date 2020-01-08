@@ -1,5 +1,5 @@
 ---@type Frame
-local grid = CreateFrame("Frame", "WLK-GridFrame", UIParent)
+local grid = CreateFrame("Frame", "WLK_GridFrame", UIParent)
 grid:SetAllPoints()
 grid:Hide()
 

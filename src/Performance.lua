@@ -1,5 +1,5 @@
 ---@type Frame
-local performanceFrame = CreateFrame("Frame", "WLK-PerformanceFrame", UIParent)
+local performanceFrame = CreateFrame("Frame", "WLK_PerformanceFrame", UIParent)
 --- MicroButtonAndBagsBar 的大小是（298px，88px），MainMenuBarBackpackButton 右上角相对 MicroButtonAndBagsBar 右上角偏移
 --- （-4px，-4px），MainMenuBarBackpackButton 的大小是（40px，40px），CharacterBagSlot 的大小是（30px，30px），
 --- CharacterBag0Slot 右边相对 MainMenuBarBackpackButton 左边偏移 -4px，CharacterBagSlot 之间的水平间距是 2px
@@ -47,7 +47,7 @@ local function SetFormattedLatency(label, latency)
 end
 
 ---@type StatusBar
-local memoryBar = CreateFrame("StatusBar", "WLK-MemoryBar", UIParent)
+local memoryBar = CreateFrame("StatusBar", "WLK_MemoryBar", UIParent)
 --- CharacterBagSlot 右边相对 MainMenuBarBackpackButton 左边垂直偏移 -4px
 memoryBar:SetSize(30 * NUM_BAG_SLOTS + 2 * (NUM_BAG_SLOTS - 1) + 4 + 1, (40 - 30) / 2 - 2 + 4 + 4)
 memoryBar:SetPoint("TOPLEFT", performanceFrame, "TOPRIGHT")

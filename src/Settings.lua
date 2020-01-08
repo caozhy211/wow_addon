@@ -6,14 +6,14 @@ hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
 end)
 
 ---@type Button
-local defaultButton = CreateFrame("BUTTON", "WLK-DefaultSettings", UIParent, "UIPanelButtonTemplate")
+local defaultButton = CreateFrame("BUTTON", "WLK_DefaultSettingsButton", UIParent, "UIPanelButtonTemplate")
 defaultButton:SetSize(60, 22)
 defaultButton:SetPoint("RIGHT", 0, 225)
 defaultButton:SetText("BLZ")
 defaultButton:SetAlpha(0)
 
 ---@type Button
-local wlkButton = CreateFrame("BUTTON", "WLK-WlkSettings", UIParent, "UIPanelButtonTemplate")
+local wlkButton = CreateFrame("BUTTON", "WLK_WlkSettingsButton", UIParent, "UIPanelButtonTemplate")
 wlkButton:SetSize(60, 22)
 wlkButton:SetPoint("RIGHT", 0, 255)
 wlkButton:SetText("WLK")

@@ -1,6 +1,6 @@
 --- 创建将鼠标悬停位置框架设置为焦点的按钮
 ---@type CheckButton
-local focusButton = CreateFrame("CheckButton", "WLK-SetFocusButton", UIParent, "SecureActionButtonTemplate")
+local focusButton = CreateFrame("CheckButton", "WLK_SetFocusButton", UIParent, "SecureActionButtonTemplate")
 --- 设置鼠标左键点击 focusButton 时执行将鼠标悬停位置的框架设置为焦点的宏命令
 focusButton:SetAttribute("type1", "macro")
 focusButton:SetAttribute("macrotext", "/focus mouseover")

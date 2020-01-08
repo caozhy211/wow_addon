@@ -1,5 +1,5 @@
 ---@type Frame
-local copyFrame = CreateFrame("Frame", "WLK-CopyFrame", UIParent, "DialogBoxFrame")
+local copyFrame = CreateFrame("Frame", "WLK_CopyFrame", UIParent, "DialogBoxFrame")
 --- DialogBoxButton 底部相对 DialogBoxFrame 底部偏移 16px，DialogBoxButton 的高度是 32px，ScrollBar 左边相对 ScrollFrame 右
 --- 边偏移 6px，ScrollBar 的宽度是 16px
 copyFrame:SetSize(350 + 16 * 2 + 6 + 16, 200 + 16 * 2 + 5 + 32)

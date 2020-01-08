@@ -3,7 +3,7 @@ local rows = 4
 local columns = 3
 
 ---@type Frame
-local chatCommandFrame = CreateFrame("Frame", "WLK-ChatCommandFrame", UIParent)
+local chatCommandFrame = CreateFrame("Frame", "WLK_ChatCommandFrame", UIParent)
 chatCommandFrame:SetSize(size * columns, size * rows)
 chatCommandFrame:SetPoint("TOPRIGHT", ChatFrame1ResizeButton, "BOTTOMRIGHT")
 --- 设置较高的层级，防止出现和动作条纹理重叠导致按钮无法点击的问题
