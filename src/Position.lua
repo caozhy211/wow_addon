@@ -88,7 +88,7 @@ hooksecurefunc("AuraButton_OnUpdate", function(self)
         duration:SetFontObject("SystemFont_Outline_Small")
     end
     duration:ClearAllPoints()
-    duration:SetPoint("BOTTOM")
+    duration:SetPoint("TOPRIGHT")
 end)
 
 --- LossOfControlFrame 的高度是 58px，纹理 RedLineTop 和 RedLineBottom 的高度是 27px，下边界相对屏幕底部偏移 185 + 20 + 1 +
