@@ -53,10 +53,11 @@ memoryBar:SetSize(30 * NUM_BAG_SLOTS + 2 * (NUM_BAG_SLOTS - 1) + 4 + 1, (40 - 30
 memoryBar:SetPoint("TOPLEFT", performanceFrame, "TOPRIGHT")
 memoryBar:SetBackdrop({ bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark", })
 memoryBar:SetStatusBarTexture("Interface/TargetingFrame/UI-StatusBar")
-memoryBar:SetStatusBarColor(GetTableColor(LIGHTBLUE_FONT_COLOR))
+local _, class = UnitClass("player")
+memoryBar:SetStatusBarColor(GetClassColor(class))
 
 ---@type FontString
-local usageLabel = memoryBar:CreateFontString(nil, "ARTWORK", "SystemFont_Small")
+local usageLabel = memoryBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
 usageLabel:SetPoint("CENTER")
 
 memoryBar:RegisterEvent("PLAYER_LOGIN")
