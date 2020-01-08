@@ -34,5 +34,5 @@
 - （待完成）SimCText.lua：SimulationCraft 文本
 - （待完成）SoulShard.lua：灵魂碎片
 - （待完成）Tooltip.lua：鼠标提示
-- （待完成）UnitFrame.lua：玩家、目标、宠物、目标的目标、焦点、BOSS 框体
+- UnitFrame.lua：玩家、目标、宠物、目标的目标、焦点、BOSS 框体
 - （待完成）UsableItem.lua：可主动使用的饰品和任务物品

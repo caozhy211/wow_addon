@@ -4,6 +4,7 @@
 ## Author: czy211
 ## Version: 2.0.0
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI
+## SavedVariables: WLK_UnitAuraFilter
 
 ActionBar.lua
 ChatCommands.lua
@@ -18,3 +19,4 @@ MirrorTimer.lua
 Performance.lua
 Position.lua
 Settings.lua
+UnitFrame.lua
