@@ -17,7 +17,7 @@ local buffFrame = BuffFrame
 
 --- 设置 BuffFrame 的位置
 hooksecurefunc("UIParent_UpdateTopFramePositions", function()
-    local buffsAreaTopOffset = 13
+    local buffsAreaTopOffset = 5
     -- 职业大厅条显示时需要下移
     if orderHallCommandBar and orderHallCommandBar:IsShown() then
         buffsAreaTopOffset = buffsAreaTopOffset + orderHallCommandBar:GetHeight()
@@ -28,10 +28,10 @@ hooksecurefunc("UIParent_UpdateTopFramePositions", function()
 end)
 
 --- BuffFrame 的高度是 50px，BuffArea 相对屏幕顶部偏移 -13px，OrderHallCommandBar 的高度是 25px，BuffArea 下边界相对屏幕顶部偏
---- 移 -330px，TemporaryEnchant 最多有 3 个
+--- 移 -315px，TemporaryEnchant 最多有 3 个
 local buffMaxRows = ceil((BUFF_MAX_DISPLAY + 3) / BUFFS_PER_ROW)
 local debuffMaxRows = ceil(DEBUFF_MAX_DISPLAY / BUFFS_PER_ROW)
-local buffRowSpacing = floor((330 - 13 - 25 - 50 - (buffMaxRows + debuffMaxRows) * BUFF_BUTTON_HEIGHT) / (buffMaxRows
+local buffRowSpacing = floor((315 - 5 - 25 - 50 - (buffMaxRows + debuffMaxRows) * BUFF_BUTTON_HEIGHT) / (buffMaxRows
         + debuffMaxRows - 1))
 
 --- 设置 BuffButton 位置
