@@ -19,7 +19,7 @@
 - FastFocus.lua：快速设置焦点
 - Grid.lua：网格线
 - （待完成）Hidden.lua：隐藏框体
-- （待完成）ItemInfo.lua：在背包、角色、拍卖行等框体显示物品的等级、种类等信息
+- ItemInfo.lua：在背包、角色、拍卖行等物品按钮上显示物品的等级、类型等信息
 - Merchant.lua：自动出售垃圾物品和修理装备
 - Minimap.lua：小地图
 - MirrorTimer.lua：镜像计时条

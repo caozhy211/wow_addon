@@ -3,7 +3,7 @@
 ## Notes: 自用魔兽世界插件
 ## Author: czy211
 ## Version: 2.0.0
-## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI
+## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_AuctionUI, Blizzard_GuildUI, Blizzard_GuildBankUI
 ## SavedVariables: WLK_UnitAuraFilter
 
 ActionBar.lua
@@ -13,6 +13,7 @@ Coordinate.lua
 Copy.lua
 FastFocus.lua
 Grid.lua
+ItemInfo.lua
 Merchant.lua
 Minimap.lua
 MirrorTimer.lua
