@@ -49,7 +49,7 @@ tinsert(FrameStackTooltip.commandKeys, KeyCommand_Create(function()
 end, KeyCommand.RUN_ON_DOWN, KeyCommand_CreateKey("F5")))
 
 local text
---- 显示枚举值
+--- 显示枚举值和部分数字常量
 SlashCmdList["ENUMS"] = function()
     -- text 是 nil 则需要遍历
     if text == nil then
@@ -64,7 +64,13 @@ SlashCmdList["ENUMS"] = function()
             end
             tinsert(textTable, "    },\n")
         end
-        tinsert(textTable, "}\n")
+        tinsert(textTable, "}\n\n")
+
+        for name, value in pairs(_G) do
+            if strfind(name, "^LE_") or strfind(name, ".+_LE_") then
+                tinsert(textTable, name .. " = " .. value .. "\n")
+            end
+        end
 
         text = table.concat(textTable)
     end
