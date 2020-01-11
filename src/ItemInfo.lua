@@ -25,9 +25,9 @@ local function GetBindLabel(button)
     return bindLabel
 end
 
---- 获取物品上半部分的类型标签
+--- 获取物品右上方标签
 ---@param button Button
-local function GetTypeTopLabel(button)
+local function GetTopRightLabel(button)
     ---@type FontString
     local typeTopLabel = button.typeTopLabel
     if typeTopLabel == nil then
@@ -38,9 +38,9 @@ local function GetTypeTopLabel(button)
     return typeTopLabel
 end
 
---- 获取物品下半部分的类型标签
+--- 获取物品右下方型标签
 ---@param button Button
-local function GetTypeBottomLabel(button)
+local function GetBottomRightLabel(button)
     ---@type FontString
     local typeBottomLabel = button.typeBottomLabel
     if typeBottomLabel == nil then
@@ -104,16 +104,28 @@ local subtypes = {
     },
 }
 
+--- 获取 16 进制的颜色字符串
+local function GetColorStr(equipLoc, r, g, b)
+    -- 双手武器显示为白色
+    if equipLoc == "INVTYPE_2HWEAPON" then
+        return "ffffffff"
+    end
+    return format("ff%.2x%.2x%.2x", r * 255, g * 255, b * 255)
+end
+
 ---@type GameTooltip
 local tooltip = CreateFrame("GameTooltip", "WLK_EquipmentInfoTooltip", UIParent, "GameTooltipTemplate")
 
---- 获取物品的等级和绑定信息
-local function GetItemLevelAndBind(link, arg, slot)
-    local level, isBound
-    local rarity, _, _, _, _, _, _, _, _, classID, _, bindType = select(3, GetItemInfo(link))
+--- 获取物品信息
+local function GetItemInformation(link, onlyForLevel, arg, slot)
+    local level, isBound, slotName, subtype
+    local quality, _, _, _, _, _, equipLoc, _, _, classID, subclassID, bindType = select(3, GetItemInfo(link))
     -- 非传家宝武器和护甲直接使用 GetDetailedItemLevelInfo 方法获取物品等级
-    if (classID == LE_ITEM_CLASS_WEAPON or classID == LE_ITEM_CLASS_ARMOR) and rarity ~= LE_ITEM_QUALITY_HEIRLOOM then
+    if (classID == LE_ITEM_CLASS_WEAPON or classID == LE_ITEM_CLASS_ARMOR) and quality ~= LE_ITEM_QUALITY_HEIRLOOM then
         level = GetDetailedItemLevelInfo(link)
+        if onlyForLevel then
+            return level
+        end
     end
     -- 其他物品等级和绑定信息通过扫描鼠标提示信息获取
     tooltip:SetOwner(UIParent, "ANCHOR_NONE")
@@ -130,101 +142,88 @@ local function GetItemLevelAndBind(link, arg, slot)
         -- 其他物品
         tooltip:SetHyperlink(link)
     end
-    for i = 2, 6 do
-        ---@type FontString
-        local line = _G[tooltip:GetName() .. "TextLeft" .. i]
-        if line then
-            local text = line:GetText() or ""
-            if not level then
-                level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+    for i = 2, 7 do
+        while true do
+            ---@type FontString
+            local textLeftLabel = _G[tooltip:GetName() .. "TextLeft" .. i]
+            if textLeftLabel then
+                local leftText = textLeftLabel:GetText()
+                if leftText then
+                    -- 获取物品等级
+                    if not level then
+                        level = strmatch(leftText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+                        if level and onlyForLevel then
+                            return level
+                        end
+                        break
+                    end
+                    -- 获取物品绑定信息
+                    if not isBound and bindType == 2 and strfind(leftText, ITEM_SOULBOUND) then
+                        -- 物品是装备后绑定，且已经绑定
+                        isBound = true
+                        break
+                    end
+                    -- 获取物品的装备槽位和类型
+                    if equipLoc ~= "" then
+                        if leftText == _G[equipLoc] then
+                            local colorStr = GetColorStr(equipLoc, textLeftLabel:GetTextColor())
+                            slotName = WrapTextInColorCode(slotNames[equipLoc], colorStr)
+                            ---@type FontString
+                            local textRightLabel = _G[tooltip:GetName() .. "TextRight" .. i]
+                            if textRightLabel and textRightLabel:GetText() then
+                                colorStr = GetColorStr(equipLoc, textRightLabel:GetTextColor())
+                                subtype = WrapTextInColorCode(subtypes[classID][subclassID], colorStr)
+                            end
+                        end
+                        break
+                    end
+                end
             end
-            if level and not slot then
-                -- 已经获得物品等级时，非背包、银行和买回按钮不需要获取绑定信息
-                break
-            end
-            if bindType == 2 and strfind(text, ITEM_SOULBOUND) then
-                -- 物品是装备后绑定，且已经绑定
-                isBound = true
-                break
-            end
+            break
         end
     end
     -- 背包、银行、买回按钮未绑定的装绑物品显示 “装”
     local bind = (slot and bindType == 2 and not isBound) and "裝" or ""
-    return level or "", bind
-end
-
-local equippableItems = {}
-
---- 获取物品的类型和装备槽位
-local function GetItemSubtypeAndSlotName(link, arg, slot)
-    local equipLoc, _, _, classID, subclassID = select(9, GetItemInfo(link))
-    local subtype = subtypes[classID] and subtypes[classID][subclassID] or ""
-    local slotName = slotNames[equipLoc] or ""
-
-    -- 只检查背包和银行中的物品是否可装备
-    if arg and slot then
-        local IsEquippable = false
-        local itemID = GetItemInfoFromHyperlink(link)
-        for _, id in pairs(equippableItems) do
-            if id == itemID then
-                IsEquippable = true
-                break
-            end
-        end
-        -- 不可装备的物品（非双手武器，恶魔卫士可使用）类型使用红色字体显示
-        if not IsEquippable and equipLoc ~= "INVTYPE_2HWEAPON" then
-            subtype = RED_FONT_COLOR_CODE .. subtype .. FONT_COLOR_CODE_CLOSE
-        end
-    end
-
-    -- 披风不显示类型
-    if equipLoc == "INVTYPE_CLOAK" then
-        subtype = ""
-    end
-
-    local typeTop, typeBottom
-    -- 物品类型是盾牌或武器时，上面显示装备槽位，下面显示物品类型
+    local topRightLabel, bottomRightLabel
+    -- 物品类型是盾牌或武器时，右上方显示装备槽位，右下方显示物品类型
     if classID == LE_ITEM_CLASS_ARMOR and subclassID == LE_ITEM_ARMOR_SHIELD or classID == LE_ITEM_CLASS_WEAPON then
-        typeTop = slotName
-        typeBottom = subtype
+        topRightLabel = slotName
+        bottomRightLabel = subtype
     else
-        typeTop = subtype
-        typeBottom = slotName
+        topRightLabel = subtype
+        bottomRightLabel = slotName
     end
-
-    return typeTop, typeBottom
+    return level or "", bind, topRightLabel or "", bottomRightLabel or ""
 end
 
 --- 物品按钮上显示物品信息
 ---@param button ItemButton
 local function ShowItemInfo(button, link, arg, slot)
-    local level, typeTop, typeBottom, bind = "", "", "", ""
+    local level, bind, topRight, bottomRight = "", "", "", ""
     if link then
         if button.origLink == link then
             level = button.origLevel
             bind = button.origBind
-            typeTop = button.origTypeTop
-            typeBottom = button.origTypeBottom
+            topRight = button.origTopRight
+            bottomRight = button.origBottomRight
         else
             button.origLink = link
-            level, bind = GetItemLevelAndBind(link, arg, slot)
+            level, bind, topRight, bottomRight = GetItemInformation(link, false, arg, slot)
             button.origLevel = level
             button.origBind = bind
-            typeTop, typeBottom = GetItemSubtypeAndSlotName(link, arg, slot)
-            button.origTypeTop = typeTop
-            button.origTypeBottom = typeBottom
+            button.origTopRight = topRight
+            button.origBottomRight = bottomRight
         end
     end
 
     local levelLabel = GetLevelLabel(button)
     local bindLabel = GetBindLabel(button)
-    local slotLabel = GetTypeTopLabel(button)
-    local subtypeLabel = GetTypeBottomLabel(button)
+    local topRightLabel = GetTopRightLabel(button)
+    local bottomRightLabel = GetBottomRightLabel(button)
     levelLabel:SetText(level)
     bindLabel:SetText(bind)
-    slotLabel:SetText(typeTop)
-    subtypeLabel:SetText(typeBottom)
+    topRightLabel:SetText(topRight)
+    bottomRightLabel:SetText(bottomRight)
 end
 
 --- 背包物品按钮显示物品信息
@@ -238,6 +237,20 @@ hooksecurefunc("ContainerFrame_Update", function(self)
         local link = GetContainerItemLink(bagID, slot)
         ShowItemInfo(button, link, bagID, slot)
     end
+end)
+
+--- 银行物品按钮显示物品信息
+---@param button ItemButton
+hooksecurefunc("BankFrameItemButton_Update", function(button)
+    if button.isBag then
+        return
+    end
+    ---@type Frame
+    local bankSlotsFrame = button:GetParent()
+    local bagID = bankSlotsFrame:GetID()
+    local slot = button:GetID()
+    local link = GetContainerItemLink(bagID, slot)
+    ShowItemInfo(button, link, "player", ButtonInventorySlot(button))
 end)
 
 --- 公会银行物品按钮显示物品信息
@@ -296,14 +309,16 @@ hooksecurefunc("EquipmentFlyout_DisplayButton", function(button)
     if not location then
         return
     end
-    local link
+    local link, arg
     local _, _, bags, _, slot, bagID = EquipmentManager_UnpackLocation(location)
     if bags then
         link = GetContainerItemLink(bagID, slot)
+        arg = bagID
     else
         link = GetInventoryItemLink("player", slot)
+        arg = "player"
     end
-    ShowItemInfo(button, link, bagID, slot)
+    ShowItemInfo(button, link, arg, slot)
 end)
 
 --- 拍卖行浏览界面物品按钮显示物品信息
@@ -349,7 +364,7 @@ local function ShowPaperDollItemLevel(button, unit)
     local slot = button:GetID()
     local link = GetInventoryItemLink(unit, slot)
     local levelLabel = GetLevelLabel(button)
-    levelLabel:SetText(link and GetItemLevelAndBind(link, unit, slot) or "")
+    levelLabel:SetText(link and GetItemInformation(link, true, unit, slot) or "")
 end
 
 hooksecurefunc("PaperDollItemSlotButton_OnShow", function(self)
@@ -369,9 +384,6 @@ end)
 ---@type Frame
 local eventListener = CreateFrame("Frame")
 
-eventListener:RegisterEvent("BAG_UPDATE")
-eventListener:RegisterEvent("BANKFRAME_OPENED")
-eventListener:RegisterEvent("PLAYERBANKSLOTS_CHANGED")
 eventListener:RegisterEvent("INSPECT_READY")
 
 eventListener:SetScript("OnEvent", function(_, event, ...)
@@ -397,36 +409,6 @@ eventListener:SetScript("OnEvent", function(_, event, ...)
             ShowPaperDollItemLevel(InspectTrinket1Slot, InspectFrame.unit)
             ShowPaperDollItemLevel(InspectMainHandSlot, InspectFrame.unit)
             ShowPaperDollItemLevel(InspectSecondaryHandSlot, InspectFrame.unit)
-        end
-    elseif event == "BANKFRAME_OPENED" or event == "PLAYERBANKSLOTS_CHANGED" or event == "BAG_UPDATE" then
-        -- 更新可装备的物品
-        for i = INVSLOT_FIRST_EQUIPPED, INVSLOT_LAST_EQUIPPED do
-            GetInventoryItemsForSlot(i, equippableItems)
-        end
-        -- 银行物品按钮显示物品信息
-        if event == "BANKFRAME_OPENED" then
-            for i = 1, NUM_BANKGENERIC_SLOTS do
-                ---@type Frame
-                local bankSlotsFrame = BankSlotsFrame
-                local bagID = bankSlotsFrame:GetID()
-                ---@type ItemButton
-                local button = bankSlotsFrame["Item" .. i]
-                local slot = button:GetID()
-                local link = GetContainerItemLink(bagID, slot)
-                ShowItemInfo(button, link, "player", ButtonInventorySlot(button))
-            end
-            eventListener:UnregisterEvent(event)
-        elseif event == "PLAYERBANKSLOTS_CHANGED" then
-            local slot = ...
-            -- 物品槽位更新才会更新物品信息，背包槽位更新不更新
-            if slot <= NUM_BANKGENERIC_SLOTS then
-                ---@type Frame
-                local bankSlotsFrame = BankSlotsFrame
-                local bagID = bankSlotsFrame:GetID()
-                local button = bankSlotsFrame["Item" .. slot]
-                local link = GetContainerItemLink(bagID, slot)
-                ShowItemInfo(button, link, "player", ButtonInventorySlot(button))
-            end
         end
     end
 end)
@@ -496,7 +478,7 @@ local function AddInfoToLink(link)
         return chatFrameItems[link]
     end
 
-    local level = GetItemLevelAndBind(link)
+    local level = GetItemInformation(link, true)
     if level ~= "" then
         local name, _, _, _, _, _, _, _, equipLoc = GetItemInfo(link)
         local equipSlotName = equipLoc == "" and "" or ("(" .. _G[equipLoc] .. ")")
