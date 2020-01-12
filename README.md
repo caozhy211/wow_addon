@@ -32,7 +32,7 @@
 - （待完成）RaidMarker.lua：副本标记
 - Settings.lua：一键应用默认设置或自定义设置
 - （待完成）SimCText.lua：SimulationCraft 文本
-- （待完成）SoulShard.lua：灵魂碎片
+- SoulShard.lua：灵魂碎片
 - Tooltip.lua：鼠标提示
 - UnitFrame.lua：玩家、目标、宠物、目标的目标、焦点、BOSS 框体
 - （待完成）UsableItem.lua：可主动使用的饰品和任务物品

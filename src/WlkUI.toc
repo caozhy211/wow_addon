@@ -20,5 +20,6 @@ MirrorTimer.lua
 Performance.lua
 Position.lua
 Settings.lua
+SoulShards.lua
 Tooltip.lua
 UnitFrame.lua
