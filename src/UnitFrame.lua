@@ -636,7 +636,7 @@ end
 
 ---@type StatusBar
 local playerPowerBar = CreateFrame("StatusBar", nil, playerFrame)
-playerPowerBar:SetSize(playerFrame:GetWidth() - height, playerFrame:GetHeight() / 3)
+playerPowerBar:SetSize(playerFrame:GetWidth() - height, height / 3)
 playerPowerBar:SetPoint("TOPRIGHT", playerHealthBar, "BOTTOMRIGHT")
 playerPowerBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
 playerFrame.powerBar = playerPowerBar
@@ -728,17 +728,17 @@ end
 
 ---@type Frame
 local playerComboPoints = CreateFrame("Frame", nil, playerFrame)
-playerComboPoints:SetSize(playerFrame:GetWidth() - height, 10)
+playerComboPoints:SetSize(playerFrame:GetWidth() - height, 9)
 playerComboPoints:SetPoint("BOTTOMRIGHT")
 
 playerComboPoints:SetScript("OnShow", function()
-    playerPowerBar:SetHeight(playerPowerBar:GetHeight() - 4)
+    playerPowerBar:SetHeight((height - playerComboPoints:GetHeight()) / 3)
     playerHealthBar:SetHeight(height - playerPowerBar:GetHeight() - playerComboPoints:GetHeight())
 end)
 
 playerComboPoints:SetScript("OnHide", function()
-    playerPowerBar:SetHeight(playerPowerBar:GetHeight() + 4)
-    playerHealthBar:SetHeight(height - playerPowerBar:GetHeight())
+    playerPowerBar:SetHeight(height / 3)
+    playerHealthBar:SetHeight(height * 2 / 3)
 end)
 
 playerFrame.comboPoints = {}
@@ -1475,7 +1475,7 @@ targetFrame.levelLabel = targetLevelLabel
 
 ---@type StatusBar
 local targetPowerBar = CreateFrame("StatusBar", nil, targetFrame)
-targetPowerBar:SetSize(targetFrame:GetWidth() - height, targetFrame:GetHeight() / 3)
+targetPowerBar:SetSize(targetFrame:GetWidth() - height, height / 3)
 targetPowerBar:SetPoint("TOPLEFT", targetHealthBar, "BOTTOMLEFT")
 targetPowerBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
 targetFrame.powerBar = targetPowerBar
@@ -1507,13 +1507,13 @@ targetAltPowerLabel:SetPoint("CENTER")
 targetFrame.altPowerLabel = targetAltPowerLabel
 
 targetAltPowerBar:SetScript("OnShow", function()
-    targetPowerBar:SetHeight((targetFrame:GetHeight() - targetAltPowerBar:GetHeight()) / 3)
+    targetPowerBar:SetHeight((height - targetAltPowerBar:GetHeight()) / 3)
     targetHealthBar:SetHeight(height - targetPowerBar:GetHeight() - targetAltPowerBar:GetHeight())
 end)
 
 targetAltPowerBar:SetScript("OnHide", function()
-    targetPowerBar:SetHeight(targetFrame:GetHeight() / 3)
-    targetHealthBar:SetHeight(height - targetPowerBar:GetHeight())
+    targetPowerBar:SetHeight(height / 3)
+    targetHealthBar:SetHeight(height * 2 / 3)
 end)
 
 --- 更新 AlternatePowerBar
@@ -2081,13 +2081,13 @@ focusAltPowerBar:SetPoint("BOTTOM")
 focusFrame.altPowerBar = focusAltPowerBar
 
 focusAltPowerBar:SetScript("OnShow", function()
-    focusPowerBar:SetHeight(max(12, focusFrame:GetHeight() - focusAltPowerBar:GetHeight() / 3))
+    focusPowerBar:SetHeight(max(12, (focusFrame:GetHeight() - focusAltPowerBar:GetHeight()) / 3))
     focusHealthBar:SetHeight(focusFrame:GetHeight() - focusPowerBar:GetHeight() - focusAltPowerBar:GetHeight())
 end)
 
 focusAltPowerBar:SetScript("OnHide", function()
     focusPowerBar:SetHeight(focusFrame:GetHeight() / 3)
-    focusHealthBar:SetHeight(focusFrame:GetHeight() - focusPowerBar:GetHeight())
+    focusHealthBar:SetHeight(focusFrame:GetHeight() * 2 / 3)
 end)
 
 ---@type FontString
@@ -2354,7 +2354,7 @@ local function CreateBossFrame(i)
 
     bossAltPowerBar:SetScript("OnHide", function()
         bossPowerBar:SetHeight(bossFrame:GetHeight() / 3)
-        bossHealthBar:SetHeight(bossFrame:GetHeight() - bossPowerBar:GetHeight())
+        bossHealthBar:SetHeight(bossFrame:GetHeight() * 2 / 3)
     end)
 
     ---@type FontString
