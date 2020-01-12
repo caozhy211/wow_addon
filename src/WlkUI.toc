@@ -20,4 +20,5 @@ MirrorTimer.lua
 Performance.lua
 Position.lua
 Settings.lua
+Tooltip.lua
 UnitFrame.lua
