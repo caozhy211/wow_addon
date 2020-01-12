@@ -186,7 +186,7 @@ local function UpdateStatusIcon(unitFrame)
     ---@type Texture
     local statusIcon = unitFrame.statusIcon
 
-    if unit == "player" and IsResting() then
+    if UnitIsUnit(unit, "player") and IsResting() then
         statusIcon:SetTexCoord(0, 0.5, 0, 0.421875)
         statusIcon:ClearAllPoints()
         statusIcon:SetPoint("BOTTOMLEFT", -10, -3)
@@ -262,7 +262,7 @@ local function UpdateHealthBarColor(unitFrame)
     if not UnitIsConnected(unit) then
         -- 离线单位
         color = DISABLED_FONT_COLOR
-    elseif unit == "vehicle" then
+    elseif UnitIsUnit(unit, "vehicle") then
         -- 载具
         color = DIM_GREEN_FONT_COLOR
     elseif UnitIsPlayer(unit) then
@@ -750,7 +750,7 @@ local function UpdateComboPoints(unitFrame)
     local unit = unitFrame.unit
 
     local show
-    if unit == "vehicle" then
+    if UnitIsUnit(unit, "vehicle") then
         show = PlayerVehicleHasComboPoints()
     else
         local _, class = UnitClass(unit)

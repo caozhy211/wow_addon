@@ -389,8 +389,8 @@ eventListener:RegisterEvent("INSPECT_READY")
 eventListener:SetScript("OnEvent", function(_, event, ...)
     if event == "INSPECT_READY" then
         -- 观察人物界面显示装备等级
-        local unit = ...
-        if InspectFrame and InspectFrame.unit and UnitGUID(InspectFrame.unit) == unit then
+        local guid = ...
+        if InspectFrame and InspectFrame.unit and UnitGUID(InspectFrame.unit) == guid then
             ShowPaperDollItemLevel(InspectHeadSlot, InspectFrame.unit)
             ShowPaperDollItemLevel(InspectNeckSlot, InspectFrame.unit)
             ShowPaperDollItemLevel(InspectShoulderSlot, InspectFrame.unit)
