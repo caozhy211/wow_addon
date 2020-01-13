@@ -61,18 +61,19 @@ if class == "WARLOCK" then
         end
     end
 
-    shardPane:SetScript("OnEvent", function(_, event, ...)
+    ---@param self Frame
+    shardPane:SetScript("OnEvent", function(self, event, ...)
         if event == "PLAYER_LEVEL_UP" then
             local level = ...
             if level >= SHARDBAR_SHOW_LEVEL then
-                shardPane:UnregisterEvent(event)
-                shardPane:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
-                shardPane:SetAlpha(1)
+                self:UnregisterEvent(event)
+                self:RegisterUnitEvent("UNIT_POWER_FREQUENT", "player")
+                self:SetAlpha(1)
                 CreateShardFrame()
                 UpdateShards()
             end
         elseif event == "PLAYER_LOGIN" then
-            shardPane:UnregisterEvent(event)
+            self:UnregisterEvent(event)
             CreateShardFrame()
             UpdateShards()
         elseif event == "UNIT_POWER_FREQUENT" then

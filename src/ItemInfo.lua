@@ -271,7 +271,6 @@ hooksecurefunc("GuildBankFrame_Update", function()
 end)
 
 --- 商人界面物品按钮显示物品信息
----@param self Frame
 hooksecurefunc("MerchantFrameItem_UpdateQuality", function(self, link)
     ---@type ItemButton
     local button = self.ItemButton
@@ -386,30 +385,28 @@ local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("INSPECT_READY")
 
-eventListener:SetScript("OnEvent", function(_, event, ...)
-    if event == "INSPECT_READY" then
-        -- 观察人物界面显示装备等级
-        local guid = ...
-        if InspectFrame and InspectFrame.unit and UnitGUID(InspectFrame.unit) == guid then
-            ShowPaperDollItemLevel(InspectHeadSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectNeckSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectShoulderSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectBackSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectChestSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectShirtSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectTabardSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectWristSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectHandsSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectWaistSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectLegsSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectFeetSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectFinger0Slot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectFinger1Slot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectTrinket0Slot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectTrinket1Slot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectMainHandSlot, InspectFrame.unit)
-            ShowPaperDollItemLevel(InspectSecondaryHandSlot, InspectFrame.unit)
-        end
+eventListener:SetScript("OnEvent", function(...)
+    -- 观察人物界面显示装备等级
+    local _, _, guid = ...
+    if InspectFrame and InspectFrame.unit and UnitGUID(InspectFrame.unit) == guid then
+        ShowPaperDollItemLevel(InspectHeadSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectNeckSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectShoulderSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectBackSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectChestSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectShirtSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectTabardSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectWristSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectHandsSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectWaistSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectLegsSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectFeetSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectFinger0Slot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectFinger1Slot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectTrinket0Slot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectTrinket1Slot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectMainHandSlot, InspectFrame.unit)
+        ShowPaperDollItemLevel(InspectSecondaryHandSlot, InspectFrame.unit)
     end
 end)
 

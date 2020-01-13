@@ -434,9 +434,10 @@ if not isPetTrainer then
     -- 玩家不是宠物训练师时，注册 SPELLS_CHANGED 事件
     wlkButton:RegisterEvent("SPELLS_CHANGED")
 
-    wlkButton:SetScript("OnEvent", function(_, event)
+    ---@param self Button
+    wlkButton:SetScript("OnEvent", function(self, event)
         -- 成为宠物训练师时，小地图追踪勾选 “宠物追踪” 和 “兽栏管理员”
-        if event == "SPELLS_CHANGED" and isPetTrainer then
+        if isPetTrainer then
             for i = 1, GetNumTrackingTypes() do
                 local _, texture = GetTrackingInfo(i)
                 if texture == 613074 or texture == 136466 then
@@ -444,7 +445,7 @@ if not isPetTrainer then
                 end
             end
             -- 取消注册 SPELLS_CHANGED 事件
-            wlkButton:UnregisterEvent(event)
+            self:UnregisterEvent(event)
         end
     end)
 end

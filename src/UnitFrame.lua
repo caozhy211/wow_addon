@@ -4,7 +4,8 @@ local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("ADDON_LOADED")
 
-eventListener:SetScript("OnEvent", function(_, event, ...)
+---@param self Frame
+eventListener:SetScript("OnEvent", function(self, event, ...)
     if event == "ADDON_LOADED" and ... == addonName then
         -- 将光环过滤器保存在文件中
         if not WLK_UnitAuraFilter then
@@ -34,7 +35,7 @@ eventListener:SetScript("OnEvent", function(_, event, ...)
                 },
             }
         end
-        eventListener:UnregisterEvent(event)
+        self:UnregisterEvent(event)
     end
 end)
 
@@ -731,9 +732,10 @@ local playerComboPoints = CreateFrame("Frame", nil, playerFrame)
 playerComboPoints:SetSize(playerFrame:GetWidth() - height, 9)
 playerComboPoints:SetPoint("BOTTOMRIGHT")
 
-playerComboPoints:SetScript("OnShow", function()
-    playerPowerBar:SetHeight((height - playerComboPoints:GetHeight()) / 3)
-    playerHealthBar:SetHeight(height - playerPowerBar:GetHeight() - playerComboPoints:GetHeight())
+---@param self Frame
+playerComboPoints:SetScript("OnShow", function(self)
+    playerPowerBar:SetHeight((height - self:GetHeight()) / 3)
+    playerHealthBar:SetHeight(height - playerPowerBar:GetHeight() - self:GetHeight())
 end)
 
 playerComboPoints:SetScript("OnHide", function()
@@ -897,26 +899,28 @@ local function CreateAuraButton(auraFrame)
     icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     btn.icon = icon
 
-    btn:SetScript("OnEnter", function()
-        local index = btn.index
+    btn:SetScript("OnEnter", function(self)
+        local index = self.index
 
-        GameTooltip:SetOwner(btn, "ANCHOR_CURSOR_RIGHT", 30, -12)
+        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
         GameTooltip:SetUnitAura(unit, index, filter)
-        btn.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
+        self.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
             GameTooltip:SetUnitAura(unit, index, filter)
         end)
     end)
 
-    btn:SetScript("OnLeave", function()
-        btn.ticker:Cancel()
-        btn.ticker = nil
+    btn:SetScript("OnLeave", function(self)
+        ---@type TickerPrototype
+        local ticker = self.ticker
+        ticker:Cancel()
+        ticker = nil
         GameTooltip:Hide()
     end)
 
     btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
-    btn:SetScript("OnClick", function(_, button)
-        local index = btn.index
+    btn:SetScript("OnClick", function(self, button)
+        local index = self.index
 
         if button == "LeftButton" then
             -- 鼠标左键点击光环将其加入黑名单中
@@ -1064,76 +1068,77 @@ local function UpdatePlayerFrame()
     UpdateAuras(playerFrame)
 end
 
-playerFrame:SetScript("OnEvent", function(_, event)
+---@param self Button
+playerFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         UpdatePlayerFrame()
-        playerFrame:UnregisterEvent(event)
+        self:UnregisterEvent(event)
     elseif event == "UNIT_ENTERED_VEHICLE" and UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
         -- 进入载具且有载具界面时，更新 playerFrame.unit 为 "vehicle"
-        playerFrame.unit = "vehicle"
-        RegisterUnitEvents(playerFrame, playerFrameUnitEvents, "vehicle")
+        self.unit = "vehicle"
+        RegisterUnitEvents(self, playerFrameUnitEvents, "vehicle")
         UpdatePlayerFrame()
     elseif event == "UNIT_EXITING_VEHICLE" then
         -- 离开载具时，更新 playerFrame.unit 为 "player"
-        playerFrame.unit = "player"
-        RegisterUnitEvents(playerFrame, playerFrameUnitEvents, "player")
+        self.unit = "player"
+        RegisterUnitEvents(self, playerFrameUnitEvents, "player")
         UpdatePlayerFrame()
     elseif event == "UNIT_PORTRAIT_UPDATE" or event == "PORTRAITS_UPDATED" or event == "UNIT_MODEL_CHANGED" then
-        UpdatePortrait(playerFrame)
+        UpdatePortrait(self)
     elseif event == "RAID_TARGET_UPDATE" then
-        UpdateRaidTargetIcon(playerFrame)
+        UpdateRaidTargetIcon(self)
     elseif event == "UNIT_FACTION" then
-        UpdatePvPIcon(playerFrame)
+        UpdatePvPIcon(self)
     elseif event == "PARTY_LEADER_CHANGED" then
-        UpdateLeaderIcon(playerFrame)
+        UpdateLeaderIcon(self)
     elseif event == "GROUP_ROSTER_UPDATE" then
-        UpdateLeaderIcon(playerFrame)
-        UpdateGroupLabel(playerFrame)
+        UpdateLeaderIcon(self)
+        UpdateGroupLabel(self)
     elseif event == "PLAYER_ENTER_COMBAT" or event == "PLAYER_LEAVE_COMBAT" or event == "PLAYER_REGEN_ENABLED"
             or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_UPDATE_RESTING" then
-        UpdateStatusIcon(playerFrame)
+        UpdateStatusIcon(self)
     elseif event == "PLAYER_FLAGS_CHANGED" then
-        UpdateStatusLabel(playerFrame)
+        UpdateStatusLabel(self)
     elseif event == "UNIT_MAXHEALTH" then
-        UpdateMaxHealth(playerFrame)
-        UpdateHealth(playerFrame)
-        UpdateHealPrediction(playerFrame)
-        UpdatePercentHealthLabel(playerFrame)
-        UpdateHealthLabel(playerFrame)
+        UpdateMaxHealth(self)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
-        UpdateHealth(playerFrame)
-        UpdateHealPrediction(playerFrame)
-        UpdatePercentHealthLabel(playerFrame)
-        UpdateHealthLabel(playerFrame)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(playerFrame)
+        UpdateHealPrediction(self)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(playerFrame)
-        UpdateAbsorbLabel(playerFrame)
+        UpdateHealPrediction(self)
+        UpdateAbsorbLabel(self)
     elseif event == "UNIT_NAME_UPDATE" then
-        UpdateNameLabel(playerFrame)
+        UpdateNameLabel(self)
     elseif event == "PLAYER_LEVEL_CHANGED" then
-        UpdateLevelLabel(playerFrame)
+        UpdateLevelLabel(self)
     elseif event == "UNIT_CLASSIFICATION_CHANGED" then
-        UpdateRaceLabel(playerFrame)
+        UpdateRaceLabel(self)
     elseif event == "UNIT_MAXPOWER" or event == "UNIT_POWER_FREQUENT" then
-        UpdateMaxPower(playerFrame)
-        UpdatePower(playerFrame)
-        UpdatePercentPowerLabel(playerFrame)
-        UpdatePowerLabel(playerFrame)
-        UpdateComboPoints(playerFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePercentPowerLabel(self)
+        UpdatePowerLabel(self)
+        UpdateComboPoints(self)
     elseif event == "UNIT_POWER_UPDATE" then
-        UpdatePower(playerFrame)
-        UpdatePercentPowerLabel(playerFrame)
-        UpdatePowerLabel(playerFrame)
+        UpdatePower(self)
+        UpdatePercentPowerLabel(self)
+        UpdatePowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
-        UpdateMaxPower(playerFrame)
-        UpdatePower(playerFrame)
-        UpdatePowerBarColor(playerFrame)
-        UpdatePercentPowerLabel(playerFrame)
-        UpdatePowerLabel(playerFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePowerBarColor(self)
+        UpdatePercentPowerLabel(self)
+        UpdatePowerLabel(self)
     elseif event == "UNIT_AURA" then
-        UpdateAuras(playerFrame)
+        UpdateAuras(self)
     end
 end)
 
@@ -1163,6 +1168,7 @@ petFrame:SetScript("OnLeave", function(self)
     UnitFrame_OnLeave(self)
 end)
 
+---@param self Button
 petFrame:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
     if self.elapsed < FRAMESTACK_UPDATE_TIME then
@@ -1171,7 +1177,7 @@ petFrame:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = 0
 
     -- 755：生命通道，45 码
-    petFrame:SetAlpha(IsSpellInRange(GetSpellInfo(755), petFrame.unit) == 1 and 1 or 0.55)
+    self:SetAlpha(IsSpellInRange(GetSpellInfo(755), self.unit) == 1 and 1 or 0.55)
 end)
 
 ---@type Texture
@@ -1278,49 +1284,49 @@ local function UpdatePetFrame()
     UpdatePercentPowerLabel(petFrame)
 end
 
-petFrame:SetScript("OnEvent", function(_, event)
+petFrame:SetScript("OnEvent", function(self, event)
     if event == "UNIT_PET" then
         UpdatePetFrame()
     elseif event == "UNIT_ENTERING_VEHICLE" then
-        petFrame.unit = "player"
-        RegisterUnitEvents(petFrame, petFrameUnitEvents, "player")
+        self.unit = "player"
+        RegisterUnitEvents(self, petFrameUnitEvents, "player")
         UpdatePetFrame()
     elseif event == "UNIT_EXITED_VEHICLE" then
-        petFrame.unit = "pet"
-        RegisterUnitEvents(petFrame, petFrameUnitEvents, "pet")
+        self.unit = "pet"
+        RegisterUnitEvents(self, petFrameUnitEvents, "pet")
         UpdatePetFrame()
     elseif event == "RAID_TARGET_UPDATE" then
-        UpdateRaidTargetIcon(petFrame)
+        UpdateRaidTargetIcon(self)
     elseif event == "UNIT_MAXHEALTH" then
-        UpdateMaxHealth(petFrame)
-        UpdateHealth(petFrame)
-        UpdateHealPrediction(petFrame)
-        UpdatePercentHealthLabel(petFrame)
-        UpdateHealthLabel(petFrame)
+        UpdateMaxHealth(self)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
-        UpdateHealth(petFrame)
-        UpdateHealPrediction(petFrame)
-        UpdatePercentHealthLabel(petFrame)
-        UpdateHealthLabel(petFrame)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(petFrame)
+        UpdateHealPrediction(self)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(petFrame)
-        UpdateAbsorbLabel(petFrame)
+        UpdateHealPrediction(self)
+        UpdateAbsorbLabel(self)
     elseif event == "UNIT_NAME_UPDATE" then
-        UpdateNameLabel(petFrame)
+        UpdateNameLabel(self)
     elseif event == "UNIT_MAXPOWER" then
-        UpdateMaxPower(petFrame)
-        UpdatePower(petFrame)
-        UpdatePercentPowerLabel(petFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePercentPowerLabel(self)
     elseif event == "UNIT_POWER_UPDATE" then
-        UpdatePower(petFrame)
-        UpdatePercentPowerLabel(petFrame)
+        UpdatePower(self)
+        UpdatePercentPowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
-        UpdateMaxPower(petFrame)
-        UpdatePower(petFrame)
-        UpdatePowerBarColor(petFrame)
-        UpdatePercentPowerLabel(petFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePowerBarColor(self)
+        UpdatePercentPowerLabel(self)
     end
 end)
 
@@ -1506,9 +1512,10 @@ local targetAltPowerLabel = targetAltPowerBar:CreateFontString(nil, "ARTWORK", "
 targetAltPowerLabel:SetPoint("CENTER")
 targetFrame.altPowerLabel = targetAltPowerLabel
 
-targetAltPowerBar:SetScript("OnShow", function()
-    targetPowerBar:SetHeight((height - targetAltPowerBar:GetHeight()) / 3)
-    targetHealthBar:SetHeight(height - targetPowerBar:GetHeight() - targetAltPowerBar:GetHeight())
+---@param self StatusBar
+targetAltPowerBar:SetScript("OnShow", function(self)
+    targetPowerBar:SetHeight((height - self:GetHeight()) / 3)
+    targetHealthBar:SetHeight(height - targetPowerBar:GetHeight() - self:GetHeight())
 end)
 
 targetAltPowerBar:SetScript("OnHide", function()
@@ -1656,94 +1663,95 @@ local function UpdateTargetFrame()
     UpdateAuras(targetFrame)
 end
 
-targetFrame:SetScript("OnEvent", function(_, event, ...)
+---@param self Button
+targetFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         UpdateTargetFrame()
-        targetFrame:UnregisterEvent(event)
+        self:UnregisterEvent(event)
     elseif event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
         UpdateTargetFrame()
     elseif event == "UNIT_PORTRAIT_UPDATE" or event == "UNIT_MODEL_CHANGED" or event == "PORTRAITS_UPDATED" then
-        UpdatePortrait(targetFrame)
+        UpdatePortrait(self)
     elseif event == "RAID_TARGET_UPDATE" then
-        UpdateRaidTargetIcon(targetFrame)
+        UpdateRaidTargetIcon(self)
     elseif event == "UNIT_FACTION" then
-        UpdatePvPIcon(targetFrame)
-        UpdateHealthBarColor(targetFrame)
+        UpdatePvPIcon(self)
+        UpdateHealthBarColor(self)
     elseif event == "PARTY_LEADER_CHANGED" then
-        UpdateLeaderIcon(targetFrame)
+        UpdateLeaderIcon(self)
     elseif event == "GROUP_ROSTER_UPDATE" then
-        UpdateLeaderIcon(targetFrame)
-        UpdateGroupLabel(targetFrame)
+        UpdateLeaderIcon(self)
+        UpdateGroupLabel(self)
     elseif event == "UNIT_CLASSIFICATION_CHANGED" then
-        UpdateQuestIcon(targetFrame)
-        UpdateRaceLabel(targetFrame)
-        UpdateLevelLabel(targetFrame)
+        UpdateQuestIcon(self)
+        UpdateRaceLabel(self)
+        UpdateLevelLabel(self)
     elseif event == "PLAYER_FLAGS_CHANGED" then
-        UpdateStatusLabel(targetFrame)
+        UpdateStatusLabel(self)
     elseif event == "UNIT_MAXHEALTH" then
-        UpdateMaxHealth(targetFrame)
-        UpdateHealth(targetFrame)
-        UpdateHealPrediction(targetFrame)
-        UpdatePercentHealthLabel(targetFrame)
-        UpdateHealthLabel(targetFrame)
+        UpdateMaxHealth(self)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
-        UpdateHealth(targetFrame)
-        UpdateHealPrediction(targetFrame)
-        UpdatePercentHealthLabel(targetFrame)
-        UpdateHealthLabel(targetFrame)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_CONNECTION" then
-        UpdateHealthBarColor(targetFrame)
-        UpdatePowerBarColor(targetFrame)
+        UpdateHealthBarColor(self)
+        UpdatePowerBarColor(self)
     elseif event == "UNIT_THREAT_LIST_UPDATE" then
-        UpdateHealthBarColor(targetFrame)
+        UpdateHealthBarColor(self)
     elseif event == "UNIT_NAME_UPDATE" then
-        UpdateNameLabel(targetFrame)
-        UpdateHealthBarColor(targetFrame)
+        UpdateNameLabel(self)
+        UpdateHealthBarColor(self)
     elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(targetFrame)
+        UpdateHealPrediction(self)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(targetFrame)
-        UpdateAbsorbLabel(targetFrame)
+        UpdateHealPrediction(self)
+        UpdateAbsorbLabel(self)
     elseif event == "UNIT_LEVEL" then
-        UpdateLevelLabel(targetFrame)
+        UpdateLevelLabel(self)
     elseif event == "UNIT_MAXPOWER" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
-            UpdateAltPowerBar(targetFrame)
+            UpdateAltPowerBar(self)
         else
-            UpdateMaxPower(targetFrame)
-            UpdatePower(targetFrame)
-            UpdatePercentPowerLabel(targetFrame)
-            UpdatePowerLabel(targetFrame)
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePercentPowerLabel(self)
+            UpdatePowerLabel(self)
         end
     elseif event == "UNIT_POWER_UPDATE" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
-            UpdateAltPowerBar(targetFrame)
+            UpdateAltPowerBar(self)
         else
-            UpdatePower(targetFrame)
-            UpdatePercentPowerLabel(targetFrame)
-            UpdatePowerLabel(targetFrame)
+            UpdatePower(self)
+            UpdatePercentPowerLabel(self)
+            UpdatePowerLabel(self)
         end
     elseif event == "UNIT_DISPLAYPOWER" then
-        UpdateMaxPower(targetFrame)
-        UpdatePower(targetFrame)
-        UpdatePowerBarColor(targetFrame)
-        UpdatePercentPowerLabel(targetFrame)
-        UpdatePowerLabel(targetFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePowerBarColor(self)
+        UpdatePercentPowerLabel(self)
+        UpdatePowerLabel(self)
     elseif event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
-            UpdateAltPowerBar(targetFrame)
+            UpdateAltPowerBar(self)
         else
-            UpdateMaxPower(targetFrame)
-            UpdatePower(targetFrame)
-            UpdatePowerBarColor(targetFrame)
-            UpdatePercentPowerLabel(targetFrame)
-            UpdatePowerLabel(targetFrame)
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePowerBarColor(self)
+            UpdatePercentPowerLabel(self)
+            UpdatePowerLabel(self)
         end
     elseif event == "UNIT_AURA" then
-        UpdateAuras(targetFrame)
+        UpdateAuras(self)
     end
 end)
 
@@ -1875,50 +1883,51 @@ local function UpdateTargetTargetFrame()
     UpdatePercentPowerLabel(targetTargetFrame)
 end
 
-targetTargetFrame:SetScript("OnEvent", function(_, event)
+---@param self Button
+targetTargetFrame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         UpdateTargetTargetFrame()
-        targetTargetFrame:UnregisterEvent(event)
+        self:UnregisterEvent(event)
     elseif event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGET" then
         UpdateTargetTargetFrame()
     elseif event == "RAID_TARGET_UPDATE" then
-        UpdateRaidTargetIcon(targetTargetFrame)
+        UpdateRaidTargetIcon(self)
     elseif event == "UNIT_MAXHEALTH" then
-        UpdateMaxHealth(targetTargetFrame)
-        UpdateHealth(targetTargetFrame)
-        UpdateHealPrediction(targetTargetFrame)
-        UpdatePercentHealthLabel(targetTargetFrame)
-        UpdateHealthLabel(targetTargetFrame)
+        UpdateMaxHealth(self)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
-        UpdateHealth(targetTargetFrame)
-        UpdateHealPrediction(targetTargetFrame)
-        UpdatePercentHealthLabel(targetTargetFrame)
-        UpdateHealthLabel(targetTargetFrame)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_CONNECTION" then
-        UpdateHealthBarColor(targetTargetFrame)
-        UpdatePowerBarColor(targetTargetFrame)
+        UpdateHealthBarColor(self)
+        UpdatePowerBarColor(self)
     elseif event == "UNIT_THREAT_LIST_UPDATE" or event == "UNIT_FACTION" then
-        UpdateHealthBarColor(targetTargetFrame)
+        UpdateHealthBarColor(self)
     elseif event == "UNIT_NAME_UPDATE" then
-        UpdateNameLabel(targetTargetFrame)
-        UpdateHealthBarColor(targetTargetFrame)
+        UpdateNameLabel(self)
+        UpdateHealthBarColor(self)
     elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(targetTargetFrame)
+        UpdateHealPrediction(self)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(targetTargetFrame)
-        UpdateAbsorbLabel(targetTargetFrame)
+        UpdateHealPrediction(self)
+        UpdateAbsorbLabel(self)
     elseif event == "UNIT_MAXPOWER" then
-        UpdateMaxPower(targetTargetFrame)
-        UpdatePower(targetTargetFrame)
-        UpdatePercentPowerLabel(targetTargetFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePercentPowerLabel(self)
     elseif event == "UNIT_POWER_UPDATE" then
-        UpdatePower(targetTargetFrame)
-        UpdatePercentPowerLabel(targetTargetFrame)
+        UpdatePower(self)
+        UpdatePercentPowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
-        UpdateMaxPower(targetTargetFrame)
-        UpdatePower(targetTargetFrame)
-        UpdatePowerBarColor(targetTargetFrame)
-        UpdatePercentPowerLabel(targetTargetFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePowerBarColor(self)
+        UpdatePercentPowerLabel(self)
     end
 end)
 
@@ -2080,9 +2089,9 @@ focusAltPowerBar:SetSize(focusFrame:GetWidth(), 9)
 focusAltPowerBar:SetPoint("BOTTOM")
 focusFrame.altPowerBar = focusAltPowerBar
 
-focusAltPowerBar:SetScript("OnShow", function()
-    focusPowerBar:SetHeight(max(12, (focusFrame:GetHeight() - focusAltPowerBar:GetHeight()) / 3))
-    focusHealthBar:SetHeight(focusFrame:GetHeight() - focusPowerBar:GetHeight() - focusAltPowerBar:GetHeight())
+focusAltPowerBar:SetScript("OnShow", function(self)
+    focusPowerBar:SetHeight(max(12, (focusFrame:GetHeight() - self:GetHeight()) / 3))
+    focusHealthBar:SetHeight(focusFrame:GetHeight() - focusPowerBar:GetHeight() - self:GetHeight())
 end)
 
 focusAltPowerBar:SetScript("OnHide", function()
@@ -2179,74 +2188,75 @@ local function UpdateFocusFrame()
     UpdateAuras(focusFrame)
 end
 
-focusFrame:SetScript("OnEvent", function(_, event, ...)
+---@param self Button
+focusFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         UpdateFocusFrame()
-        focusFrame:UnregisterEvent(event)
+        self:UnregisterEvent(event)
     elseif event == "PLAYER_FOCUS_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
         UpdateFocusFrame()
     elseif event == "PLAYER_TARGET_CHANGED" then
-        UpdateHighlight(focusFrame)
+        UpdateHighlight(self)
     elseif event == "RAID_TARGET_UPDATE" then
-        UpdateRaidTargetIcon(focusFrame)
+        UpdateRaidTargetIcon(self)
     elseif event == "UNIT_MAXHEALTH" then
-        UpdateMaxHealth(focusFrame)
-        UpdateHealth(focusFrame)
-        UpdateHealPrediction(focusFrame)
-        UpdatePercentHealthLabel(focusFrame)
-        UpdateHealthLabel(focusFrame)
+        UpdateMaxHealth(self)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
-        UpdateHealth(focusFrame)
-        UpdateHealPrediction(focusFrame)
-        UpdatePercentHealthLabel(focusFrame)
-        UpdateHealthLabel(focusFrame)
+        UpdateHealth(self)
+        UpdateHealPrediction(self)
+        UpdatePercentHealthLabel(self)
+        UpdateHealthLabel(self)
     elseif event == "UNIT_CONNECTION" then
-        UpdateHealthBarColor(focusFrame)
-        UpdatePowerBarColor(focusFrame)
+        UpdateHealthBarColor(self)
+        UpdatePowerBarColor(self)
     elseif event == "UNIT_THREAT_LIST_UPDATE" or event == "UNIT_FACTION" then
-        UpdateHealthBarColor(focusFrame)
+        UpdateHealthBarColor(self)
     elseif event == "UNIT_NAME_UPDATE" then
-        UpdateNameLabel(focusFrame)
-        UpdateHealthBarColor(focusFrame)
+        UpdateNameLabel(self)
+        UpdateHealthBarColor(self)
     elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(focusFrame)
+        UpdateHealPrediction(self)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
-        UpdateHealPrediction(focusFrame)
-        UpdateAbsorbLabel(focusFrame)
+        UpdateHealPrediction(self)
+        UpdateAbsorbLabel(self)
     elseif event == "UNIT_MAXPOWER" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
-            UpdateAltPowerBar(focusFrame)
+            UpdateAltPowerBar(self)
         else
-            UpdateMaxPower(focusFrame)
-            UpdatePower(focusFrame)
-            UpdatePercentPowerLabel(focusFrame)
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePercentPowerLabel(self)
         end
     elseif event == "UNIT_POWER_UPDATE" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
-            UpdateAltPowerBar(focusFrame)
+            UpdateAltPowerBar(self)
         else
-            UpdatePower(focusFrame)
-            UpdatePercentPowerLabel(focusFrame)
+            UpdatePower(self)
+            UpdatePercentPowerLabel(self)
         end
     elseif event == "UNIT_DISPLAYPOWER" then
-        UpdateMaxPower(focusFrame)
-        UpdatePower(focusFrame)
-        UpdatePowerBarColor(focusFrame)
-        UpdatePercentPowerLabel(focusFrame)
+        UpdateMaxPower(self)
+        UpdatePower(self)
+        UpdatePowerBarColor(self)
+        UpdatePercentPowerLabel(self)
     elseif event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
-            UpdateAltPowerBar(focusFrame)
+            UpdateAltPowerBar(self)
         else
-            UpdateMaxPower(focusFrame)
-            UpdatePower(focusFrame)
-            UpdatePowerBarColor(focusFrame)
-            UpdatePercentPowerLabel(focusFrame)
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePowerBarColor(self)
+            UpdatePercentPowerLabel(self)
         end
     elseif event == "UNIT_AURA" then
-        UpdateAuras(focusFrame)
+        UpdateAuras(self)
     end
 end)
 
@@ -2347,9 +2357,10 @@ local function CreateBossFrame(i)
     bossAltPowerBar:SetPoint("BOTTOM")
     bossFrame.altPowerBar = bossAltPowerBar
 
-    bossAltPowerBar:SetScript("OnShow", function()
-        bossPowerBar:SetHeight(max(12, (bossFrame:GetHeight() - bossAltPowerBar:GetHeight()) / 3))
-        bossHealthBar:SetHeight(bossFrame:GetHeight() - bossPowerBar:GetHeight() - bossAltPowerBar:GetHeight())
+    ---@param self StatusBar
+    bossAltPowerBar:SetScript("OnShow", function(self)
+        bossPowerBar:SetHeight(max(12, (bossFrame:GetHeight() - self:GetHeight()) / 3))
+        bossHealthBar:SetHeight(bossFrame:GetHeight() - bossPowerBar:GetHeight() - self:GetHeight())
     end)
 
     bossAltPowerBar:SetScript("OnHide", function()
@@ -2430,74 +2441,75 @@ local function CreateBossFrame(i)
         UpdateAuras(bossFrame)
     end
 
-    bossFrame:SetScript("OnEvent", function(_, event, ...)
+    ---@param self Button
+    bossFrame:SetScript("OnEvent", function(self, event, ...)
         if event == "PLAYER_LOGIN" then
             UpdateBossFrame()
-            bossFrame:UnregisterEvent(event)
+            self:UnregisterEvent(event)
         elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or event == "UNIT_TARGETABLE_CHANGED" then
             UpdateBossFrame()
         elseif event == "PLAYER_TARGET_CHANGED" then
-            UpdateHighlight(bossFrame)
+            UpdateHighlight(self)
         elseif event == "RAID_TARGET_UPDATE" then
-            UpdateRaidTargetIcon(bossFrame)
+            UpdateRaidTargetIcon(self)
         elseif event == "UNIT_MAXHEALTH" then
-            UpdateMaxHealth(bossFrame)
-            UpdateHealth(bossFrame)
-            UpdateHealPrediction(bossFrame)
-            UpdatePercentHealthLabel(bossFrame)
-            UpdateHealthLabel(bossFrame)
+            UpdateMaxHealth(self)
+            UpdateHealth(self)
+            UpdateHealPrediction(self)
+            UpdatePercentHealthLabel(self)
+            UpdateHealthLabel(self)
         elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
-            UpdateHealth(bossFrame)
-            UpdateHealPrediction(bossFrame)
-            UpdatePercentHealthLabel(bossFrame)
-            UpdateHealthLabel(bossFrame)
+            UpdateHealth(self)
+            UpdateHealPrediction(self)
+            UpdatePercentHealthLabel(self)
+            UpdateHealthLabel(self)
         elseif event == "UNIT_CONNECTION" then
-            UpdateHealthBarColor(bossFrame)
-            UpdatePowerBarColor(bossFrame)
+            UpdateHealthBarColor(self)
+            UpdatePowerBarColor(self)
         elseif event == "UNIT_THREAT_LIST_UPDATE" or event == "UNIT_FACTION" then
-            UpdateHealthBarColor(bossFrame)
+            UpdateHealthBarColor(self)
         elseif event == "UNIT_NAME_UPDATE" then
-            UpdateNameLabel(bossFrame)
-            UpdateHealthBarColor(bossFrame)
+            UpdateNameLabel(self)
+            UpdateHealthBarColor(self)
         elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
-            UpdateHealPrediction(bossFrame)
+            UpdateHealPrediction(self)
         elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
-            UpdateHealPrediction(bossFrame)
-            UpdateAbsorbLabel(bossFrame)
+            UpdateHealPrediction(self)
+            UpdateAbsorbLabel(self)
         elseif event == "UNIT_MAXPOWER" then
             local _, powerType = ...
             if powerType == "ALTERNATE" then
-                UpdateAltPowerBar(bossFrame)
+                UpdateAltPowerBar(self)
             else
-                UpdateMaxPower(bossFrame)
-                UpdatePower(bossFrame)
-                UpdatePercentPowerLabel(bossFrame)
+                UpdateMaxPower(self)
+                UpdatePower(self)
+                UpdatePercentPowerLabel(self)
             end
         elseif event == "UNIT_POWER_UPDATE" then
             local _, powerType = ...
             if powerType == "ALTERNATE" then
-                UpdateAltPowerBar(bossFrame)
+                UpdateAltPowerBar(self)
             else
-                UpdatePower(bossFrame)
-                UpdatePercentPowerLabel(bossFrame)
+                UpdatePower(self)
+                UpdatePercentPowerLabel(self)
             end
         elseif event == "UNIT_DISPLAYPOWER" then
-            UpdateMaxPower(bossFrame)
-            UpdatePower(bossFrame)
-            UpdatePowerBarColor(bossFrame)
-            UpdatePercentPowerLabel(bossFrame)
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePowerBarColor(self)
+            UpdatePercentPowerLabel(self)
         elseif event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
             local _, powerType = ...
             if powerType == "ALTERNATE" then
-                UpdateAltPowerBar(bossFrame)
+                UpdateAltPowerBar(self)
             else
-                UpdateMaxPower(bossFrame)
-                UpdatePower(bossFrame)
-                UpdatePowerBarColor(bossFrame)
-                UpdatePercentPowerLabel(bossFrame)
+                UpdateMaxPower(self)
+                UpdatePower(self)
+                UpdatePowerBarColor(self)
+                UpdatePercentPowerLabel(self)
             end
         elseif event == "UNIT_AURA" then
-            UpdateAuras(bossFrame)
+            UpdateAuras(self)
         end
     end)
 

@@ -86,13 +86,14 @@ local eventListener = CreateFrame("Frame")
 eventListener:RegisterEvent("PLAYER_LOGIN")
 eventListener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
 
-eventListener:SetScript("OnEvent", function(_, event, ...)
+---@param self Frame
+eventListener:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" then
         -- 设置 PlayerPowerBarAlt 位置
         playerPowerBarAlt:ClearAllPoints()
         -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
         playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
-        eventListener:UnregisterEvent(event)
+        self:UnregisterEvent(event)
     elseif event == "SPELL_PUSHED_TO_ACTIONBAR" then
         -- 阻止在不是第一页动作条学会新技能时技能图标自动添加到第一页动作条
         local _, slot = ...
@@ -183,7 +184,6 @@ for i = 1, #actionButtons do
 end
 
 --- 目标不在动作条按钮的技能范围内时，按钮变红色
----@param self Button 动作条按钮
 hooksecurefunc("ActionButton_OnUpdate", function(self)
     if self.rangeTimer == TOOLTIP_UPDATE_TIME then
         local valid = IsActionInRange(self.action)

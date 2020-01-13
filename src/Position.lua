@@ -172,7 +172,8 @@ local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("PLAYER_LOGIN")
 
-eventListener:SetScript("OnEvent", function(_, event)
+---@param self Frame
+eventListener:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         objectiveTrackerFrame:ClearAllPoints()
         -- MicroButtonAndBagsBar 左边相对屏幕右边偏移 -298px，PoiButton 左边相对 objectiveTrackerFrame 左边偏移 -29px，上边界
@@ -187,7 +188,7 @@ eventListener:SetScript("OnEvent", function(_, event)
         end
         wipe(needUpdateFrames)
     end
-    eventListener:UnregisterEvent(event)
+    self:UnregisterEvent(event)
 end)
 
 --- 修改团队单位之间的间距

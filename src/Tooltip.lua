@@ -165,23 +165,21 @@ local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("INSPECT_READY")
 
-eventListener:SetScript("OnEvent", function(_, event, ...)
-    if event == "INSPECT_READY" then
-        local guid = ...
-        if guid == inspectGUID then
-            -- 获取装等和专精并添加到鼠标提示
-            local iLevel = iLevelCaches[inspectGUID] or GetUnitAverageItemLevel()
-            local specName = specNameCaches[inspectGUID] or GetUnitSpecialization()
-            GameTooltipShowItemLevelAndSpec(iLevel, specName)
-            if iLevel == "..." or specName == "..." then
-                -- 如果装等或专精返回 “...”，表示服务器未返回数据，需要重新查看单位并获取数据
-                ClearInspectPlayer()
-                NotifyInspect(inspectUnit)
-            else
-                -- 获取正确数据后，添加到缓存中
-                iLevelCaches[inspectGUID] = iLevel
-                specNameCaches[inspectGUID] = specName
-            end
+eventListener:SetScript("OnEvent", function(...)
+    local _, _, guid = ...
+    if guid == inspectGUID then
+        -- 获取装等和专精并添加到鼠标提示
+        local iLevel = iLevelCaches[inspectGUID] or GetUnitAverageItemLevel()
+        local specName = specNameCaches[inspectGUID] or GetUnitSpecialization()
+        GameTooltipShowItemLevelAndSpec(iLevel, specName)
+        if iLevel == "..." or specName == "..." then
+            -- 如果装等或专精返回 “...”，表示服务器未返回数据，需要重新查看单位并获取数据
+            ClearInspectPlayer()
+            NotifyInspect(inspectUnit)
+        else
+            -- 获取正确数据后，添加到缓存中
+            iLevelCaches[inspectGUID] = iLevel
+            specNameCaches[inspectGUID] = specName
         end
     end
 end)

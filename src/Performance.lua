@@ -64,17 +64,16 @@ memoryBar:RegisterEvent("PLAYER_LOGIN")
 
 local addons = {}
 --- 登录后初始化 addons 表
-memoryBar:SetScript("OnEvent", function(_, event)
-    if event == "PLAYER_LOGIN" then
-        for i = 1, GetNumAddOns() do
-            if not addons[i] and IsAddOnLoaded(i) then
-                local name = GetAddOnInfo(i)
-                local memory = GetAddOnMemoryUsage(i)
-                tinsert(addons, { name = name, memory = memory, min = 100000, max = 0, })
-            end
+---@param self StatusBar
+memoryBar:SetScript("OnEvent", function(self, event)
+    for i = 1, GetNumAddOns() do
+        if not addons[i] and IsAddOnLoaded(i) then
+            local name = GetAddOnInfo(i)
+            local memory = GetAddOnMemoryUsage(i)
+            tinsert(addons, { name = name, memory = memory, min = 100000, max = 0, })
         end
-        memoryBar:UnregisterEvent(event)
     end
+    self:UnregisterEvent(event)
 end)
 
 --- 格式化内存占用
@@ -156,8 +155,10 @@ memoryBar:SetScript("OnEnter", function(self)
 end)
 
 memoryBar:SetScript("OnLeave", function(self)
-    self.ticker:Cancel()
-    self.ticker = nil
+    ---@type TickerPrototype
+    local ticker = self.ticker
+    ticker:Cancel()
+    ticker = nil
     GameTooltip:Hide()
 end)
 

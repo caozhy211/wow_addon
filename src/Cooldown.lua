@@ -40,27 +40,28 @@ local function CreateTimer(cooldown)
 
     timer.updateInterval = 0.01
 
-    timer:SetScript("OnUpdate", function(_, elapsed)
-        timer.elapsed = (timer.elapsed or 0) + elapsed
-        if timer.elapsed < timer.updateInterval then
+    ---@param self Frame
+    timer:SetScript("OnUpdate", function(self, elapsed)
+        self.elapsed = (self.elapsed or 0) + elapsed
+        if self.elapsed < self.updateInterval then
             return
         end
-        timer.elapsed = 0
+        self.elapsed = 0
 
-        local timeRemaining = timer.duration - (GetTime() - timer.start)
+        local timeRemaining = self.duration - (GetTime() - self.start)
         if timeRemaining > 0 then
             local timeText, scale, updateInterval = GetSettingParameters(timeRemaining)
             label:SetText(timeText)
             label:SetScale(scale)
-            timer.updateInterval = updateInterval
+            self.updateInterval = updateInterval
         else
-            timer:Hide()
+            self:Hide()
         end
     end)
 
-    timer:SetScript("OnShow", function()
+    timer:SetScript("OnShow", function(self)
         -- 计时器显示时需要立即更新
-        timer.updateInterval = 0.01
+        self.updateInterval = 0.01
     end)
 
     cooldown.timerFrame = timer
