@@ -12,7 +12,7 @@
 - CharacterStat.lua：人物统计
 - ChatCommands.lua：聊天命令
 - ChatFrame.lua：聊天窗口
-- （待完成）Cooldown.lua：冷却计时
+- Cooldown.lua：冷却计时
 - Coordinate.lua：世界地图坐标
 - Copy.lua：复制游戏内文字内容
 - （待完成）DamageStat.lua：伤害统计

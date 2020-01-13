@@ -10,6 +10,7 @@ ActionBar.lua
 CharacterStats.lua
 ChatCommands.lua
 ChatFrame.lua
+Cooldown.lua
 Coordinate.lua
 Copy.lua
 FastFocus.lua
