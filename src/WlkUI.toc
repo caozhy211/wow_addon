@@ -7,6 +7,7 @@
 ## SavedVariables: WLK_UnitAuraFilter
 
 ActionBar.lua
+CharacterStats.lua
 ChatCommands.lua
 ChatFrame.lua
 Coordinate.lua
