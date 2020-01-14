@@ -198,7 +198,7 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
 end)
 
 local numDivs = 10
-local width = 360
+local width = 380
 ---@type Texture
 local xpMid = OverrideActionBar.xpBar.XpMid
 ---@type Texture
