@@ -26,7 +26,7 @@
 - （待完成）NamePlate.lua：姓名板
 - （待完成）Notice.lua：获得物品、完成成就等提示
 - Performance.lua：显示延迟、帧数和内存占用
-- （待完成）PetBattle.lua：宠物对战
+- PetBattle.lua：宠物对战
 - Position.lua：调整框体位置
 - （待完成）PvpTalent.lua：pvp 天赋
 - Marker.lua：标记按钮

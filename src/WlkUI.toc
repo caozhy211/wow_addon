@@ -21,6 +21,7 @@ Merchant.lua
 Minimap.lua
 MirrorTimer.lua
 Performance.lua
+PetBattle.lua
 Position.lua
 Settings.lua
 SoulShards.lua
