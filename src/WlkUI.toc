@@ -25,3 +25,4 @@ Settings.lua
 SoulShards.lua
 Tooltip.lua
 UnitFrame.lua
+UsableItem.lua
