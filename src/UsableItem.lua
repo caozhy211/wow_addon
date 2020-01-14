@@ -5,6 +5,20 @@ local usableItemFrame = CreateFrame("Frame", "WLK_UsableItemFrame", UIParent)
 usableItemFrame:SetSize(228, size)
 usableItemFrame:SetPoint("BOTTOM", 0, 185 + 20 + 1)
 
+---@type GameTooltip
+local tooltip = CreateFrame("GameTooltip", "WLK_UsableItemTooltip", UIParent, "GameTooltipTemplate")
+
+---@type GameTooltip
+tooltip:HookScript("OnTooltipSetItem", function(self)
+    local _, link = self:GetItem()
+    local id = GetItemInfoFromHyperlink(link)
+    if id then
+        self:AddLine(" ")
+        self:AddLine(ITEMS .. ID .. "：" .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:Show()
+    end
+end)
+
 ---@type table<number, Button>
 local itemButtons = {}
 local numItemButtons = 6
@@ -28,10 +42,20 @@ local function CreateItemButton(index)
 
     ---@param self Button
     itemButton:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
-        GameTooltip:SetHyperlink(self.link)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+        local bagID = self:GetAttribute("bag")
+        local slot = self:GetAttribute("slot")
+        if bagID then
+            tooltip:SetBagItem(bagID, slot)
+        else
+            tooltip:SetInventoryItem("player", slot)
+        end
         self.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
-            GameTooltip:SetHyperlink(self.link)
+            if bagID then
+                tooltip:SetBagItem(bagID, slot)
+            else
+                tooltip:SetInventoryItem("player", slot)
+            end
         end)
     end)
 
@@ -40,7 +64,7 @@ local function CreateItemButton(index)
         local ticker = self.ticker
         ticker:Cancel()
         ticker = nil
-        GameTooltip:Hide()
+        tooltip:Hide()
     end)
 
     itemButton:SetScript("OnUpdate", function(self)

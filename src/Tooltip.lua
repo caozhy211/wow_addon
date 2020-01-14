@@ -37,7 +37,6 @@ end)
 local scannerTooltip = CreateFrame("GameTooltip", "WLK_Tooltip", UIParent, "GameTooltipTemplate")
 
 local inspectUnit, inspectGUID
-local iLevelCaches, specNameCaches = {}, {}
 
 --- 获取当前查看单位的装等
 local function GetUnitAverageItemLevel()
@@ -169,17 +168,13 @@ eventListener:SetScript("OnEvent", function(...)
     local _, _, guid = ...
     if guid == inspectGUID then
         -- 获取装等和专精并添加到鼠标提示
-        local iLevel = iLevelCaches[inspectGUID] or GetUnitAverageItemLevel()
-        local specName = specNameCaches[inspectGUID] or GetUnitSpecialization()
+        local iLevel = GetUnitAverageItemLevel()
+        local specName = GetUnitSpecialization()
         GameTooltipShowItemLevelAndSpec(iLevel, specName)
         if iLevel == "..." or specName == "..." then
             -- 如果装等或专精返回 “...”，表示服务器未返回数据，需要重新查看单位并获取数据
             ClearInspectPlayer()
             NotifyInspect(inspectUnit)
-        else
-            -- 获取正确数据后，添加到缓存中
-            iLevelCaches[inspectGUID] = iLevel
-            specNameCaches[inspectGUID] = specName
         end
     end
 end)
@@ -293,7 +288,7 @@ GameTooltip:HookScript("OnUpdate", function(self, elapsed)
     end
 
     self.elapsed = (self.elapsed or 0) + elapsed
-    if self.elapsed < FRAMESTACK_UPDATE_TIME then
+    if self.elapsed < TOOLTIP_UPDATE_TIME then
         return
     end
     self.elapsed = 0

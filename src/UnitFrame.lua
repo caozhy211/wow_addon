@@ -863,6 +863,18 @@ local function UpdateAuras(unitFrame)
     end
 end
 
+---@type GameTooltip
+local tooltip = CreateFrame("GameTooltip", "WLK_UnitAuraTooltip", UIParent, "GameTooltipTemplate")
+
+hooksecurefunc(tooltip, "SetUnitAura", function(self, ...)
+    local id = select(10, UnitAura(...))
+    if id then
+        self:AddLine(" ")
+        self:AddLine(AURAS .. ID .. "：" .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:Show()
+    end
+end)
+
 --- 光环按钮大小
 local size = 34
 
@@ -902,10 +914,10 @@ local function CreateAuraButton(auraFrame)
     btn:SetScript("OnEnter", function(self)
         local index = self.index
 
-        GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
-        GameTooltip:SetUnitAura(unit, index, filter)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+        tooltip:SetUnitAura(unit, index, filter)
         self.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
-            GameTooltip:SetUnitAura(unit, index, filter)
+            tooltip:SetUnitAura(unit, index, filter)
         end)
     end)
 
@@ -914,7 +926,7 @@ local function CreateAuraButton(auraFrame)
         local ticker = self.ticker
         ticker:Cancel()
         ticker = nil
-        GameTooltip:Hide()
+        tooltip:Hide()
     end)
 
     btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
