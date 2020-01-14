@@ -16,6 +16,7 @@ Copy.lua
 FastFocus.lua
 Grid.lua
 ItemInfo.lua
+Marker.lua
 Merchant.lua
 Minimap.lua
 MirrorTimer.lua
