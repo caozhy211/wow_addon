@@ -372,8 +372,13 @@ local function ApplyWlkSettings()
     SetWlkInterfaceOptions()
     -- 按键设置
     SetWlkBindings()
-    -- 加入 “寻求组队” 频道
-    ChatFrame_AddChannel(ChatFrame1, LOOK_FOR_GROUP)
+    -- 综合聊天窗口设置勾选 “频道” 中的所有频道
+    local channelList = { GetChannelList() }
+    for i = 2, #channelList, 3 do
+        ChatFrame_AddChannel(ChatFrame1, channelList[i])
+    end
+    -- 综合聊天窗口设置取消勾选 “其他” 中的 “频道”
+    ChatFrame_RemoveMessageGroup(ChatFrame1, "CHANNEL")
     -- 设置小地图追踪类型
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
