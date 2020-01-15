@@ -20,6 +20,7 @@ Marker.lua
 Merchant.lua
 Minimap.lua
 MirrorTimer.lua
+NamePlates.lua
 Performance.lua
 PetBattle.lua
 Position.lua

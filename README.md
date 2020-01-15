@@ -23,7 +23,7 @@
 - Merchant.lua：自动出售垃圾物品和修理装备
 - Minimap.lua：小地图
 - MirrorTimer.lua：镜像计时条
-- （待完成）NamePlate.lua：姓名板
+- NamePlates.lua：姓名板
 - （待完成）Notice.lua：获得物品、完成成就等提示
 - Performance.lua：显示延迟、帧数和内存占用
 - PetBattle.lua：宠物对战
