@@ -34,8 +34,7 @@ local function CreateTimer(cooldown)
     timer:SetAllPoints()
 
     ---@type FontString
-    local label = timer:CreateFontString(nil, "ARTWORK", "SystemFont_Outline")
-    label:SetHeight(cooldown:GetHeight() * 0.5)
+    local label = timer:CreateFontString()
     label:SetPoint("CENTER")
 
     timer.updateInterval = 0.01
@@ -51,8 +50,8 @@ local function CreateTimer(cooldown)
         local timeRemaining = self.duration - (GetTime() - self.start)
         if timeRemaining > 0 then
             local timeText, scale, updateInterval = GetSettingParameters(timeRemaining)
+            label:SetFont("Fonts/blei00d.TTF", cooldown:GetHeight() * 0.5 * scale, "OUTLINE")
             label:SetText(timeText)
-            label:SetScale(scale)
             self.updateInterval = updateInterval
         else
             self:Hide()
