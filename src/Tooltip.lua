@@ -40,6 +40,10 @@ local inspectUnit, inspectGUID
 
 --- 获取当前查看单位的装等
 local function GetUnitAverageItemLevel()
+    if UnitIsUnit(inspectUnit, "player") then
+        local _, avgItemLevelEquipped = GetAverageItemLevel()
+        return floor(avgItemLevelEquipped + 0.5)
+    end
     local totalItemLevel = 0
     local waiting
     local mEquipSlot, oEquipSlot
