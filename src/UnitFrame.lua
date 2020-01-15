@@ -1299,7 +1299,8 @@ end
 petFrame:SetScript("OnEvent", function(self, event)
     if event == "UNIT_PET" then
         UpdatePetFrame()
-    elseif event == "UNIT_ENTERING_VEHICLE" then
+    elseif event == "UNIT_ENTERING_VEHICLE" and UnitHasVehicleUI("player")
+            and UnitHasVehiclePlayerFrameUI("player") then
         self.unit = "player"
         RegisterUnitEvents(self, petFrameUnitEvents, "player")
         UpdatePetFrame()
