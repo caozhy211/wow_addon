@@ -208,7 +208,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     end
 
     -- 查看单位以获取装等和专精
-    if CanInspect(unit) then
+    if unit and CanInspect(unit) then
         inspectUnit = unit
         inspectGUID = UnitGUID(unit)
         ClearInspectPlayer()
