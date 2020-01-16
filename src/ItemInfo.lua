@@ -320,44 +320,6 @@ hooksecurefunc("EquipmentFlyout_DisplayButton", function(button)
     ShowItemInfo(button, link, arg, slot)
 end)
 
---- 拍卖行浏览界面物品按钮显示物品信息
-hooksecurefunc("AuctionFrameBrowse_Update", function()
-    local offset = FauxScrollFrame_GetOffset(BrowseScrollFrame)
-    for i = 1, NUM_BROWSE_TO_DISPLAY do
-        local button = _G["BrowseButton" .. i .. "Item"]
-        local link = GetAuctionItemLink("list", offset + i)
-        if button then
-            ShowItemInfo(button, link)
-        end
-    end
-end)
-
---- 拍卖行竞拍界面物品按钮显示物品信息
-hooksecurefunc("AuctionFrameBid_Update", function()
-    local offset = FauxScrollFrame_GetOffset(BidScrollFrame)
-    for i = 1, NUM_BIDS_TO_DISPLAY do
-        local button = _G["BidButton" .. i .. "Item"]
-        local link = GetAuctionItemLink("bidder", offset + i)
-        if button then
-            ShowItemInfo(button, link)
-        end
-    end
-end)
-
---- 拍卖行拍卖界面物品按钮显示物品信息
-hooksecurefunc("AuctionFrameAuctions_Update", function()
-    local offset = FauxScrollFrame_GetOffset(AuctionsScrollFrame)
-    -- 获取拍卖的时光徽章的数量
-    local tokenCount = C_WowTokenPublic.GetNumListedAuctionableTokens()
-    for i = 1, NUM_AUCTIONS_TO_DISPLAY do
-        local button = _G["AuctionsButton" .. i .. "Item"]
-        local link = GetAuctionItemLink("owner", offset - tokenCount + i)
-        if button then
-            ShowItemInfo(button, link)
-        end
-    end
-end)
-
 --- 人物界面显示装备等级
 local function ShowPaperDollItemLevel(button, unit)
     local slot = button:GetID()
