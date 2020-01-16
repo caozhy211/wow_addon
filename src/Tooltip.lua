@@ -34,7 +34,7 @@ gameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
 end)
 
 ---@type GameTooltip
-local scannerTooltip = CreateFrame("GameTooltip", "WLK_Tooltip", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", "WLK_InventoryScanner", UIParent, "GameTooltipTemplate")
 
 local inspectUnit, inspectGUID
 
@@ -51,9 +51,9 @@ local function GetUnitAverageItemLevel()
     for i = INVSLOT_FIRST_EQUIPPED, INVSLOT_OFFHAND do
         -- 不计算衬衫的等级
         if i ~= INVSLOT_BODY then
-            scannerTooltip:SetOwner(UIParent, "ANCHOR_NONE")
-            scannerTooltip:SetInventoryItem(inspectUnit, i)
-            local link = GetInventoryItemLink(inspectUnit, i) or select(2, scannerTooltip:GetItem())
+            scanner:SetOwner(UIParent, "ANCHOR_NONE")
+            scanner:SetInventoryItem(inspectUnit, i)
+            local link = GetInventoryItemLink(inspectUnit, i) or select(2, scanner:GetItem())
             if link then
                 local name, _, quality, _, _, _, _, _, equipLoc = GetItemInfo(link)
                 if not waiting and not name then
@@ -68,7 +68,7 @@ local function GetUnitAverageItemLevel()
                         -- 传家宝使用鼠标提示获取物品等级
                         for j = 2, 3 do
                             ---@type FontString
-                            local line = _G[scannerTooltip:GetName() .. "TextLeft" .. j]
+                            local line = _G[scanner:GetName() .. "TextLeft" .. j]
                             if line then
                                 local text = line:GetText()
                                 if not level and text then

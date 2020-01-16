@@ -114,7 +114,7 @@ local function GetColorStr(equipLoc, r, g, b)
 end
 
 ---@type GameTooltip
-local tooltip = CreateFrame("GameTooltip", "WLK_EquipmentInfoTooltip", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", "WLK_ItemScanner", UIParent, "GameTooltipTemplate")
 
 --- 获取物品信息
 local function GetItemInformation(link, onlyForLevel, arg, slot)
@@ -128,24 +128,24 @@ local function GetItemInformation(link, onlyForLevel, arg, slot)
         end
     end
     -- 其他物品等级和绑定信息通过扫描鼠标提示信息获取
-    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+    scanner:SetOwner(UIParent, "ANCHOR_NONE")
     if type(arg) == "number" and slot then
         -- 背包中的物品
-        tooltip:SetBagItem(arg, slot)
+        scanner:SetBagItem(arg, slot)
     elseif type(arg) == "string" and slot then
         -- 银行中的物品
-        tooltip:SetInventoryItem(arg, slot)
+        scanner:SetInventoryItem(arg, slot)
     elseif slot then
         -- 商人界面买回按钮上的物品
-        tooltip:SetBuybackItem(slot)
+        scanner:SetBuybackItem(slot)
     else
         -- 其他物品
-        tooltip:SetHyperlink(link)
+        scanner:SetHyperlink(link)
     end
     for i = 2, 7 do
         while true do
             ---@type FontString
-            local textLeftLabel = _G[tooltip:GetName() .. "TextLeft" .. i]
+            local textLeftLabel = _G[scanner:GetName() .. "TextLeft" .. i]
             if textLeftLabel then
                 local leftText = textLeftLabel:GetText()
                 if leftText then
@@ -169,7 +169,7 @@ local function GetItemInformation(link, onlyForLevel, arg, slot)
                             local colorStr = GetColorStr(equipLoc, textLeftLabel:GetTextColor())
                             slotName = WrapTextInColorCode(slotNames[equipLoc], colorStr)
                             ---@type FontString
-                            local textRightLabel = _G[tooltip:GetName() .. "TextRight" .. i]
+                            local textRightLabel = _G[scanner:GetName() .. "TextRight" .. i]
                             if textRightLabel and textRightLabel:GetText() then
                                 colorStr = GetColorStr(equipLoc, textRightLabel:GetTextColor())
                                 subtype = WrapTextInColorCode(subtypes[classID][subclassID], colorStr)
