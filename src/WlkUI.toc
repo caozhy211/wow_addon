@@ -1,4 +1,4 @@
-## Interface: 80205
+## Interface: 80300
 ## Title: WlkUI
 ## Notes: 自用魔兽世界插件
 ## Author: czy211
