@@ -28,7 +28,7 @@
 - Performance.lua：显示延迟、帧数和内存占用
 - PetBattle.lua：宠物对战
 - Position.lua：调整框体位置
-- （待完成）PvpTalent.lua：pvp 天赋
+- PVPTalent.lua：pvp 天赋
 - Marker.lua：标记按钮
 - Settings.lua：一键应用默认设置或自定义设置
 - （待完成）SimCText.lua：SimulationCraft 文本

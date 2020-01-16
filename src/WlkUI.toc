@@ -24,6 +24,7 @@ NamePlates.lua
 Performance.lua
 PetBattle.lua
 Position.lua
+PVPTalent.lua
 Settings.lua
 SoulShards.lua
 Tooltip.lua
