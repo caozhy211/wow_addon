@@ -149,6 +149,10 @@ local function GetItemInformation(link, onlyForLevel, arg, slot)
             if textLeftLabel then
                 local leftText = textLeftLabel:GetText()
                 if leftText then
+                    if leftText == RETRIEVING_ITEM_INFO then
+                        -- 读取物品资讯
+                        return
+                    end
                     -- 获取物品等级
                     if not level then
                         level = strmatch(leftText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
@@ -199,7 +203,7 @@ end
 --- 物品按钮上显示物品信息
 ---@param button ItemButton
 local function ShowItemInfo(button, link, arg, slot)
-    local level, bind, topRight, bottomRight = "", "", "", ""
+    local level, bind, topRight, bottomRight
     if link then
         if button.origLink == link then
             level = button.origLevel
@@ -207,12 +211,14 @@ local function ShowItemInfo(button, link, arg, slot)
             topRight = button.origTopRight
             bottomRight = button.origBottomRight
         else
-            button.origLink = link
             level, bind, topRight, bottomRight = GetItemInformation(link, false, arg, slot)
-            button.origLevel = level
-            button.origBind = bind
-            button.origTopRight = topRight
-            button.origBottomRight = bottomRight
+            if level then
+                button.origLink = link
+                button.origLevel = level
+                button.origBind = bind
+                button.origTopRight = topRight
+                button.origBottomRight = bottomRight
+            end
         end
     end
 
