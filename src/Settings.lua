@@ -442,7 +442,7 @@ if not isPetTrainer then
     ---@param self Button
     wlkButton:SetScript("OnEvent", function(self, event)
         -- 成为宠物训练师时，小地图追踪勾选 “宠物追踪” 和 “兽栏管理员”
-        if isPetTrainer then
+        if IsSpellKnown(125439) and C_PetJournal.IsJournalUnlocked() then
             for i = 1, GetNumTrackingTypes() do
                 local _, texture = GetTrackingInfo(i)
                 if texture == 613074 or texture == 136466 then
