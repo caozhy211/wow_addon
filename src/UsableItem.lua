@@ -27,7 +27,7 @@ local spacing = (228 - size * numItemButtons) / (numItemButtons - 1)
 --- 创建按钮
 local function CreateItemButton(index)
     ---@type Button
-    local itemButton = CreateFrame("Button", "WLK_UsableItemButton", usableItemFrame,
+    local itemButton = CreateFrame("Button", "WLK_UsableItemButton" .. index, usableItemFrame,
             "SecureActionButtonTemplate, ActionButtonTemplate")
     itemButton:SetSize(size, size)
     itemButton:SetPoint("LEFT", (size + spacing) * (index - 1), 0)
@@ -115,6 +115,15 @@ local shownItems = {}
 
 local delayShowItemButtons = {}
 
+--- 使用 new 替换 tbl 中的 old
+local function tReplace(tbl, old, new)
+    for k, v in pairs(tbl) do
+        if v == old then
+            tbl[k] = new
+        end
+    end
+end
+
 --- 显示按钮
 local function ShowItemButton(link, itemID, count, texture, slot, bagID)
     if InCombatLockdown() then
@@ -126,8 +135,8 @@ local function ShowItemButton(link, itemID, count, texture, slot, bagID)
         local itemButton = itemButtons[i]
         if itemButton:IsShown() and itemButton:GetAttribute("slot") == slot
                 and itemButton:GetAttribute("bag") == bagID then
-            -- 装备界面替换装备，删除 shownItems 中保存的之前的物品 link，并更新按钮的属性
-            tDeleteItem(shownItems, itemButton.link)
+            -- 装备界面替换装备，替换 shownItems 中保存的之前的物品 link，并更新按钮的属性
+            tReplace(shownItems, itemButton.link, link)
             itemButton.link = link
             itemButton.itemID = itemID
             ---@type FontString
@@ -137,7 +146,6 @@ local function ShowItemButton(link, itemID, count, texture, slot, bagID)
             local icon = itemButton.icon
             icon:SetTexture(texture)
             UpdateCooldown()
-            tinsert(shownItems, link)
             break
         elseif not itemButton:IsShown() then
             -- 新增物品，设置按钮属性后显示按钮
@@ -190,6 +198,7 @@ local function HideItemButton(slot)
             local itemButton = itemButtons[i]
             if itemButton:IsShown() and not itemButton:GetAttribute("bag")
                     and itemButton:GetAttribute("slot") == slot then
+                itemButton:SetAttribute("slot", nil)
                 itemButton:Hide()
                 tDeleteItem(shownItems, itemButton.link)
                 break
@@ -200,6 +209,8 @@ local function HideItemButton(slot)
         for i = 1, numItemButtons do
             local itemButton = itemButtons[i]
             if itemButton:IsShown() and not FindInInventoryOrBag(itemButton.link) then
+                itemButton:SetAttribute("bag", nil)
+                itemButton:SetAttribute("slot", nil)
                 itemButton:Hide()
                 tDeleteItem(shownItems, itemButton.link)
             end
@@ -245,6 +256,9 @@ local function CheckPaperDollItem(slot)
             -- 装备槽位有可使用的物品，按钮显示该物品
             local icon = GetInventoryItemTexture("player", slot)
             ShowItemButton(link, itemID, 1, icon, slot)
+        else
+            -- 替换为不可使用的物品，隐藏之前显示的物品
+            HideItemButton(slot)
         end
     else
         -- 装备槽位没有物品，隐藏之前显示的物品
