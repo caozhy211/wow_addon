@@ -115,15 +115,6 @@ local shownItems = {}
 
 local delayShowItemButtons = {}
 
---- 使用 new 替换 tbl 中的 old
-local function tReplace(tbl, old, new)
-    for k, v in pairs(tbl) do
-        if v == old then
-            tbl[k] = new
-        end
-    end
-end
-
 --- 显示按钮
 local function ShowItemButton(link, itemID, count, texture, slot, bagID)
     if InCombatLockdown() then
@@ -131,38 +122,37 @@ local function ShowItemButton(link, itemID, count, texture, slot, bagID)
         tinsert(delayShowItemButtons, { link, itemID, count, texture, slot, bagID, })
         return
     end
-    for i = 1, numItemButtons do
-        local itemButton = itemButtons[i]
-        if itemButton:IsShown() and itemButton:GetAttribute("slot") == slot
-                and itemButton:GetAttribute("bag") == bagID then
-            -- 装备界面替换装备，替换 shownItems 中保存的之前的物品 link，并更新按钮的属性
-            tReplace(shownItems, itemButton.link, link)
-            itemButton.link = link
-            itemButton.itemID = itemID
-            ---@type FontString
-            local countLabel = itemButton.Count
-            countLabel:SetText(count > 1 and count or "")
-            ---@type Texture
-            local icon = itemButton.icon
-            icon:SetTexture(texture)
-            UpdateCooldown()
-            break
-        elseif not itemButton:IsShown() then
-            -- 新增物品，设置按钮属性后显示按钮
-            itemButton:SetAttribute("bag", bagID)
-            itemButton:SetAttribute("slot", slot)
-            itemButton.link = link
-            itemButton.itemID = itemID
-            ---@type FontString
-            local countLabel = itemButton.Count
-            countLabel:SetText(count > 1 and count or "")
-            ---@type Texture
-            local icon = itemButton.icon
-            icon:SetTexture(texture)
-            itemButton:Show()
-            UpdateCooldown()
-            tinsert(shownItems, link)
-            break
+    if tContains(shownItems, link) then
+        -- 替换已经显示的物品
+        for i = 1, numItemButtons do
+            local itemButton = itemButtons[i]
+            if itemButton:IsShown() and itemButton.link == link then
+                itemButton:SetAttribute("bag", bagID)
+                itemButton:SetAttribute("slot", slot)
+                UpdateCooldown()
+                break
+            end
+        end
+    else
+        -- 新增物品，设置按钮属性后显示按钮
+        for i = 1, numItemButtons do
+            local itemButton = itemButtons[i]
+            if not itemButton:IsShown() then
+                itemButton:SetAttribute("bag", bagID)
+                itemButton:SetAttribute("slot", slot)
+                itemButton.link = link
+                itemButton.itemID = itemID
+                ---@type FontString
+                local countLabel = itemButton.Count
+                countLabel:SetText(count > 1 and count or "")
+                ---@type Texture
+                local icon = itemButton.icon
+                icon:SetTexture(texture)
+                itemButton:Show()
+                UpdateCooldown()
+                tinsert(shownItems, link)
+                break
+            end
         end
     end
 end
@@ -232,6 +222,7 @@ hooksecurefunc("QuestObjectiveItem_Initialize", function(_, questLogIndex)
                     for slot = 1, GetContainerNumSlots(bagID) do
                         if link == GetContainerItemLink(bagID, slot) then
                             ShowItemButton(link, itemID, count, icon, slot, bagID)
+                            return
                         end
                     end
                 end
@@ -247,6 +238,24 @@ hooksecurefunc("QuestObjectiveReleaseBlockButton_Item", function()
     end
 end)
 
+---@param self Frame
+hooksecurefunc("ContainerFrame_Update", function(self)
+    if #shownItems > 0 then
+        local bagID = self:GetID()
+        for i = 1, self.size do
+            ---@type ItemButton
+            local button = _G[self:GetName() .. "Item" .. i]
+            local slot = button:GetID()
+            local link = GetContainerItemLink(bagID, slot)
+            if link and tContains(shownItems, link) then
+                local itemID = GetItemInfoFromHyperlink(link)
+                local count, _, icon = select(8, GetItemInfo(link))
+                ShowItemButton(link, itemID, count, icon, slot, bagID)
+            end
+        end
+    end
+end)
+
 --- 检查装备槽位上的物品是否可使用
 local function CheckPaperDollItem(slot)
     local link = GetInventoryItemLink("player", slot)
@@ -257,11 +266,11 @@ local function CheckPaperDollItem(slot)
             local icon = GetInventoryItemTexture("player", slot)
             ShowItemButton(link, itemID, 1, icon, slot)
         else
-            -- 替换为不可使用的物品，隐藏之前显示的物品
+            -- 不可使用的物品
             HideItemButton(slot)
         end
     else
-        -- 装备槽位没有物品，隐藏之前显示的物品
+        -- 装备槽位没有物品
         HideItemButton(slot)
     end
 end
