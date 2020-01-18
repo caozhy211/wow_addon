@@ -24,7 +24,7 @@
 - Minimap.lua：小地图
 - MirrorTimer.lua：镜像计时条
 - NamePlates.lua：姓名板
-- （待完成）Notice.lua：获得物品、完成成就等提示
+- Notification.lua：获得物品、完成成就等提示
 - Performance.lua：显示延迟、帧数和内存占用
 - PetBattle.lua：宠物对战
 - Position.lua：调整框体位置
