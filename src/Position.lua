@@ -203,3 +203,80 @@ hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
         UpdateCompactRaidGroupLayout(frame)
     end
 end)
+
+---@type Frame
+local bankFrame = BankFrame
+
+--- 调整背包位置
+hooksecurefunc("UpdateContainerFrameAnchors", function()
+    -- ContainerFrame1 底部相对屏幕底部偏移 130px，NoticePane 顶部相对屏幕底部偏移 156px
+    local containerOffsetY = CONTAINER_OFFSET_Y + 156 - 130
+    local containerFrameOffsetX = max(CONTAINER_OFFSET_X, MINIMUM_CONTAINER_OFFSET_X)
+    local xOffset, yOffset, screenHeight, freeScreenHeight, leftMostPoint, column
+    local screenWidth = GetScreenWidth()
+    local containerScale = 1
+    local leftLimit = 0
+    if bankFrame:IsShown() then
+        leftLimit = bankFrame:GetRight() - 25
+    end
+
+    while containerScale > CONTAINER_SCALE do
+        screenHeight = GetScreenHeight() / containerScale
+        -- Adjust the start anchor for bags depending on the multibars
+        xOffset = containerFrameOffsetX / containerScale
+        yOffset = containerOffsetY / containerScale
+        -- freeScreenHeight determines when to start a new column of bags
+        freeScreenHeight = screenHeight - yOffset
+        leftMostPoint = screenWidth - xOffset
+        column = 1
+        local frameHeight
+        for i = 1, #(ContainerFrame1.bags) do
+            ---@type Frame
+            local containerFrame = _G[ContainerFrame1.bags[i]]
+            frameHeight = containerFrame:GetHeight()
+            if freeScreenHeight < frameHeight then
+                -- Start a new column
+                column = column + 1
+                leftMostPoint = screenWidth - (column * CONTAINER_WIDTH * containerScale) - xOffset
+                freeScreenHeight = screenHeight - yOffset
+            end
+            freeScreenHeight = freeScreenHeight - frameHeight - VISIBLE_CONTAINER_SPACING
+        end
+        if leftMostPoint < leftLimit then
+            containerScale = containerScale - 0.01
+        else
+            break
+        end
+    end
+
+    if containerScale < CONTAINER_SCALE then
+        containerScale = CONTAINER_SCALE
+    end
+
+    screenHeight = GetScreenHeight() / containerScale
+    -- Adjust the start anchor for bags depending on the multibars
+    xOffset = containerFrameOffsetX / containerScale
+    yOffset = containerOffsetY / containerScale
+    -- freeScreenHeight determines when to start a new column of bags
+    freeScreenHeight = screenHeight - yOffset
+    column = 0
+    for i = 1, #(ContainerFrame1.bags) do
+        --for index, frameName in ipairs(ContainerFrame1.bags) do
+        ---@type Frame
+        local frame = _G[ContainerFrame1.bags[i]]
+        frame:SetScale(containerScale)
+        if i == 1 then
+            -- First bag
+            frame:SetPoint("BOTTOMRIGHT", -xOffset, yOffset)
+        elseif freeScreenHeight < frame:GetHeight() then
+            -- Start a new column
+            column = column + 1
+            freeScreenHeight = screenHeight - yOffset
+            frame:SetPoint("BOTTOMRIGHT", -(column * CONTAINER_WIDTH) - xOffset, yOffset)
+        else
+            -- Anchor to the previous bag
+            frame:SetPoint("BOTTOMRIGHT", ContainerFrame1.bags[i - 1], "TOPRIGHT", 0, CONTAINER_SPACING)
+        end
+        freeScreenHeight = freeScreenHeight - frame:GetHeight() - VISIBLE_CONTAINER_SPACING
+    end
+end)
