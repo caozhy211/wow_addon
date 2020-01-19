@@ -40,7 +40,7 @@ end
 
 --- 使用快捷键显示 fstack 选中的对象名称
 tinsert(FrameStackTooltip.commandKeys, KeyCommand_Create(function()
-    ---@type Object
+    ---@type UIObject
     local object = FrameStackTooltip.highlightFrame
     if object then
         local name = object:GetDebugName()

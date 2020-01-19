@@ -12,7 +12,7 @@ ChatCommands.lua
 ChatFrame.lua
 Cooldown.lua
 Coordinate.lua
-Copy.lua
+CopyText.lua
 FastFocus.lua
 Grid.lua
 ItemInfo.lua
