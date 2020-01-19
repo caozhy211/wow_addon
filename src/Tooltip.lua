@@ -133,33 +133,36 @@ end
 
 --- 鼠标提示显示装等和专精
 local function GameTooltipShowItemLevelAndSpec(iLevel, specName)
-    iLevel = HIGHLIGHT_FONT_COLOR_CODE .. iLevel .. FONT_COLOR_CODE_CLOSE
-    ---@type FontString
-    local index
-    -- 在鼠标提示内容中找到装等专精标签在第几行
-    for i = GameTooltip:NumLines(), 2, -1 do
+    local _, unit = GameTooltip:GetUnit()
+    if unit and UnitGUID(unit) == inspectGUID then
+        iLevel = HIGHLIGHT_FONT_COLOR_CODE .. iLevel .. FONT_COLOR_CODE_CLOSE
         ---@type FontString
-        local line = _G["GameTooltipTextLeft" .. i]
-        if line then
-            local text = line:GetText()
-            if text and strfind(text, "^" .. STAT_AVERAGE_ITEM_LEVEL .. "：") then
-                index = i
-                break
+        local index
+        -- 在鼠标提示内容中找到装等专精标签在第几行
+        for i = GameTooltip:NumLines(), 2, -1 do
+            ---@type FontString
+            local line = _G["GameTooltipTextLeft" .. i]
+            if line then
+                local text = line:GetText()
+                if text and strfind(text, "^" .. STAT_AVERAGE_ITEM_LEVEL .. "：") then
+                    index = i
+                    break
+                end
             end
         end
-    end
-    if index then
-        -- 鼠标提示中已经有装等专精标签，更新标签内容
-        ---@type FontString
-        local levelLabel = _G["GameTooltipTextLeft" .. index]
-        levelLabel:SetText(STAT_AVERAGE_ITEM_LEVEL .. "：" .. iLevel)
-        ---@type FontString
-        local specLabel = _G["GameTooltipTextRight" .. index]
-        specLabel:SetText(specName)
-    else
-        -- 没有装等专精标签，则添加标签
-        GameTooltip:AddDoubleLine(STAT_AVERAGE_ITEM_LEVEL .. "：" .. iLevel, specName)
-        GameTooltip:Show()
+        if index then
+            -- 鼠标提示中已经有装等专精标签，更新标签内容
+            ---@type FontString
+            local levelLabel = _G["GameTooltipTextLeft" .. index]
+            levelLabel:SetText(STAT_AVERAGE_ITEM_LEVEL .. "：" .. iLevel)
+            ---@type FontString
+            local specLabel = _G["GameTooltipTextRight" .. index]
+            specLabel:SetText(specName)
+        else
+            -- 没有装等专精标签，则添加标签
+            GameTooltip:AddDoubleLine(STAT_AVERAGE_ITEM_LEVEL .. "：" .. iLevel, specName)
+            GameTooltip:Show()
+        end
     end
 end
 
