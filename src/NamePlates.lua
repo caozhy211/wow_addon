@@ -165,31 +165,32 @@ local scanner = CreateFrame("GameTooltip", "WLK_NamePlateScanner", UIParent, "Ga
 local function IsQuestUnit(unit)
     scanner:SetOwner(UIParent, "ANCHOR_NONE")
     scanner:SetUnit(unit)
+    local isQuestUnit, completed
     for i = 3, scanner:NumLines() do
         ---@type FontString
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
         local r, g, b = line:GetTextColor()
         if r > 0.99 and g > 0.82 and b == 0 then
-            return true
+            isQuestUnit = true
         else
             local text = line:GetText()
             local name, progress = strmatch(text, "^ ([^ ]-) ?%- (.+)$")
-            local areaProgress = strmatch(text, "(%d+)%%$")
-            if name and (progress or areaProgress) then
+            local percentProgress = strmatch(text, "(%d+)%%$")
+            if (name == "" or name == UnitName("player")) and (progress or percentProgress) then
                 local current, goal
-                if areaProgress then
-                    current = areaProgress
-                    goal = 100
+                if percentProgress then
+                    current = percentProgress
+                    goal = "100"
                 else
                     current, goal = strmatch(progress, "(%d+)/(%d+)")
                 end
-                if current and goal then
-                    return current ~= goal and (name == "" or name == UnitName("player"))
+                if current == goal then
+                    completed = true
                 end
-                return name == "" or name == UnitName("player")
             end
         end
     end
+    return isQuestUnit and not completed
 end
 
 --- 更新任务图标
