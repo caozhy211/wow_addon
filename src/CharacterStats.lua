@@ -56,8 +56,6 @@ local function CreateStatFrame()
     statFrameCreated = true
 end
 
-local wasSwimming
-
 --- 更新统计数据
 local function UpdateStats()
     if not statFrameCreated then
@@ -135,31 +133,6 @@ local function UpdateStats()
     -- 更新躲避
     valueLabel = statFrames[index].Value
     valueLabel:SetFormattedText("%.2f%%", GetAvoidance())
-    index = index + 1
-
-    -- 更新移速
-    local _, runSpeed, flightSpeed, swimSpeed = GetUnitSpeed("player")
-    runSpeed = runSpeed / BASE_MOVEMENT_SPEED * 100
-    flightSpeed = flightSpeed / BASE_MOVEMENT_SPEED * 100
-    swimSpeed = swimSpeed / BASE_MOVEMENT_SPEED * 100
-
-    local speed = runSpeed
-    local swimming = IsSwimming("player")
-    if swimming then
-        speed = swimSpeed
-    elseif IsFlying("player") then
-        speed = flightSpeed
-    end
-    -- 从水中出来时不改变移速
-    if IsFalling("player") then
-        if wasSwimming then
-            speed = swimSpeed
-        end
-    else
-        wasSwimming = swimming
-    end
-    valueLabel = statFrames[index].Value
-    valueLabel:SetFormattedText("%d%%", speed + 0.5)
 end
 
 statsPane:RegisterUnitEvent("UNIT_DAMAGE", "player")
@@ -191,4 +164,32 @@ statsPane:SetScript("OnEvent", function(_, event)
         CreateStatFrame()
     end
     UpdateStats()
+end)
+
+local wasSwimming
+
+C_Timer.NewTicker(PERFORMANCEBAR_UPDATE_INTERVAL, function()
+    -- 更新移速
+    local _, runSpeed, flightSpeed, swimSpeed = GetUnitSpeed("player")
+    runSpeed = runSpeed / BASE_MOVEMENT_SPEED * 100
+    flightSpeed = flightSpeed / BASE_MOVEMENT_SPEED * 100
+    swimSpeed = swimSpeed / BASE_MOVEMENT_SPEED * 100
+
+    local speed = runSpeed
+    local swimming = IsSwimming("player")
+    if swimming then
+        speed = swimSpeed
+    elseif IsFlying("player") then
+        speed = flightSpeed
+    end
+    -- 在水面跳动时不改变移速
+    if IsFalling("player") then
+        if wasSwimming then
+            speed = swimSpeed
+        end
+    else
+        wasSwimming = swimming
+    end
+    local valueLabel = statFrames[#statFrames].Value
+    valueLabel:SetFormattedText("%d%%", speed + 0.5)
 end)
