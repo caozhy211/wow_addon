@@ -218,6 +218,11 @@ local function ShowItemInfo(button, link, arg, slot)
                 button.origBind = bind
                 button.origTopRight = topRight
                 button.origBottomRight = bottomRight
+            else
+                C_Timer.After(0.3, function()
+                    ShowItemInfo(button, link, arg, slot)
+                end)
+                return
             end
         end
     end
