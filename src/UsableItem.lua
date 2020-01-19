@@ -111,196 +111,110 @@ local function UpdateCooldown()
     end
 end
 
-local shownItems = {}
+local shownSlots = {}
+local shownQuests = {}
+local shownBagIDs = {}
 
-local delayShowItemButtons = {}
+--- 更新按钮的属性并显示按钮
+local function UpdateItemButton(index, itemID, count, icon, slot, bagID, questID)
+    local button = itemButtons[index]
+    button.itemID = itemID
+    ---@type FontString
+    local countLabel = button.Count
+    countLabel:SetText(count > 1 and count or "")
+    button.icon:SetTexture(icon)
+    button:SetAttribute("slot", slot)
+    button:SetAttribute("bag", bagID)
+    if bagID then
+        tinsert(shownBagIDs, bagID)
+        tinsert(shownQuests, questID)
+    else
+        tinsert(shownSlots, slot)
+    end
+    button:Show()
+    CooldownFrame_Set(button.cooldown, GetItemCooldown(button.itemID))
+end
 
---- 显示按钮
-local function ShowItemButton(link, itemID, count, texture, slot, bagID)
+--- 检查物品是否是可使用的任务物品
+local function IsQuestUsableItem(link)
+    local count, _, icon, _, classID, subclassID, bindType = select(8, GetItemInfo(link))
+    if (classID == LE_ITEM_CLASS_QUESTITEM and subclassID == LE_QUEST_TAG_TYPE_TAG or bindType == LE_ITEM_BIND_QUEST)
+            and IsUsableItem(link) then
+        return count, icon
+    end
+end
+
+--- 获取任务物品的任务 ID
+local function GetQuestIDByItemLink(link)
+    for i = 1, GetNumQuestLogEntries() do
+        if link == GetQuestLogSpecialItemInfo(i) then
+            return select(8, GetQuestLogTitle(i))
+        end
+    end
+end
+
+--- 检查装备和背包中可使用的物品，更新 itemButtons
+local function UpdateAllItemButtons(questID)
     if InCombatLockdown() then
         usableItemFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        tinsert(delayShowItemButtons, { link, itemID, count, texture, slot, bagID, })
         return
     end
-    if tContains(shownItems, link) then
-        -- 替换已经显示的物品
-        for i = 1, numItemButtons do
-            local itemButton = itemButtons[i]
-            if itemButton:IsShown() and itemButton.link == link then
-                itemButton:SetAttribute("bag", bagID)
-                itemButton:SetAttribute("slot", slot)
-                UpdateCooldown()
-                break
-            end
-        end
-    else
-        -- 新增物品，设置按钮属性后显示按钮
-        for i = 1, numItemButtons do
-            local itemButton = itemButtons[i]
-            if not itemButton:IsShown() then
-                itemButton:SetAttribute("bag", bagID)
-                itemButton:SetAttribute("slot", slot)
-                itemButton.link = link
-                itemButton.itemID = itemID
-                ---@type FontString
-                local countLabel = itemButton.Count
-                countLabel:SetText(count > 1 and count or "")
-                ---@type Texture
-                local icon = itemButton.icon
-                icon:SetTexture(texture)
-                itemButton:Show()
-                UpdateCooldown()
-                tinsert(shownItems, link)
-                break
-            end
-        end
-    end
-end
+    usableItemFrame:UnregisterEvent("PLAYER_REGEN_ENABLED")
 
---- 在装备界面和背包中查找是否拥有该物品
-local function FindInInventoryOrBag(link)
-    for i = INVSLOT_HEAD, INVSLOT_OFFHAND do
-        if link == GetInventoryItemLink("player", i) then
-            return true
-        end
-    end
-    for bagID = 0, NUM_BAG_FRAMES do
-        for slot = 1, GetContainerNumSlots(bagID) do
-            if link == GetContainerItemLink(bagID, slot) then
-                return true
-            end
-        end
-    end
-end
+    wipe(shownSlots)
+    wipe(shownQuests)
+    wipe(shownBagIDs)
 
-local delayHideItemButtons = {}
-
---- 隐藏按钮
-local function HideItemButton(slot)
-    if InCombatLockdown() then
-        usableItemFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        tinsert(delayHideItemButtons, { slot, })
-        return
-    end
-    if slot then
-        -- 隐藏装备物品
-        for i = 1, numItemButtons do
-            local itemButton = itemButtons[i]
-            if itemButton:IsShown() and not itemButton:GetAttribute("bag")
-                    and itemButton:GetAttribute("slot") == slot then
-                itemButton:SetAttribute("slot", nil)
-                itemButton:Hide()
-                tDeleteItem(shownItems, itemButton.link)
-                break
-            end
+    local index = 1
+    -- 检查装备界面的所有装备
+    for slot = INVSLOT_HEAD, INVSLOT_OFFHAND do
+        local link = GetInventoryItemLink("player", slot)
+        local itemID = link and GetItemInfoFromHyperlink(link)
+        if itemID and IsUsableItem(link) then
+            local icon = GetInventoryItemTexture("player", slot)
+            UpdateItemButton(index, itemID, 1, icon, slot)
+            index = index + 1
         end
-    else
-        -- 隐藏任务追踪物品
-        for i = 1, numItemButtons do
-            local itemButton = itemButtons[i]
-            if itemButton:IsShown() and not FindInInventoryOrBag(itemButton.link) then
-                itemButton:SetAttribute("bag", nil)
-                itemButton:SetAttribute("slot", nil)
-                itemButton:Hide()
-                tDeleteItem(shownItems, itemButton.link)
-            end
+        if index == numItemButtons then
+            return
         end
     end
-end
 
---- 显示背包中可使用的任务物品
-hooksecurefunc("QuestObjectiveItem_Initialize", function(_, questLogIndex)
-    -- 因为只能是新增物品，所以已显示物品小于按钮数量时才需要显示按钮
-    if #shownItems < numItemButtons then
-        local link, icon, count = GetQuestLogSpecialItemInfo(questLogIndex)
-        -- 该物品必须是未在按钮中显示的
-        if not tContains(shownItems, link) then
-            local itemID = GetItemInfoFromHyperlink(link)
-            if itemID then
-                -- 根据 link 找到物品在背包中位置
-                for bagID = 0, NUM_BAG_FRAMES do
-                    for slot = 1, GetContainerNumSlots(bagID) do
-                        if link == GetContainerItemLink(bagID, slot) then
-                            ShowItemButton(link, itemID, count, icon, slot, bagID)
-                            return
-                        end
+    -- 检查背包中的所有物品
+    if index < numItemButtons then
+        for bagID = 0, NUM_BAG_FRAMES do
+            for slot = 1, GetContainerNumSlots(bagID) do
+                local link = GetContainerItemLink(bagID, slot)
+                local itemID = link and GetItemInfoFromHyperlink(link)
+                if itemID then
+                    local count, icon = IsQuestUsableItem(link)
+                    if count and icon then
+                        UpdateItemButton(index, itemID, count, icon, slot, bagID, questID or GetQuestIDByItemLink(link))
+                        index = index + 1
                     end
+                end
+                if index == numItemButtons then
+                    return
                 end
             end
         end
     end
-end)
 
---- 隐藏背包中可使用的任务物品
-hooksecurefunc("QuestObjectiveReleaseBlockButton_Item", function()
-    if #shownItems > 0 then
-        HideItemButton()
-    end
-end)
-
----@param self Frame
-hooksecurefunc("ContainerFrame_Update", function(self)
-    if #shownItems > 0 then
-        local bagID = self:GetID()
-        for i = 1, self.size do
-            ---@type ItemButton
-            local button = _G[self:GetName() .. "Item" .. i]
-            local slot = button:GetID()
-            local link = GetContainerItemLink(bagID, slot)
-            if link and tContains(shownItems, link) then
-                local itemID = GetItemInfoFromHyperlink(link)
-                local count, _, icon = select(8, GetItemInfo(link))
-                ShowItemButton(link, itemID, count, icon, slot, bagID)
-            end
-        end
-    end
-end)
-
---- 检查装备槽位上的物品是否可使用
-local function CheckPaperDollItem(slot)
-    local link = GetInventoryItemLink("player", slot)
-    if link then
-        local itemID = GetItemInfoFromHyperlink(link)
-        if itemID and IsUsableItem(link) then
-            -- 装备槽位有可使用的物品，按钮显示该物品
-            local icon = GetInventoryItemTexture("player", slot)
-            ShowItemButton(link, itemID, 1, icon, slot)
-        else
-            -- 不可使用的物品
-            HideItemButton(slot)
-        end
-    else
-        -- 装备槽位没有物品
-        HideItemButton(slot)
-    end
-end
-
---- 装备界面物品改变时，更新 itemButtons 中的装备按钮
----@param self ItemButton
-hooksecurefunc("PaperDollItemSlotButton_OnEvent", function(self, event, ...)
-    -- 有可能是移除物品或替换物品，所以已显示物品小于等于按钮数量都需要更新
-    if event == "PLAYER_EQUIPMENT_CHANGED" and #shownItems <= numItemButtons then
-        local equipmentSlot = ...
-        if self:GetID() == equipmentSlot then
-            CheckPaperDollItem(equipmentSlot)
-        end
-    end
-end)
-
---- 检查装备界面所有物品是否可使用
-local function CheckAllPaperDollItems()
-    for i = INVSLOT_HEAD, INVSLOT_OFFHAND do
-        -- 按钮都已经有显示物品时，不再需要遍历
-        if #shownItems >= numItemButtons then
-            break
-        end
-        CheckPaperDollItem(i)
+    -- 隐藏没有物品的按钮
+    for i = index, numItemButtons do
+        itemButtons[i]:Hide()
     end
 end
 
 usableItemFrame:RegisterEvent("PLAYER_LOGIN")
-usableItemFrame:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
+usableItemFrame:RegisterEvent("UNIT_INVENTORY_CHANGED", "player")
 usableItemFrame:RegisterEvent("BAG_UPDATE_COOLDOWN")
+usableItemFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
+usableItemFrame:RegisterEvent("QUEST_ACCEPTED")
+usableItemFrame:RegisterEvent("QUEST_TURNED_IN")
+usableItemFrame:RegisterEvent("QUEST_REMOVED")
+usableItemFrame:RegisterEvent("BAG_UPDATE")
+usableItemFrame:RegisterEvent("PLAYER_UNGHOST")
 
 ---@param self Frame
 usableItemFrame:SetScript("OnEvent", function(self, event, ...)
@@ -308,24 +222,40 @@ usableItemFrame:SetScript("OnEvent", function(self, event, ...)
     -- PLAYER_LOGIN 事件时调用 IsUsableItem 来获取物品是否可使用
     if event == "PLAYER_LOGIN" then
         SetBindingKey()
-        CheckAllPaperDollItems()
+        UpdateAllItemButtons()
         self:UnregisterEvent(event)
     elseif event == "UNIT_INVENTORY_CHANGED" then
-        CheckAllPaperDollItems()
+        UpdateAllItemButtons()
         self:UnregisterEvent(event)
     elseif event == "BAG_UPDATE_COOLDOWN" then
         UpdateCooldown()
-    elseif event == "PLAYER_REGEN_ENABLED" then
-        -- 隐藏因战斗中锁住的按钮
-        for i = 1, #delayHideItemButtons do
-            HideItemButton(unpack(delayHideItemButtons[i]))
+    elseif event == "PLAYER_EQUIPMENT_CHANGED" then
+        local equipmentSlot = ...
+        local link = GetInventoryItemLink("player", equipmentSlot)
+        -- 该装备槽位现在是可使用的装备或该装备槽位之前有可使用的装备，都需要更新
+        if link and IsUsableItem(link) or tContains(shownSlots, equipmentSlot) then
+            UpdateAllItemButtons()
         end
-        wipe(delayHideItemButtons)
-        -- 显示因战斗中锁住的按钮
-        for i = 1, #delayShowItemButtons do
-            ShowItemButton(unpack(delayShowItemButtons[i]))
+    elseif event == "QUEST_ACCEPTED" then
+        local questIndex, questID = ...
+        local link = GetQuestLogSpecialItemInfo(questIndex)
+        -- 接受的任务有可使用的任务物品时，需要更新
+        if link and IsQuestUsableItem(link) then
+            UpdateAllItemButtons(questID)
         end
-        wipe(delayShowItemButtons)
-        self:UnregisterEvent(event)
+    elseif event == "QUEST_TURNED_IN" or event == "QUEST_REMOVED" then
+        local questID = ...
+        -- 提交任务或放弃任务，且该任务有可使用的任务物品时，需要更新
+        if tContains(shownQuests, questID) then
+            UpdateAllItemButtons()
+        end
+    elseif event == "BAG_UPDATE" then
+        local bagID = ...
+        -- 更新的背包中有可使用的任务物品时，需要更新
+        if tContains(shownBagIDs, bagID) then
+            UpdateAllItemButtons()
+        end
+    elseif event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_UNGHOST" then
+        UpdateAllItemButtons()
     end
 end)
