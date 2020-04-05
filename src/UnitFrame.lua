@@ -811,12 +811,29 @@ local function UpdateAuraButton(auraFrame, index, name, icon, count, duration, e
         ---@type Button
         local button = auraFrame.buttons[auraFrame.numAurasShown]
         if button then
+            button.slot = nil
             button.index = index
             button.icon:SetTexture(icon)
             button.stack:SetText(count > 1 and count or "")
             button.cooldown:SetCooldown(expirationTime - duration, duration)
             button:Show()
         end
+    end
+end
+
+--- 更新图腾按钮
+local function UpdateTotemButton(auraFrame, totemValue)
+    auraFrame.numAurasShown = auraFrame.numAurasShown + 1
+    ---@type Button
+    local button = auraFrame.buttons[auraFrame.numAurasShown]
+    if button then
+        button.index = nil
+        button.slot = totemValue.slot
+        button.icon:SetTexture(totemValue.icon)
+        local count = totemValue.count
+        button.stack:SetText(count > 1 and count or "")
+        button.cooldown:SetCooldown(totemValue.startTime, totemValue.duration)
+        button:Show()
     end
 end
 
@@ -836,6 +853,26 @@ local function ScannerUnitAura(auraFrame)
         UpdateAuraButton(auraFrame, index, name, icon, count, duration, expirationTime, source, tostring(spellID))
         if auraFrame.numAurasShown >= #(auraFrame.buttons) then
             break
+        end
+    end
+
+    if unit == "player" and auraFrame.type == "Buff" and auraFrame.numAurasShown < #(auraFrame.buttons) then
+        local totems = {}
+        for i = 1, MAX_TOTEMS do
+            local haveTotem, _, startTime, duration, icon = GetTotemInfo(i)
+            if haveTotem then
+                if not totems[icon] then
+                    totems[icon] = { slot = i, startTime = startTime, duration = duration, icon = icon, count = 1, }
+                else
+                    totems[icon].count = totems[icon].count + 1
+                end
+            end
+        end
+        for _, value in pairs(totems) do
+            UpdateTotemButton(auraFrame, value)
+            if auraFrame.numAurasShown >= #(auraFrame.buttons) then
+                break
+            end
         end
     end
 
@@ -881,9 +918,6 @@ local size = 34
 --- 创建光环按钮
 ---@param auraFrame Frame
 local function CreateAuraButton(auraFrame)
-    ---@type Button
-    local unitFrame = auraFrame:GetParent()
-    local unit = unitFrame.unit
     local filter = auraFrame.type == "Buff" and "HELPFUL" or "HARMFUL"
 
     ---@type Button
@@ -912,12 +946,24 @@ local function CreateAuraButton(auraFrame)
     btn.icon = icon
 
     btn:SetScript("OnEnter", function(self)
+        ---@type Button
+        local unitFrame = auraFrame:GetParent()
+        local unit = unitFrame.unit
         local index = self.index
+        local slot = self.slot
 
         tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
-        tooltip:SetUnitAura(unit, index, filter)
-        self.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
+        if index then
             tooltip:SetUnitAura(unit, index, filter)
+        elseif slot then
+            tooltip:SetTotem(slot)
+        end
+        self.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
+            if index then
+                tooltip:SetUnitAura(unit, index, filter)
+            elseif slot then
+                tooltip:SetTotem(slot)
+            end
         end)
     end)
 
@@ -932,18 +978,25 @@ local function CreateAuraButton(auraFrame)
     btn:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
     btn:SetScript("OnClick", function(self, button)
+        ---@type Button
+        local unitFrame = auraFrame:GetParent()
+        local unit = unitFrame.unit
         local index = self.index
 
-        if button == "LeftButton" then
-            -- 鼠标左键点击光环将其加入黑名单中
-            local auraName = UnitAura(unit, index, filter)
-            WLK_UnitAuraFilter.blacklist[auraFrame.type][auraName] = true
-            UpdateAuras(unitFrame)
-        else
-            -- 鼠标右键点击光环取消该增益
-            if (UnitIsUnit(unit, "player") or UnitIsUnit(unit, "vehicle")) and not InCombatLockdown() then
-                CancelUnitBuff(unit, index, filter)
+        if index then
+            if button == "LeftButton" then
+                -- 鼠标左键点击光环将其加入黑名单中
+                local auraName = UnitAura(unit, index, filter)
+                WLK_UnitAuraFilter.blacklist[auraFrame.type][auraName] = true
+                UpdateAuras(unitFrame)
+            else
+                -- 鼠标右键点击光环取消该增益
+                if (UnitIsUnit(unit, "player") or UnitIsUnit(unit, "vehicle")) and not InCombatLockdown() then
+                    CancelUnitBuff(unit, index, filter)
+                end
             end
+        elseif self.slot then
+            TotemButton_OnClick(self, button)
         end
     end)
 
@@ -1050,6 +1103,10 @@ playerFrame:RegisterEvent("PLAYER_UPDATE_RESTING")
 
 playerFrame:RegisterEvent("PLAYER_LEVEL_CHANGED")
 
+playerFrame:RegisterEvent("PLAYER_TOTEM_UPDATE")
+playerFrame:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+playerFrame:RegisterEvent("PLAYER_TALENT_UPDATE")
+
 RegisterUnitEvents(playerFrame, playerFrameUnitEvents, "player")
 
 --- 更新玩家框架
@@ -1149,7 +1206,8 @@ playerFrame:SetScript("OnEvent", function(self, event)
         UpdatePowerBarColor(self)
         UpdatePercentPowerLabel(self)
         UpdatePowerLabel(self)
-    elseif event == "UNIT_AURA" then
+    elseif event == "UNIT_AURA" or event == "PLAYER_TOTEM_UPDATE" or event == "UPDATE_SHAPESHIFT_FORM"
+            or event == "PLAYER_TALENT_UPDATE" then
         UpdateAuras(self)
     end
 end)
