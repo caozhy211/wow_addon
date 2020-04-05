@@ -292,8 +292,7 @@ end)
 --- 显示鼠标悬停单位的目标
 ---@param self GameTooltip
 GameTooltip:HookScript("OnUpdate", function(self, elapsed)
-    local unit = "mouseovertarget"
-    if not UnitExists(unit) then
+    if not UnitExists("mouseover") then
         return
     end
 
@@ -303,6 +302,7 @@ GameTooltip:HookScript("OnUpdate", function(self, elapsed)
     end
     self.elapsed = 0
 
+    local unit = "mouseovertarget"
     ---@type FontString
     local targetLine
     -- 获取目标行标签
@@ -315,26 +315,31 @@ GameTooltip:HookScript("OnUpdate", function(self, elapsed)
         end
     end
     local target
-    if UnitIsUnit(unit, "player") then
-        -- 目标是你
-        target = RED_FONT_COLOR_CODE .. ">>" .. YOU .. "<<" .. FONT_COLOR_CODE_CLOSE
-    else
-        target = UnitName(unit)
-        if UnitIsPlayer(unit) then
-            -- 目标是玩家，则使用职业颜色着色
-            local _, class = UnitClass(unit)
-            target = WrapTextInColorCode(target, select(4, GetClassColor(class)))
+    if UnitExists(unit) then
+        if UnitIsUnit(unit, "player") then
+            -- 目标是你
+            target = RED_FONT_COLOR_CODE .. ">>" .. YOU .. "<<" .. FONT_COLOR_CODE_CLOSE
         else
-            target = HIGHLIGHT_FONT_COLOR_CODE .. target .. FONT_COLOR_CODE_CLOSE
+            target = UnitName(unit)
+            if UnitIsPlayer(unit) then
+                -- 目标是玩家，则使用职业颜色着色
+                local _, class = UnitClass(unit)
+                target = WrapTextInColorCode(target, select(4, GetClassColor(class)))
+            else
+                target = HIGHLIGHT_FONT_COLOR_CODE .. target .. FONT_COLOR_CODE_CLOSE
+            end
         end
     end
 
-    if targetLine then
-        -- 目标行标签已存在，则更新
-        targetLine:SetText(TARGET .. ": " .. target)
-    else
+    if targetLine and not target then
+        targetLine:SetText("")
+        self:Show()
+    elseif target and not targetLine then
         -- 目标行标签不存在，则添加目标行标签
         self:AddLine(TARGET .. ": " .. target)
         self:Show()
+    elseif target and targetLine then
+        -- 目标行标签已存在，则更新
+        targetLine:SetText(TARGET .. ": " .. target)
     end
 end)
