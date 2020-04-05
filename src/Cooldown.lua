@@ -49,10 +49,13 @@ local function CreateTimer(cooldown)
 
         local timeRemaining = self.duration - (GetTime() - self.start)
         if timeRemaining > 0 then
-            local timeText, scale, updateInterval = GetSettingParameters(timeRemaining)
-            label:SetFont("Fonts/blei00d.TTF", cooldown:GetHeight() * 0.5 * scale, "OUTLINE")
-            label:SetText(timeText)
-            self.updateInterval = updateInterval
+            local height = cooldown:GetHeight()
+            if height > 0 then
+                local timeText, scale, updateInterval = GetSettingParameters(timeRemaining)
+                label:SetFont("Fonts/blei00d.TTF", height * 0.5 * scale, "OUTLINE")
+                label:SetText(timeText)
+                self.updateInterval = updateInterval
+            end
         else
             self:Hide()
         end
