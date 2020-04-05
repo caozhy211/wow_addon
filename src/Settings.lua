@@ -454,3 +454,11 @@ if not isPetTrainer then
         end
     end)
 end
+
+--- 分辨率不是 1920X1080 时，缩放界面
+if abs(GetScreenWidth() - 1920) > 0.01 then
+    BlizzardOptionsPanel_SetCVarSafe("useUiScale", 1)
+    local scale = GetScreenWidth() / 1920
+    BlizzardOptionsPanel_SetCVarSafe("uiScale", scale)
+    UIParent:SetScale(scale)
+end
