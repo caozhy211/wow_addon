@@ -101,6 +101,7 @@ local subtypes = {
         [LE_ITEM_ARMOR_MAIL] = "鎖",
         [LE_ITEM_ARMOR_PLATE] = "鎧",
         [LE_ITEM_ARMOR_SHIELD] = "盾",
+        [LE_ITEM_ARMOR_COSMETIC] = "型",
     },
 }
 
