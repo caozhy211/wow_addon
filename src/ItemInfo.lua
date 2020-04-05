@@ -116,6 +116,7 @@ end
 
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_ItemScanner", UIParent, "GameTooltipTemplate")
+scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 --- 获取物品信息
 local function GetItemInformation(link, onlyForLevel, arg, slot)
@@ -129,7 +130,6 @@ local function GetItemInformation(link, onlyForLevel, arg, slot)
         end
     end
     -- 其他物品等级和绑定信息通过扫描鼠标提示信息获取
-    scanner:SetOwner(UIParent, "ANCHOR_NONE")
     if type(arg) == "number" and slot then
         -- 背包中的物品
         scanner:SetBagItem(arg, slot)
@@ -143,7 +143,7 @@ local function GetItemInformation(link, onlyForLevel, arg, slot)
         -- 其他物品
         scanner:SetHyperlink(link)
     end
-    for i = 2, 7 do
+    for i = 2, min(7, scanner:NumLines()) do
         while true do
             ---@type FontString
             local textLeftLabel = _G[scanner:GetName() .. "TextLeft" .. i]
