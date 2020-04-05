@@ -155,7 +155,9 @@ pvpTalentFrame:SetScript("OnEvent", function(self, event)
     elseif event == "SPELL_UPDATE_COOLDOWN" then
         UpdateCooldown()
     elseif event == "PLAYER_PVP_TALENT_UPDATE" then
-        UpdatePVPTalentButtons()
+        if not InCombatLockdown() then
+            UpdatePVPTalentButtons()
+        end
     elseif event == "SPELLS_CHANGED" then
         if IsUsableSpell(trinketSpellID) and not self:IsShown() then
             self:Show()
