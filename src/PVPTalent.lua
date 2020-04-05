@@ -4,6 +4,7 @@ local size = 30
 local pvpTalentFrame = CreateFrame("Frame", "WLK_PVPTalentFrame", UIParent)
 pvpTalentFrame:SetSize(150, size)
 pvpTalentFrame:SetPoint("BOTTOMLEFT", 390, 300)
+pvpTalentFrame:Hide()
 
 ---@type GameTooltip
 local tooltip = CreateFrame("GameTooltip", "WLK_PVPTalentTooltip", UIParent, "GameTooltipTemplate")
