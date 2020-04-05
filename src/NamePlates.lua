@@ -158,39 +158,49 @@ hooksecurefunc("CompactUnitFrame_UpdateSelectionHighlight", function(frame)
     end
 end)
 
+local questTitles = {}
+
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_NamePlateScanner", UIParent, "GameTooltipTemplate")
+scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 --- 检查 unit 是否是任务单位
 local function IsQuestUnit(unit)
-    scanner:SetOwner(UIParent, "ANCHOR_NONE")
     scanner:SetUnit(unit)
-    local isQuestUnit, completed
+
+    local isQuestTitle, isPlayerName, isPlayerQuest
+    local isCompleted = true
     for i = 3, scanner:NumLines() do
         ---@type FontString
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
         local r, g, b = line:GetTextColor()
+        local text = line:GetText()
+        -- 黄色文字可能是任务名称、玩家名称或队友名称
         if r > 0.99 and g > 0.82 and b == 0 then
-            isQuestUnit = true
-        else
-            local text = line:GetText()
-            local name, progress = strmatch(text, "^ ([^ ]-) ?%- (.+)$")
-            local percentProgress = strmatch(text, "(%d+)%%$")
-            if (name == "" or name == UnitName("player")) and (progress or percentProgress) then
-                local current, goal
-                if percentProgress then
-                    current = percentProgress
-                    goal = "100"
-                else
-                    current, goal = strmatch(progress, "(%d+)/(%d+)")
-                end
-                if current == goal then
-                    completed = true
-                end
+            if questTitles[text] then
+                isQuestTitle = true
+            else
+                isPlayerName = text == UnitName("player")
+            end
+            -- 黄色文字是玩家名称，则任务是玩家自己的任务
+            if not isPlayerQuest and isPlayerName then
+                isPlayerQuest = true
+            end
+            -- 检查玩家自己的任务是否已完成
+        elseif isQuestTitle and isPlayerName ~= false then
+            local current, goal = strmatch(text, "(%d+)/(%d+)")
+            local currentPercent = strmatch(text, "%((%d+)%%%)") or strmatch(text, "(%d+)%%$")
+            if (current and goal and current ~= goal) or (currentPercent and currentPercent ~= "100") then
+                isCompleted = false
             end
         end
     end
-    return isQuestUnit and not completed
+    -- 没有出现玩家名称和队友名称时，任务是玩家自己的任务
+    if not isPlayerQuest and isPlayerName == nil then
+        isPlayerQuest = true
+    end
+    -- 该单位是任务单位，且任务是玩家自己的未完成任务
+    return isQuestTitle and isPlayerQuest and not isCompleted
 end
 
 --- 更新任务图标
@@ -219,25 +229,49 @@ local function UpdateQuestIcon(namePlate)
     end
 end
 
+--- 更新 questTitles
+local function UpdateQuestTitles()
+    wipe(questTitles)
+    for i = 1, GetNumQuestLogEntries() do
+        local title, _, _, isHeader = GetQuestLogTitle(i)
+        if not isHeader then
+            questTitles[title] = true
+        end
+    end
+end
+
 ---@type Frame
 local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("PLAYER_LOGIN")
 eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
+eventListener:RegisterEvent("QUEST_ACCEPTED")
+eventListener:RegisterEvent("QUEST_REMOVED")
+eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 eventListener:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
+eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_LOGIN" or event == "UNIT_QUEST_LOG_CHANGED" then
+        if event == "PLAYER_LOGIN" then
+            UpdateQuestTitles()
+            self:UnregisterEvent(event)
+        end
         local namePlates = C_NamePlate.GetNamePlates()
         for i = 1, #namePlates do
             UpdateQuestIcon(namePlates[i])
         end
-        if event == "PLAYER_LOGIN" then
-            self:UnregisterEvent(event)
-        end
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unitToken = ...
         UpdateQuestIcon(C_NamePlate.GetNamePlateForUnit(unitToken))
+    elseif event == "QUEST_ACCEPTED" then
+        local questIndex = ...
+        local title = GetQuestLogTitle(questIndex)
+        if title and not questTitles[title] then
+            questTitles[title] = true
+        end
+    elseif event == "QUEST_REMOVED" then
+        UpdateQuestTitles()
     end
 end)
