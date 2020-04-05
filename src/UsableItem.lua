@@ -14,7 +14,7 @@ tooltip:HookScript("OnTooltipSetItem", function(self)
     local id = GetItemInfoFromHyperlink(link)
     if id then
         self:AddLine(" ")
-        self:AddLine(ITEMS .. ID .. "：" .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:AddLine(ITEMS .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         self:Show()
     end
 end)

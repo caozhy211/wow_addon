@@ -11,15 +11,15 @@ local offset = 2
 ---@type FontString
 local latencyHomeLabel = performanceFrame:CreateFontString(nil, "ARTWORK", "Tooltip_Small")
 latencyHomeLabel:SetPoint("TOPLEFT", offset, -offset)
-latencyHomeLabel:SetText("本地延遲：")
+latencyHomeLabel:SetText("本地延遲: ")
 ---@type FontString
 local latencyWorldLabel = performanceFrame:CreateFontString(nil, "ARTWORK", "Tooltip_Small")
 latencyWorldLabel:SetPoint("LEFT", offset, 0)
-latencyWorldLabel:SetText("世界延遲：")
+latencyWorldLabel:SetText("世界延遲: ")
 ---@type FontString
 local fpsLabel = performanceFrame:CreateFontString(nil, "ARTWORK", "Tooltip_Small")
 fpsLabel:SetPoint("BOTTOMLEFT", offset, offset)
-fpsLabel:SetText("每秒幀數：")
+fpsLabel:SetText("每秒幀數: ")
 
 ---@type FontString
 local latencyHomeValue = performanceFrame:CreateFontString(nil, "ARTWORK", "Tooltip_Small")
@@ -82,9 +82,9 @@ end)
 local function FormatMemoryUsage(memory, type)
     local prefix
     if type == "min" then
-        prefix = GREEN_FONT_COLOR_CODE .. MINIMUM .. "："
+        prefix = GREEN_FONT_COLOR_CODE .. MINIMUM .. ": "
     elseif type == "max" then
-        prefix = RED_FONT_COLOR_CODE .. MAXIMUM .. "："
+        prefix = RED_FONT_COLOR_CODE .. MAXIMUM .. ": "
     else
         prefix = YELLOW_FONT_COLOR_CODE
     end
@@ -186,13 +186,13 @@ memoryBar:SetScript("OnMouseDown", function()
         local memory = FormatMemoryUsage(addon.memory)
         local min = FormatMemoryUsage(addon.min, "min")
         local max = FormatMemoryUsage(addon.max, "max")
-        print(name .. "：" .. memory .. "，" .. min .. "，" .. max)
+        print(name .. ": " .. memory .. "，" .. min .. "，" .. max)
 
         minSum = minSum + addon.min
         sum = sum + addon.memory
         maxSum = maxSum + addon.max
     end
-    print("共計 " .. #data .. " 個插件：" .. FormatMemoryUsage(sum) .. "，" .. FormatMemoryUsage(minSum, "min")
+    print("共計 " .. #data .. " 個插件: " .. FormatMemoryUsage(sum) .. "，" .. FormatMemoryUsage(minSum, "min")
             .. "，" .. FormatMemoryUsage(maxSum, "max"))
     print("--------------------------------------------------------------------")
 end)

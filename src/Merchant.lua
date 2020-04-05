@@ -47,6 +47,6 @@ eventListener:SetScript("OnEvent", function()
         end
     end
     if totalPrice > 0 then
-        print("出售物品獲得：" .. GetCoinTextureString(totalPrice))
+        print("出售物品獲得: " .. GetCoinTextureString(totalPrice))
     end
 end)

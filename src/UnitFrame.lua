@@ -870,7 +870,7 @@ hooksecurefunc(tooltip, "SetUnitAura", function(self, ...)
     local id = select(10, UnitAura(...))
     if id then
         self:AddLine(" ")
-        self:AddLine(AURAS .. ID .. "：" .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:AddLine(AURAS .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         self:Show()
     end
 end)

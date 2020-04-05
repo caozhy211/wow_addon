@@ -14,7 +14,7 @@ tooltip:HookScript("OnTooltipSetSpell", function(self)
     local _, id = self:GetSpell()
     if id then
         self:AddLine(" ")
-        self:AddLine(SPELLS .. ID .. "：" .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:AddLine(SPELLS .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         self:Show()
     end
 end)

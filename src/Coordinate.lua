@@ -20,7 +20,7 @@ worldMap:HookScript("OnUpdate", function(self, elapsed)
 
     local position = C_Map.GetPlayerMapPosition(MapUtil.GetDisplayableMapForPlayer(), "player")
     if position then
-        playerLabel:SetFormattedText(PLAYER .. "：%.1f, %.1f", position.x * 100, position.y * 100)
+        playerLabel:SetFormattedText(PLAYER .. ": %.1f, %.1f", position.x * 100, position.y * 100)
     else
         playerLabel:SetText("")
     end
@@ -34,7 +34,7 @@ worldMap:HookScript("OnUpdate", function(self, elapsed)
         local x = (cx / scale - container:GetLeft()) / container:GetWidth()
         local y = (container:GetTop() - cy / scale) / container:GetHeight()
         if x > 0 and x < 1 and y > 0 and y < 1 then
-            cursorLabel:SetFormattedText("滑鼠：%.1f, %.1f", x * 100, y * 100)
+            cursorLabel:SetFormattedText("滑鼠: %.1f, %.1f", x * 100, y * 100)
         else
             cursorLabel:SetText("")
         end
