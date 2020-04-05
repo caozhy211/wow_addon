@@ -19,7 +19,7 @@ end
 
 ---@param notice Frame
 local function CreateSlotFrame(notice, index)
-    local size = (notice:GetHeight() - 2 * 2) / 2
+    local size = (notice:GetHeight() - 2 * 2) - 26
     ---@type Frame
     local slot = CreateFrame("Frame", nil, notice)
     slot:SetSize(size, size)
@@ -275,7 +275,9 @@ local function CreateNoticeFrame()
 
     ---@type FontString
     local text = noticeFrame:CreateFontString(nil, "ARTWORK", "Game12Font")
+    text:SetSize(noticeFrame:GetWidth() - 2 * 2 - iconFrame:GetWidth(), 26)
     text:SetPoint("BOTTOM", iconFrame:GetWidth() / 2, 2)
+    text:SetIndentedWordWrap()
     noticeFrame.text = text
 
     ---@type Texture
