@@ -81,8 +81,9 @@ end)
 hooksecurefunc("AuraButton_OnUpdate", function(self)
     ---@type FontString
     local duration = self.duration
-    if self.timeLeft > SMALLER_AURA_DURATION_FONT_MIN_THRESHOLD
-            and self.timeLeft < SMALLER_AURA_DURATION_FONT_MAX_THRESHOLD then
+    -- 提高字体的层级，防止被 debuff 的边框覆盖
+    duration:SetDrawLayer("OVERLAY")
+    if self.timeLeft > SECONDS_PER_HOUR and self.timeLeft < SECONDS_PER_DAY then
         duration:SetFontObject("Game10Font_o1")
     else
         duration:SetFontObject("SystemFont_Outline_Small")
