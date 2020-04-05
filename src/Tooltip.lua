@@ -226,7 +226,7 @@ local function ShowItemID(tooltip)
     local id = GetItemInfoFromHyperlink(link)
     if id then
         tooltip:AddLine(" ")
-        tooltip:AddLine(ITEMS .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        tooltip:AddLine(ITEMS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         tooltip:Show()
     end
 end
@@ -256,7 +256,7 @@ local function SpellIDIsShown(tooltip)
         local line = _G[tooltip:GetName() .. "TextLeft" .. i]
         if line then
             local text = line:GetText()
-            if strfind(text, SPELLS .. ID .. ":") then
+            if strfind(text, SPELLS .. " " .. ID .. ":") then
                 return true
             end
         end
@@ -270,7 +270,7 @@ GameTooltip:HookScript("OnTooltipSetSpell", function(self)
     -- 防止天赋技能显示两次 SpellID
     if id and not SpellIDIsShown(self) then
         self:AddLine(" ")
-        self:AddLine(SPELLS .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:AddLine(SPELLS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         self:Show()
     end
 end)
@@ -281,7 +281,7 @@ hooksecurefunc(GameTooltip, "SetUnitAura", function(self, ...)
     local id = select(10, UnitAura(...))
     if id then
         self:AddLine(" ")
-        self:AddLine(AURAS .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        self:AddLine(AURAS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         self:Show()
     end
 end)
