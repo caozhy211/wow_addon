@@ -1159,6 +1159,7 @@ finishRollAnim:SetScript("OnFinished", function(self)
     if frame.rewardType == "item" then
         SetUpLootSpecialNotice("LOOT_ITEM_BONUS_ROLL_WON", frame.rewardLink, frame.rewardQuantity)
     end
+    GroupLootContainer_RemoveFrame(GroupLootContainer, frame)
 end)
 
 --- 创建获得配方时的通知
