@@ -389,9 +389,10 @@ local function ApplyWlkSettings()
     end
 end
 
---- 因为调用 InterfaceOptionsFrame_SetAllToDefaults() 方法后设置 “nameplateShowAll” 会出现脚本错误，所以移至此处设置
+--- 重新载入界面
 local function ReloadForSettings()
-    -- 总是显示姓名板
+    -- 总是显示姓名板，因为调用 InterfaceOptionsFrame_SetAllToDefaults() 方法后设置 “nameplateShowAll” 会出现脚本错误，
+    -- 所以移至此处设置
     SetCVar("nameplateShowAll", 1)
     ReloadUI()
 end

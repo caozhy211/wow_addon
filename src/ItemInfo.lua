@@ -119,13 +119,13 @@ local scanner = CreateFrame("GameTooltip", "WLK_ItemScanner", UIParent, "GameToo
 scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 --- 获取物品信息
-local function GetItemInformation(link, onlyForLevel, arg, slot)
+local function GetItemInformation(link, levelOnly, arg, slot)
     local level, isBound, slotName, subtype
     local quality, _, _, _, _, _, equipLoc, _, _, classID, subclassID, bindType = select(3, GetItemInfo(link))
     -- 非传家宝武器和护甲直接使用 GetDetailedItemLevelInfo 方法获取物品等级
     if (classID == LE_ITEM_CLASS_WEAPON or classID == LE_ITEM_CLASS_ARMOR) and quality ~= LE_ITEM_QUALITY_HEIRLOOM then
         level = GetDetailedItemLevelInfo(link)
-        if onlyForLevel then
+        if levelOnly then
             return level
         end
     end
@@ -157,7 +157,7 @@ local function GetItemInformation(link, onlyForLevel, arg, slot)
                     -- 获取物品等级
                     if not level then
                         level = strmatch(leftText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                        if level and onlyForLevel then
+                        if level and levelOnly then
                             return level
                         end
                         break

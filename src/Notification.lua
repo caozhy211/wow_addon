@@ -422,12 +422,14 @@ end
 --- 查找通知框架
 local function FindNotice(event, type, value)
     if type and value then
+        -- 在已显示的通知框架中查找
         for i = 1, #activeNotices do
             local activeNotice = activeNotices[i]
             if (not event or event == activeNotice.data.event) and activeNotice.data[type] == value then
                 return activeNotice
             end
         end
+        -- 在排队的通知框架中查找
         for i = 1, #queuedNotices do
             local queuedNotice = queuedNotices[i]
             if (not event or event == queuedNotice.data.event) and queuedNotice.data[type] == value then
@@ -877,9 +879,8 @@ local function SetUpLootCommonNotice(event, link, quantity)
     local isNew, isQueued
     ---@type Frame
     local notice
-
+    -- 检查是否已有其他事件为该物品创建通知
     notice, isQueued = FindNotice(nil, "itemID", itemID)
-
     if notice then
         if notice.data.event ~= event then
             return

@@ -39,7 +39,7 @@ scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 local inspectUnit, inspectGUID
 
---- 获取当前查看单位的装等
+--- 获取当前观察单位的装等
 local function GetUnitAverageItemLevel()
     if UnitIsUnit(inspectUnit, "player") then
         local _, avgItemLevelEquipped = GetAverageItemLevel()
@@ -107,7 +107,7 @@ local function GetUnitAverageItemLevel()
     return "..."
 end
 
---- 获取当前查看单位的专精
+--- 获取当前观察单位的专精
 local function GetUnitSpecialization()
     if UnitIsUnit(inspectUnit, "player") then
         local specIndex = GetSpecialization()
@@ -132,7 +132,7 @@ local function GetUnitSpecialization()
 end
 
 --- 鼠标提示显示装等和专精
-local function GameTooltipShowItemLevelAndSpec(iLevel, specName)
+local function ShowItemLevelAndSpec(iLevel, specName)
     local _, unit = GameTooltip:GetUnit()
     if unit and UnitGUID(unit) == inspectGUID then
         iLevel = HIGHLIGHT_FONT_COLOR_CODE .. iLevel .. FONT_COLOR_CODE_CLOSE
@@ -177,16 +177,16 @@ eventListener:SetScript("OnEvent", function(...)
         -- 获取装等和专精并添加到鼠标提示
         local iLevel = GetUnitAverageItemLevel()
         local specName = GetUnitSpecialization()
-        GameTooltipShowItemLevelAndSpec(iLevel, specName)
+        ShowItemLevelAndSpec(iLevel, specName)
         if iLevel == "..." or specName == "..." then
-            -- 如果装等或专精返回 “...”，表示服务器未返回数据，需要重新查看单位并获取数据
+            -- 如果装等或专精返回 “...”，表示服务器未返回数据，需要重新观察单位并获取数据
             ClearInspectPlayer()
             NotifyInspect(inspectUnit)
         end
     end
 end)
 
---- 鼠标停留在单位上时，修改玩家单位鼠标提示文字颜色，并查看单位
+--- 鼠标停留在单位上时，修改玩家单位鼠标提示文字颜色，并观察单位
 ---@param self GameTooltip
 GameTooltip:HookScript("OnTooltipSetUnit", function(self)
     local _, unit = self:GetUnit()
@@ -210,7 +210,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         factionLine:SetTextColor(GetTableColor(GetFactionColor(UnitFactionGroup(unit))))
     end
 
-    -- 查看单位以获取装等和专精
+    -- 观察单位以获取装等和专精
     if unit and CanInspect(unit) then
         inspectUnit = unit
         inspectGUID = UnitGUID(unit)
