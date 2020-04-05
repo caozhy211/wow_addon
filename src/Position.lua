@@ -11,13 +11,13 @@ talkingHeadFrame:SetPoint("CENTER", UIParent, "TOPLEFT", 570 / 2, (UIParent:GetA
 talkingHeadFrame.SetPoint = nop
 
 ---@type Frame
-local orderHallCommandBar = OrderHallCommandBar
----@type Frame
 local buffFrame = BuffFrame
 
 --- 设置 BuffFrame 的位置
 hooksecurefunc("UIParent_UpdateTopFramePositions", function()
     local buffsAreaTopOffset = 5
+    ---@type Frame
+    local orderHallCommandBar = OrderHallCommandBar
     -- 职业大厅条显示时需要下移
     if orderHallCommandBar and orderHallCommandBar:IsShown() then
         buffsAreaTopOffset = buffsAreaTopOffset + orderHallCommandBar:GetHeight()
