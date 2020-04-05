@@ -382,8 +382,8 @@ local function ApplyWlkSettings()
     -- 设置小地图追踪类型
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
-        -- 136458：旅店老板，613074：追踪宠物，136466：兽栏管理员
-        if texture == 136458 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
+        -- 136458：旅店老板，524052：目标，613074：追踪宠物，136466：兽栏管理员
+        if texture == 136458 or texture == 524052 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
             SetTracking(i, true)
         end
     end
