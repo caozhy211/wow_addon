@@ -1063,7 +1063,7 @@ local oldMoney
 local function SetUpLootSpecialNotice(event, link, quantity, lessAwesome, isUpgraded, baseQuality, isLegendary,
                                       isAzerite, isCorrupted)
     if link then
-        local sanitizedLink, originalLink = SanitizeLink(link)
+        local sanitizedLink, originalLink, _, itemID = SanitizeLink(link)
         local notice, isNew, isQueued = GetNotice(event, "link", sanitizedLink)
         if isNew then
             local name, _, quality, _, _, _, _, _, _, icon = GetItemInfo(originalLink)
@@ -1114,6 +1114,7 @@ local function SetUpLootSpecialNotice(event, link, quantity, lessAwesome, isUpgr
                 notice.data.count = quantity
                 notice.data.event = event
                 notice.data.link = sanitizedLink
+                notice.data.itemID = itemID
                 notice.data.sound = sound
                 notice.data.showArrows = isUpgraded
 
