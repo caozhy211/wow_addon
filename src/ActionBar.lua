@@ -75,33 +75,19 @@ playerPowerBarAlt:SetMovable(true)
 playerPowerBarAlt:SetUserPlaced(true)
 
 ---@type Frame
-local iconIntroTracker = IconIntroTracker
---- 阻止学会新技能时技能图标自动添加到动作条
-iconIntroTracker.RegisterEvent = nop
-iconIntroTracker:UnregisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
-
----@type Frame
 local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("PLAYER_LOGIN")
 eventListener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
 
 ---@param self Frame
-eventListener:SetScript("OnEvent", function(self, event, ...)
+eventListener:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         -- 设置 PlayerPowerBarAlt 位置
         playerPowerBarAlt:ClearAllPoints()
         -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
         playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
         self:UnregisterEvent(event)
-    elseif event == "SPELL_PUSHED_TO_ACTIONBAR" then
-        -- 阻止在不是第一页动作条学会新技能时技能图标自动添加到第一页动作条
-        local _, slot = ...
-        if not InCombatLockdown() then
-            ClearCursor()
-            PickupAction(slot)
-            ClearCursor()
-        end
     end
 end)
 
