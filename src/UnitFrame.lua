@@ -1241,7 +1241,7 @@ end)
 ---@param self Button
 petFrame:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
-    if self.elapsed < FRAMESTACK_UPDATE_TIME then
+    if self.elapsed < TOOLTIP_UPDATE_TIME then
         return
     end
     self.elapsed = 0
@@ -1426,7 +1426,7 @@ end)
 ---@param unitFrame Button
 local function UpdateInRange(unitFrame, elapsed)
     unitFrame.elapsed = (unitFrame.elapsed or 0) + elapsed
-    if unitFrame.elapsed < FRAMESTACK_UPDATE_TIME then
+    if unitFrame.elapsed < TOOLTIP_UPDATE_TIME then
         return
     end
     unitFrame.elapsed = 0
