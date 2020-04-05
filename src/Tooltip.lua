@@ -207,7 +207,10 @@ GameTooltip:HookScript("OnTooltipSetUnit", function(self)
         -- 修改阵营颜色
         ---@type FontString
         local factionLine = _G["GameTooltipTextLeft" .. (classLineIndex + 1)]
-        factionLine:SetTextColor(GetTableColor(GetFactionColor(UnitFactionGroup(unit))))
+        local factionColor = GetFactionColor(UnitFactionGroup(unit))
+        if factionColor then
+            factionLine:SetTextColor(GetTableColor(factionColor))
+        end
     end
 
     -- 观察单位以获取装等和专精
