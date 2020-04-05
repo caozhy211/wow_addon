@@ -43,7 +43,7 @@ local inspectUnit, inspectGUID
 local function GetUnitAverageItemLevel()
     if UnitIsUnit(inspectUnit, "player") then
         local _, avgItemLevelEquipped = GetAverageItemLevel()
-        return floor(avgItemLevelEquipped + 0.5)
+        return floor(avgItemLevelEquipped)
     end
     local totalItemLevel = 0
     local waiting
@@ -102,7 +102,7 @@ local function GetUnitAverageItemLevel()
         else
             totalItemLevel = totalItemLevel + mLevel + oLevel
         end
-        return floor(totalItemLevel / 16 + 0.5)
+        return floor(totalItemLevel / 16)
     end
     return "..."
 end
