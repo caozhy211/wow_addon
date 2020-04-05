@@ -450,11 +450,19 @@ local function AddInfoToLink(link)
     end
 
     local level = GetItemInformation(link, true)
-    if level ~= "" then
-        local name, _, _, _, _, _, _, _, equipLoc = GetItemInfo(link)
-        local equipSlotName = equipLoc == "" and "" or ("(" .. _G[equipLoc] .. ")")
+    if level and level ~= "" then
+        local prefix = ""
+        local name, _, _, _, _, _, itemSubtype, _, equipLoc, _, _, itemClass = GetItemInfo(link)
+        local itemTypeName = (itemClass == LE_ITEM_CLASS_WEAPON or itemClass == LE_ITEM_CLASS_ARMOR) and itemSubtype
+                or ""
+        local equipSlotName = equipLoc == "" and "" or _G[equipLoc]
+        if itemTypeName ~= "" and equipSlotName ~= "" then
+            prefix = "(" .. equipSlotName .. "/" .. itemTypeName .. ")"
+        elseif itemTypeName ~= "" or equipSlotName ~= "" then
+            prefix = "(" .. equipSlotName .. itemTypeName .. ")"
+        end
         local gems = GetGemIcons(link)
-        link = gsub(link, "|h%[(.-)%]|h", "|h[" .. level .. equipSlotName .. ":" .. name .. "]|h" .. gems)
+        link = gsub(link, "|h%[(.-)%]|h", "|h[" .. level .. prefix .. ":" .. name .. "]|h" .. gems)
         chatFrameItems[link] = link
     end
     return link
