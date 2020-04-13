@@ -1623,7 +1623,7 @@ local function UpdateAltPowerBar(unitFrame)
     end
 end
 
-maxNum = 16
+maxNum = 8
 numPerLine = 8
 rows = ceil(maxNum / numPerLine)
 
