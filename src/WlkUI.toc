@@ -24,6 +24,7 @@ Minimap.lua
 MirrorTimer.lua
 NamePlates.lua
 Notification.lua
+ObjectiveItem.lua
 Performance.lua
 PetBattle.lua
 Position.lua
@@ -32,4 +33,3 @@ Settings.lua
 SoulShards.lua
 Tooltip.lua
 UnitFrame.lua
-UsableItem.lua
