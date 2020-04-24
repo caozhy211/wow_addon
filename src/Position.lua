@@ -107,7 +107,7 @@ local needUpdateFrames = {}
 --- 团队单位之间的间距，Settings.lua 中自定义设置的值
 local spacing = 2
 --- 团队队伍的行数，Settings.lua 中自定义设置的值
-local rows = 2
+local rows = 4
 
 --- 调整团队单位框架位置
 ---@param frame Frame 团队队伍框架

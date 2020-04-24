@@ -246,7 +246,7 @@ local function GetCompactUnitFrameProfilesSize()
     -- 单位之间的间距
     local spacing = 2
     -- 队伍的行数
-    local rows = 2
+    local rows = 4
     -- 队伍的列数
     local columns = ceil(MAX_RAID_GROUPS / rows)
 
@@ -254,15 +254,10 @@ local function GetCompactUnitFrameProfilesSize()
     local containerResizeFrameHeight = GetScreenHeight() - 135 - 330
     -- container 的最大高度
     local containerMaxHeight = containerResizeFrameHeight - resizeVerticalOutsets * 2
-    local height
-    local arg = 1
-    while arg >= 1 do
-        height = floor(containerMaxHeight / (MEMBERS_PER_RAID_GROUP * rows + ceil(arg)))
-        arg = (titleHeight * rows + spacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1)) / (height * ceil(arg))
-    end
+    local height = ceil((containerMaxHeight - titleHeight * rows - spacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1))
+            / (MEMBERS_PER_RAID_GROUP * rows)) - 1
 
-    -- TalkingHeadFrame 右边相对屏幕左边偏移 570px
-    local maxRight = 570
+    local maxRight = 298
     -- CompactRaidFrameManager 的宽度是 200px，左边相对屏幕左边偏移 -182px，containerResizeFrame 左边相对
     -- CompactRaidFrameManager 右边偏移 0px，container 左边相对 containerResizeFrame 左边偏移 4px
     local left = 200 - 182 + 4
@@ -279,6 +274,8 @@ local function SetRaidOptions(profile)
     SetRaidProfileOption(profile, "useClassColors", true)
     -- 不显示边框
     SetRaidProfileOption(profile, "displayBorder", false)
+    -- 不显示主坦克和助手
+    SetRaidProfileOption(profile, "displayMainTankAndAssist", false)
     -- 设置团队框架单位的大小
     local height, width = GetCompactUnitFrameProfilesSize()
     SetRaidProfileOption(profile, "frameHeight", height, height)
