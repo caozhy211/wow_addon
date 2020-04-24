@@ -256,14 +256,13 @@ end
 local tickEndTime, tickDuration, numTicks, intervalTime
 
 --- 显示引导法术 tick
-castingBar:HookScript("OnEvent", function(self, event, ...)
-    local unit = ...
-    if unit ~= self.unit then
-        return
-    end
-    if event == "UNIT_SPELLCAST_CHANNEL_START" then
+castingBar:HookScript("OnEvent", function(self, event)
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
         local startTime, endTime, _, spellID = GetCastingSpellInfo(self)
-        if self.channeling and startTime and endTime and spellTicks[spellID] then
+        if not startTime or not endTime then
+            return
+        end
+        if self.channeling and spellTicks[spellID] then
             tickEndTime = endTime
             tickDuration = endTime - startTime
             numTicks = spellTicks[spellID]
@@ -272,10 +271,13 @@ castingBar:HookScript("OnEvent", function(self, event, ...)
                 tickTime[i] = i * intervalTime
             end
             UpdateTicks(numTicks, tickDuration)
+        else
+            UpdateTicks()
+            tickDuration = nil
         end
     elseif event == "UNIT_SPELLCAST_CHANNEL_UPDATE" then
         local startTime, endTime = GetCastingSpellInfo(self)
-        if self.channeling and startTime and endTime and tickEndTime and endTime > tickEndTime then
+        if self.channeling and startTime and endTime and endTime > tickEndTime then
             local duration = endTime - startTime
             if tickDuration and duration > tickDuration and numTicks > 0 then
                 local extraTime = duration - tickDuration
@@ -286,16 +288,15 @@ castingBar:HookScript("OnEvent", function(self, event, ...)
                     numTicks = numTicks + 1
                     tickTime[numTicks] = tickTime[numTicks - 1] - intervalTime
                 end
+                tickDuration = duration
+                tickEndTime = endTime
                 UpdateTicks(numTicks, duration)
             end
         end
-    elseif event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_INTERRUPTED" then
-        tickEndTime = nil
-        tickDuration = nil
-        numTicks = nil
-        intervalTime = nil
-        wipe(tickTime)
+    elseif event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP"
+            or event == "UNIT_SPELLCAST_INTERRUPTED" then
         UpdateTicks()
+        tickDuration = nil
     end
 end)
 
@@ -308,12 +309,8 @@ local merging, currentCount, totalCount
 
 --- 合并制造物品施法条
 ---@param self StatusBar
-castingBar:HookScript("OnEvent", function(self, event, ...)
-    local unit = ...
-    if unit ~= self.unit then
-        return
-    end
-    if event == "UNIT_SPELLCAST_START" then
+castingBar:HookScript("OnEvent", function(self, event)
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
         local startTime, endTime, isTradeSkill = GetCastingSpellInfo(self)
         if isTradeSkill and self.casting then
             local repeatCount = C_TradeSkillUI.GetRecipeRepeatCount()
@@ -335,7 +332,7 @@ castingBar:HookScript("OnEvent", function(self, event, ...)
                 self:SetMinMaxValues(0, self.maxValue)
             end
         end
-    elseif event == "UNIT_SPELLCAST_STOP" then
+    elseif event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP" then
         if merging then
             if currentCount == totalCount then
                 merging = nil
@@ -350,13 +347,15 @@ castingBar:HookScript("OnEvent", function(self, event, ...)
             end
         end
     elseif event == "UNIT_SPELLCAST_FAILED" or event == "UNIT_SPELLCAST_INTERRUPTED" then
-        merging = nil
-        currentCount = nil
-        totalCount = nil
-        intervalTime = nil
-        wipe(tickTime)
-        tradeSkillCountLabel:SetText("")
-        UpdateTicks()
+        if merging then
+            merging = nil
+            currentCount = nil
+            totalCount = nil
+            intervalTime = nil
+            wipe(tickTime)
+            tradeSkillCountLabel:SetText("")
+            UpdateTicks()
+        end
     end
 end)
 
