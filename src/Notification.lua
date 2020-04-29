@@ -221,6 +221,7 @@ local function CreateNoticeFrame()
         local config = arrowsConfig[i]
         ---@type Texture
         local arrow = iconFrame:CreateTexture(nil, "ARTWORK", "LootUpgradeFrame_ArrowTemplate")
+        arrow:ClearAllPoints()
         arrow:SetPoint("CENTER", iconFrame, "BOTTOM", config.x, 0)
         arrow:SetAlpha(0)
         noticeFrame["arrow" .. i] = arrow
@@ -678,7 +679,7 @@ local function SetUpFollowerNotice(event, followerID, name, _, level, quality, i
 
     notice.data.event = event
     notice.data.followerID = followerID
-    notice.showArrows = isUpgraded
+    notice.data.showArrows = isUpgraded
 
     notice:HookScript("OnEnter", function(self)
         if self.data.followerID then
