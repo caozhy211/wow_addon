@@ -158,7 +158,7 @@ local function UpdateLeaderIcon(unitFrame)
         if HasLFGRestrictions() then
             leaderIcon:SetTexture("Interface/LFGFrame/UI-LFG-ICON-PORTRAITROLES")
             leaderIcon:SetTexCoord(0, 0.296875, 0.015625, 0.3125)
-            leaderIcon:SetScale(0.5)
+            leaderIcon:SetScale(0.3)
         else
             leaderIcon:SetTexture("Interface/GroupFrame/UI-Group-LeaderIcon")
             leaderIcon:SetTexCoord(0, 1, 0, 1)
