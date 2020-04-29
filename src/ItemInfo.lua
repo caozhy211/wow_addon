@@ -283,6 +283,7 @@ hooksecurefunc("GuildBankFrame_Update", function()
 end)
 
 --- 商人界面物品按钮显示物品信息
+---@param self Frame
 hooksecurefunc("MerchantFrameItem_UpdateQuality", function(self, link)
     ---@type ItemButton
     local button = self.ItemButton
@@ -295,7 +296,8 @@ hooksecurefunc("MerchantFrameItem_UpdateQuality", function(self, link)
         ShowItemInfo(button, link)
     else
         -- 买回界面
-        slot = button:GetID()
+        -- 使用 button:GetID() 第一次获取 slot 时无法正确获取到第 10、11、12 个买回按钮的 slot
+        slot = strmatch(self:GetName(), "%d+$")
         ShowItemInfo(button, link, nil, slot)
     end
 end)
