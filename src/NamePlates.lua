@@ -243,7 +243,7 @@ end
 ---@type Frame
 local eventListener = CreateFrame("Frame")
 
-eventListener:RegisterEvent("PLAYER_LOGIN")
+eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 eventListener:RegisterEvent("QUEST_ACCEPTED")
 eventListener:RegisterEvent("QUEST_REMOVED")
@@ -253,8 +253,8 @@ eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" or event == "UNIT_QUEST_LOG_CHANGED" then
-        if event == "PLAYER_LOGIN" then
+    if event == "PLAYER_ENTERING_WORLD" or event == "UNIT_QUEST_LOG_CHANGED" then
+        if event == "PLAYER_ENTERING_WORLD" then
             UpdateQuestTitles()
             self:UnregisterEvent(event)
         end
