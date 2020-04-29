@@ -1736,9 +1736,6 @@ end
 
 ---@param self Button
 targetFrame:SetScript("OnEvent", function(self, event, ...)
-    if not UnitExists("target") then
-        return
-    end
     if event == "PLAYER_LOGIN" then
         UpdateTargetFrame()
         self:UnregisterEvent(event)
@@ -1959,9 +1956,6 @@ end
 
 ---@param self Button
 targetTargetFrame:SetScript("OnEvent", function(self, event)
-    if not UnitExists("targetTarget") then
-        return
-    end
     if event == "PLAYER_LOGIN" then
         UpdateTargetTargetFrame()
         self:UnregisterEvent(event)
@@ -2267,9 +2261,6 @@ end
 
 ---@param self Button
 focusFrame:SetScript("OnEvent", function(self, event, ...)
-    if not UnitExists("focus") then
-        return
-    end
     if event == "PLAYER_LOGIN" then
         UpdateFocusFrame()
         self:UnregisterEvent(event)
@@ -2523,9 +2514,6 @@ local function CreateBossFrame(i)
 
     ---@param self Button
     bossFrame:SetScript("OnEvent", function(self, event, ...)
-        if not UnitExists("boss" .. i) then
-            return
-        end
         if event == "PLAYER_LOGIN" then
             UpdateBossFrame()
             self:UnregisterEvent(event)
