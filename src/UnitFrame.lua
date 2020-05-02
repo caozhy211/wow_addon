@@ -256,6 +256,9 @@ end
 --- 更新生命条颜色
 local function UpdateHealthBarColor(unitFrame)
     local unit = unitFrame.unit
+    if not UnitExists(unit) then
+        return
+    end
     ---@type StatusBar
     local healthBar = unitFrame.healthBar
 
