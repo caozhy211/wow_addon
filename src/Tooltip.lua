@@ -111,18 +111,10 @@ end
 local function GetUnitSpecialization()
     if UnitIsUnit(inspectUnit, "player") then
         local specIndex = GetSpecialization()
-        if not specIndex then
-            -- 未学习专精
-            return ""
-        end
         local _, specName, _, icon = GetSpecializationInfo(specIndex)
         return "|T" .. icon .. ":0|t " .. specName
     end
     local specID = GetInspectSpecialization(inspectUnit)
-    if not specID then
-        -- 未学习专精
-        return ""
-    end
     if specID == 0 then
         -- 服务器未返回数据
         return "..."
