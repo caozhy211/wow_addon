@@ -257,7 +257,7 @@ local tickEndTime, tickDuration, numTicks, intervalTime
 
 --- 显示引导法术 tick
 castingBar:HookScript("OnEvent", function(self, event, arg)
-    if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") and arg == "player" then
+    if event == "UNIT_SPELLCAST_CHANNEL_START" and arg == "player" then
         local startTime, endTime, _, spellID = GetCastingSpellInfo(self)
         if not startTime or not endTime then
             return
@@ -293,8 +293,7 @@ castingBar:HookScript("OnEvent", function(self, event, arg)
                 UpdateTicks(numTicks, duration)
             end
         end
-    elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP"
-            or event == "UNIT_SPELLCAST_INTERRUPTED") and arg == "player" then
+    elseif (event == "UNIT_SPELLCAST_CHANNEL_STOP" or event == "UNIT_SPELLCAST_INTERRUPTED") and arg == "player" then
         UpdateTicks()
         tickDuration = nil
     end
@@ -310,7 +309,7 @@ local merging, currentCount, totalCount
 --- 合并制造物品施法条
 ---@param self StatusBar
 castingBar:HookScript("OnEvent", function(self, event, arg)
-    if (event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START") and arg == "player" then
+    if event == "UNIT_SPELLCAST_START" and arg == "player" then
         local startTime, endTime, isTradeSkill = GetCastingSpellInfo(self)
         if isTradeSkill and self.casting then
             local repeatCount = C_TradeSkillUI.GetRecipeRepeatCount()
@@ -332,27 +331,20 @@ castingBar:HookScript("OnEvent", function(self, event, arg)
                 self:SetMinMaxValues(0, self.maxValue)
             end
         end
-    elseif (event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_CHANNEL_STOP") and arg == "player" then
+    elseif event == "UNIT_SPELLCAST_STOP" and arg == "player" then
         if merging then
             if currentCount == totalCount then
                 merging = nil
-                currentCount = nil
-                totalCount = nil
-                intervalTime = nil
-                wipe(tickTime)
                 tradeSkillCountLabel:SetText("")
+                UpdateTicks()
             else
                 self:SetValue(self.maxValue * currentCount / totalCount)
-                self:Show()
+                self.holdTime = GetTime() + 1
             end
         end
-    elseif (event == "UNIT_SPELLCAST_FAILED" or event == "UNIT_SPELLCAST_INTERRUPTED") and arg == "player" then
+    elseif event == "UNIT_SPELLCAST_INTERRUPTED" and arg == "player" then
         if merging then
             merging = nil
-            currentCount = nil
-            totalCount = nil
-            intervalTime = nil
-            wipe(tickTime)
             tradeSkillCountLabel:SetText("")
             UpdateTicks()
         end
