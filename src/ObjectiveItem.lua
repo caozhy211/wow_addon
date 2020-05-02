@@ -243,11 +243,7 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         self:UnregisterEvent(event)
         SetBindingKey()
-        -- 第一次登录不需要更新，IsUsableItem 一定返回 false
-        local isInitialLogin = ...
-        if not isInitialLogin then
-            UpdateAllItemButtons()
-        end
+        UpdateAllItemButtons()
     elseif event == "GET_ITEM_INFO_RECEIVED" then
         -- 第一次登录时 IsUsableItem 一定返回 false，需要在触发 GET_ITEM_INFO_RECEIVED 事件且成功时更新
         local _, success = ...
