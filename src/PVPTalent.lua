@@ -160,9 +160,26 @@ pvpTalentFrame:SetScript("OnEvent", function(self, event)
         end
     elseif event == "SPELLS_CHANGED" then
         if IsUsableSpell(trinketSpellID) and not self:IsShown() then
-            self:Show()
+            if InCombatLockdown() then
+                self:RegisterEvent("PLAYER_REGEN_ENABLED")
+                self.show = true
+            else
+                self:Show()
+            end
         elseif not IsUsableSpell(trinketSpellID) and self:IsShown() then
+            if InCombatLockdown() then
+                self:RegisterEvent("PLAYER_REGEN_ENABLED")
+                self.show = false
+            else
+                self:Hide()
+            end
+        end
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        if self.show then
+            self:Show()
+        else
             self:Hide()
         end
+        self:UnregisterEvent(event)
     end
 end)
