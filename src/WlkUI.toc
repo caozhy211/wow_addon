@@ -5,6 +5,7 @@
 ## Version: 2.0.0
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI
 ## SavedVariables: WLK_UnitAuraFilter
+## SavedVariablesPerCharacter: WLK_DamageDB
 
 ActionBar.lua
 CastingBar.lua
@@ -14,6 +15,7 @@ ChatFrame.lua
 Cooldown.lua
 Coordinate.lua
 CopyText.lua
+DamageMeter.lua
 FastFocus.lua
 Grid.lua
 Hidden.lua
