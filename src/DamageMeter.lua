@@ -354,7 +354,6 @@ local function HandleCombatLogEvent(timestamp, eventType, _, srcGUID, srcName, s
     if current and srcFilter and not current.gotBoss and bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) == 0
             and not current.targetName then
         current.targetName = dstName
-        current.gotBoss = true
     end
     if eventType == "SPELL_SUMMON" and (bit.band(srcFlags, RAID_FLAGS) ~= 0 or bit.band(srcFlags, PET_FLAGS) ~= 0
             or bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID]) then
@@ -936,6 +935,9 @@ local function ClearWindow()
     numBars = 0
 end
 
+local BOSS_ICON = "Interface/Icons/achievment_Boss_ultraxion"
+local NON_BOSS_ICON = "Interface/Icons/Icon_PetFamily_Critter"
+
 --- 更新数据
 local function UpdateData(force)
     if force then
@@ -958,9 +960,9 @@ local function UpdateData(force)
             data.value = 1
             data.valueText = ""
             if current and current.gotBoss then
-                data.icon = "Interface/Icons/achievment_Boss_ultraxion"
+                data.icon = BOSS_ICON
             else
-                data.icon = "Interface/Icons/Icon_PetFamily_Critter"
+                data.icon = NON_BOSS_ICON
             end
             for i = 1, #combats do
                 index = index + 1
@@ -971,9 +973,9 @@ local function UpdateData(force)
                 data.value = 1
                 data.valueText = FormatCombatTime(combats[i])
                 if combats[i].gotBoss then
-                    data.icon = "Interface/Icons/achievment_Boss_ultraxion"
+                    data.icon = BOSS_ICON
                 else
-                    data.icon = "Interface/Icons/Icon_PetFamily_Critter"
+                    data.icon = NON_BOSS_ICON
                 end
             end
         end
@@ -1000,7 +1002,7 @@ local function CombatEnd()
     if not current then
         return
     end
-    if current.gotBoss and current.targetName ~= nil and time() - current.start > 5 then
+    if current.targetName ~= nil and time() - current.start > 5 then
         if not current.stop then
             current.stop = time()
         end
