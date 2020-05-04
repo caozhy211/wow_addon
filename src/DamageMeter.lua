@@ -1209,9 +1209,7 @@ resetButton:SetScript("OnClick", function()
             damage = 0,
         }
     end
-    for i = #combats, 1, -1 do
-        wipe(tremove(combats, i))
-    end
+    wipe(combats)
     selectedCombat = 0
     window.changed = true
     UpdateData(true)
