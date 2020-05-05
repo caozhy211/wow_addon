@@ -171,11 +171,11 @@ objectiveTrackerFrame:SetUserPlaced(true)
 ---@type Frame
 local eventListener = CreateFrame("Frame")
 
-eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventListener:RegisterEvent("PLAYER_LOGIN")
 
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_ENTERING_WORLD" then
+    if event == "PLAYER_LOGIN" then
         objectiveTrackerFrame:ClearAllPoints()
         -- MicroButtonAndBagsBar 左边相对屏幕右边偏移 -298px，PoiButton 左边相对 objectiveTrackerFrame 左边偏移 -29px，上边界
         -- 相对屏幕顶部偏移 -330px；MultiBarRightButton 的宽度是 32px，MultiBarRightButton 右边相对屏幕右边偏移 -2px，
