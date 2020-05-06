@@ -686,3 +686,41 @@ end
 for i = 1, MAX_BOSS_FRAMES do
     CreateBossCastingBar(i)
 end
+
+--- 创建竞技场单位施法条
+local function CreateArenaCastingBar(i)
+    ---@type StatusBar
+    local arenaCastingBar = CreateFrame("StatusBar", "WLK_Arena" .. i .. "CastingBar", UIParent,
+            "CastingBarFrameTemplate")
+    arenaCastingBar:SetSize(570 - 298 - 1 - 2 * 2 - height, height)
+    arenaCastingBar:SetPoint("BOTTOMRIGHT", -298 - 1 - 2, 314 + 1 + 2 + (i - 1) * (13 + 2 + 2 + 36 + 2 + 33 + 2))
+    arenaCastingBar:Hide()
+
+    CastingBarFrame_OnLoad(arenaCastingBar, "arena" .. i, false, true)
+    SetTextures(arenaCastingBar)
+    ShowIcon(arenaCastingBar)
+    ShowTime(arenaCastingBar)
+    MoveText(arenaCastingBar)
+    ---@type Texture
+    local arenaShield = arenaCastingBar.BorderShield
+    arenaShield:SetTexture(nil)
+    CreateShieldBorder(arenaCastingBar)
+
+    hooksecurefunc(arenaShield, "Show", function()
+        arenaCastingBar.topBorder:Show()
+        arenaCastingBar.bottomBorder:Show()
+        arenaCastingBar.leftBorder:Show()
+        arenaCastingBar.rightBorder:Show()
+    end)
+
+    hooksecurefunc(arenaShield, "Hide", function()
+        arenaCastingBar.topBorder:Hide()
+        arenaCastingBar.bottomBorder:Hide()
+        arenaCastingBar.leftBorder:Hide()
+        arenaCastingBar.rightBorder:Hide()
+    end)
+end
+
+for i = 1, MAX_ARENA_ENEMIES do
+    CreateArenaCastingBar(i)
+end
