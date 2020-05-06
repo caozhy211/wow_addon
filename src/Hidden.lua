@@ -56,3 +56,6 @@ for i = 1, MAX_BOSS_FRAMES do
     frame = _G[name .. "ManaBar"]
     HideFrame(frame)
 end
+for i = 1, MAX_ARENA_ENEMIES do
+    HideFrame(_G["ArenaPrepFrame" .. i])
+end
