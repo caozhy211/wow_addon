@@ -3,7 +3,7 @@
 ## Notes: 自用魔兽世界插件
 ## Author: czy211
 ## Version: 2.0.0
-## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI
+## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
 ## SavedVariables: WLK_UnitAuraFilter
 ## SavedVariablesPerCharacter: WLK_DamageDB
 

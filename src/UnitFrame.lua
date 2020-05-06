@@ -1,44 +1,3 @@
-local addonName = ...
----@type Frame
-local eventListener = CreateFrame("Frame")
-
-eventListener:RegisterEvent("ADDON_LOADED")
-
----@param self Frame
-eventListener:SetScript("OnEvent", function(self, event, ...)
-    if event == "ADDON_LOADED" and ... == addonName then
-        -- 将光环过滤器保存在文件中
-        if not WLK_UnitAuraFilter then
-            WLK_UnitAuraFilter = {
-                ["blacklist"] = {
-                    ["Buff"] = {},
-                    ["Debuff"] = {},
-                },
-                ["whitelist"] = {
-                    ["Buff"] = {
-                        -- 嗜血術
-                        ["2825"] = true,
-                        -- 英勇氣概
-                        ["32182"] = true,
-                        -- 時間扭曲
-                        ["80353"] = true,
-                        -- 靈風
-                        ["160452"] = true,
-                        -- 上古狂亂
-                        ["90355"] = true,
-                        -- 野性之怒
-                        ["264667"] = true,
-                        -- 狂怒之鼓
-                        ["178207"] = true,
-                    },
-                    ["Debuff"] = {},
-                },
-            }
-        end
-        self:UnregisterEvent(event)
-    end
-end)
-
 ---@type Button
 local playerFrame = CreateFrame("Button", "WLK_PlayerFrame", UIParent, "SecureUnitButtonTemplate")
 playerFrame.unit = "player"
@@ -132,10 +91,7 @@ local function UpdatePvPIcon(unitFrame)
     local pvpIcon = unitFrame.pvpIcon
 
     local faction = UnitFactionGroup(unit)
-    if UnitIsPVPFreeForAll(unit) then
-        pvpIcon:SetTexture("Interface/TargetingFrame/UI-PVP-FFA")
-        pvpIcon:Show()
-    elseif faction and faction ~= "Neutral" and UnitIsPVP(unit) then
+    if faction and faction ~= "Neutral" and UnitIsPVP(unit) then
         pvpIcon:SetTexture("Interface/GroupFrame/UI-Group-PVP-" .. faction)
         pvpIcon:Show()
     else
@@ -2340,6 +2296,27 @@ size = 33
 spacing = 1
 rows = ceil(maxNum / numPerLine)
 
+-- 更新首领框架
+local function UpdateBossFrame(unitFrame)
+    UpdateHighlight(unitFrame)
+    UpdateRaidTargetIcon(unitFrame)
+    UpdateMaxHealth(unitFrame)
+    UpdateHealth(unitFrame)
+    UpdateHealthBarColor(unitFrame)
+    UpdateHealPrediction(unitFrame)
+    UpdatePercentHealthLabel(unitFrame)
+    UpdateHealthLabel(unitFrame)
+    UpdateAbsorbLabel(unitFrame)
+    UpdateNameLabel(unitFrame)
+    UpdateMaxPower(unitFrame)
+    UpdatePower(unitFrame)
+    UpdatePowerBarColor(unitFrame)
+    UpdatePercentPowerLabel(unitFrame)
+    UpdateAltPowerBar(unitFrame)
+    UpdateAuras(unitFrame)
+end
+
+--- 创建首领单位框架
 local function CreateBossFrame(i)
     ---@type Button
     local bossFrame = CreateFrame("Button", "WLK_Boss" .. i .. "Frame", UIParent, "SecureUnitButtonTemplate")
@@ -2495,33 +2472,13 @@ local function CreateBossFrame(i)
 
     bossFrame:RegisterUnitEvent("UNIT_AURA", "boss" .. i)
 
-    -- 更新首领框架
-    local function UpdateBossFrame()
-        UpdateHighlight(bossFrame)
-        UpdateRaidTargetIcon(bossFrame)
-        UpdateMaxHealth(bossFrame)
-        UpdateHealth(bossFrame)
-        UpdateHealthBarColor(bossFrame)
-        UpdateHealPrediction(bossFrame)
-        UpdatePercentHealthLabel(bossFrame)
-        UpdateHealthLabel(bossFrame)
-        UpdateAbsorbLabel(bossFrame)
-        UpdateNameLabel(bossFrame)
-        UpdateMaxPower(bossFrame)
-        UpdatePower(bossFrame)
-        UpdatePowerBarColor(bossFrame)
-        UpdatePercentPowerLabel(bossFrame)
-        UpdateAltPowerBar(bossFrame)
-        UpdateAuras(bossFrame)
-    end
-
     ---@param self Button
     bossFrame:SetScript("OnEvent", function(self, event, ...)
         if event == "PLAYER_LOGIN" then
-            UpdateBossFrame()
+            UpdateBossFrame(self)
             self:UnregisterEvent(event)
         elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or event == "UNIT_TARGETABLE_CHANGED" then
-            UpdateBossFrame()
+            UpdateBossFrame(self)
         elseif event == "PLAYER_TARGET_CHANGED" then
             UpdateHighlight(self)
         elseif event == "RAID_TARGET_UPDATE" then
@@ -2595,3 +2552,423 @@ for i = 1, MAX_BOSS_FRAMES do
     --- 下边界（包括施法条）相对屏幕底部偏移 314 + 1 = 315px，首领施法条的高度是 17px
     bossFrame:SetPoint("BOTTOMLEFT", 1350 + 2, 315 + 17 + 2 + (i - 1) * (bossFrame:GetHeight() + 2 + size + 17 + 2))
 end
+
+--- 更新解控技能
+local function UpdateCrowdControl(unitFrame)
+    local spellID, startTime, duration = C_PvP.GetArenaCrowdControlInfo(unitFrame.unit)
+    if spellID then
+        if spellID ~= unitFrame.CC.spellID then
+            local _, spellTextureNoOverride = GetSpellTexture(spellID)
+            unitFrame.CC.spellID = spellID
+            ---@type Texture
+            local icon = unitFrame.CC.icon
+            icon:SetTexture(spellTextureNoOverride)
+        end
+        ---@type Cooldown
+        local cooldown = unitFrame.CC.cooldown
+        if startTime ~= 0 and duration ~= 0 then
+            cooldown:SetCooldown(startTime / 1000.0, duration / 1000.0)
+        else
+            cooldown:Clear()
+        end
+    end
+end
+
+--- 重置解控技能
+local function ResetCrowdControl(unitFrame)
+    unitFrame.CC.spellID = nil;
+    ---@type Texture
+    local icon = unitFrame.CC.icon
+    icon:SetTexture(nil);
+    ---@type Cooldown
+    local cooldown = unitFrame.CC.cooldown
+    cooldown:Clear();
+    UpdateCrowdControl(unitFrame);
+end
+
+--- 隐藏竞技场单位预览框架
+---@param unitFrame Button
+local function HideArenaPrepFrame(unitFrame)
+    if UnitGUID(unitFrame.unit) then
+        local i = strmatch(unitFrame:GetName(), "(%d)")
+        ---@type Frame
+        local prepFrame = _G["WLK_ArenaPrepFrame" .. i]
+        prepFrame:Hide()
+    end
+end
+
+--- 更新 PvP 图标或专精标签
+---@param unitFrame Button
+local function ShowPvPIconOrSpecLabel(unitFrame)
+    local _, instanceType = IsInInstance()
+    -- 在竞技场显示专精标签，否则显示 PvP 图标
+    if instanceType == "arena" then
+        ---@type FontString
+        local specLabel = unitFrame.specLabel
+        local i = strmatch(unitFrame:GetName(), "(%d)")
+        local specID = GetArenaOpponentSpec(i)
+        if specID and specID > 0 then
+            local _, name = GetSpecializationInfoByID(specID)
+            specLabel:SetText(name)
+        end
+    else
+        UpdatePvPIcon(unitFrame)
+    end
+end
+
+--- 更新竞技场单位框架
+local function UpdateArenaFrame(unitFrame)
+    UpdateHighlight(unitFrame)
+    UpdateMaxHealth(unitFrame)
+    UpdateHealth(unitFrame)
+    UpdateHealthBarColor(unitFrame)
+    UpdateHealPrediction(unitFrame)
+    UpdatePercentHealthLabel(unitFrame)
+    UpdateHealthLabel(unitFrame)
+    UpdateAbsorbLabel(unitFrame)
+    UpdateNameLabel(unitFrame)
+    UpdateMaxPower(unitFrame)
+    UpdatePower(unitFrame)
+    UpdatePowerBarColor(unitFrame)
+    UpdatePercentPowerLabel(unitFrame)
+    UpdateAuras(unitFrame)
+    HideArenaPrepFrame(unitFrame)
+    ShowPvPIconOrSpecLabel(unitFrame)
+end
+
+--- 创建竞技场单位框架
+local function CreateArenaFrame(i)
+    ---@type Button
+    local arenaFrame = CreateFrame("Button", "WLK_Arena" .. i .. "Frame", UIParent, "SecureUnitButtonTemplate")
+    arenaFrame.unit = "arena" .. i
+    arenaFrame:SetSize(GetScreenWidth() - 1350 - 298 - 1 - 30 - 2 * 2 - 30, 36)
+
+    arenaFrame:SetBackdrop({ bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark", })
+    arenaFrame:SetAttribute("unit", "arena" .. i)
+    arenaFrame:SetAttribute("*type1", "target")
+    arenaFrame:SetAttribute("*type2", "togglemenu")
+    RegisterUnitWatch(arenaFrame, false)
+
+    arenaFrame:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
+    arenaFrame:SetScript("OnEnter", function(self)
+        UnitFrame_OnEnter(self)
+    end)
+
+    arenaFrame:SetScript("OnLeave", function(self)
+        UnitFrame_OnLeave(self)
+    end)
+
+    arenaFrame:SetScript("OnUpdate", UpdateInRange)
+
+    CreateHighlight(arenaFrame)
+
+    ---@type Texture
+    local arenaPvPIcon = arenaFrame:CreateTexture()
+    arenaPvPIcon:SetSize(30, 30)
+    arenaPvPIcon:SetPoint("LEFT", arenaFrame, "RIGHT", 2, 0)
+    arenaFrame.pvpIcon = arenaPvPIcon
+
+    ---@type FontString
+    local arenaSpecLabel = arenaFrame:CreateFontString(nil, "ARTWORK", "Game12Font_o1")
+    arenaSpecLabel:SetWidth(30)
+    arenaSpecLabel:SetPoint("LEFT", arenaFrame, "RIGHT", 2, 0)
+    arenaSpecLabel:SetJustifyH("LEFT")
+    arenaFrame.specLabel = arenaSpecLabel
+
+    ---@type StatusBar
+    local arenaHealthBar = CreateFrame("StatusBar", nil, arenaFrame)
+    arenaHealthBar:SetSize(arenaFrame:GetWidth(), arenaFrame:GetHeight() * 2 / 3)
+    arenaHealthBar:SetPoint("TOP")
+    arenaHealthBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Hp-Fill", "BORDER")
+    arenaFrame.healthBar = arenaHealthBar
+
+    ---@type Texture
+    local arenaHealthBarBackground = arenaHealthBar:CreateTexture(nil, "BACKGROUND")
+    arenaHealthBarBackground:SetAllPoints()
+    arenaHealthBarBackground:SetTexture("Interface/RaidFrame/Raid-Bar-HP-Bg")
+    arenaHealthBarBackground:SetTexCoord(0, 1, 0, 0.53125)
+
+    CreateHealPrediction(arenaHealthBar)
+
+    ---@type FontString
+    local arenaPercentHealthLabel = arenaHealthBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    arenaPercentHealthLabel:SetPoint("LEFT")
+    arenaFrame.percentHealthLabel = arenaPercentHealthLabel
+
+    ---@type FontString
+    local arenaAbsorbLabel = arenaHealthBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    arenaAbsorbLabel:SetPoint("RIGHT")
+    arenaFrame.absorbLabel = arenaAbsorbLabel
+
+    ---@type FontString
+    local arenaHealthLabel = arenaHealthBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    arenaHealthLabel:SetPoint("RIGHT", arenaAbsorbLabel, "LEFT")
+    arenaFrame.healthLabel = arenaHealthLabel
+
+    ---@type StatusBar
+    local arenaPowerBar = CreateFrame("StatusBar", nil, arenaFrame)
+    arenaPowerBar:SetSize(arenaFrame:GetWidth(), arenaFrame:GetHeight() / 3)
+    arenaPowerBar:SetPoint("TOP", arenaHealthBar, "BOTTOM")
+    arenaPowerBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
+    arenaFrame.powerBar = arenaPowerBar
+
+    ---@type Texture
+    local arenaPowerBarBackground = arenaPowerBar:CreateTexture(nil, "BACKGROUND")
+    arenaPowerBarBackground:SetAllPoints()
+    arenaPowerBarBackground:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+
+    ---@type FontString
+    local arenaPercentPowerLabel = arenaPowerBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    arenaPercentPowerLabel:SetPoint("LEFT")
+    arenaFrame.percentPowerLabel = arenaPercentPowerLabel
+
+    ---@type FontString
+    local arenaNameLabel = arenaPowerBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    arenaNameLabel:SetPoint("RIGHT")
+    arenaFrame.nameLabel = arenaNameLabel
+
+    ---@type Frame
+    local arenaDebuffFrame = CreateFrame("Frame", nil, arenaFrame)
+    arenaDebuffFrame.type = "Debuff"
+    arenaDebuffFrame.numAurasShown = 0
+    arenaDebuffFrame.showAllSource = false
+    arenaDebuffFrame.buttons = {}
+    arenaDebuffFrame:SetSize(size * numPerLine + spacing * (numPerLine - 1), size * rows)
+    arenaDebuffFrame:SetPoint("BOTTOMLEFT", arenaFrame, "TOPLEFT", -2 - 30, 2)
+    arenaFrame.debuffs = arenaDebuffFrame
+
+    for j = 1, maxNum do
+        local button = CreateAuraButton(arenaDebuffFrame)
+        button:SetPoint("BOTTOMLEFT", (size + spacing) * ((j - 1) % numPerLine), (ceil(j / numPerLine) - 1) * size)
+        tinsert(arenaDebuffFrame.buttons, button)
+    end
+
+    ---@type Frame
+    local arenaCCFrame = CreateFrame("Frame", nil, arenaFrame)
+    arenaCCFrame:SetSize(30, 30)
+    arenaCCFrame:SetPoint("RIGHT", arenaFrame, "LEFT", -2, 0)
+    arenaFrame.CC = arenaCCFrame
+    ---@type Texture
+    local arenaCCIcon = arenaCCFrame:CreateTexture()
+    arenaCCIcon:SetAllPoints()
+    arenaFrame.CC.icon = arenaCCIcon
+    ---@type Cooldown
+    local arenaCCCooldown = CreateFrame("Cooldown", nil, arenaCCFrame, "CooldownFrameTemplate")
+    arenaCCCooldown:SetAllPoints()
+    arenaFrame.CC.cooldown = arenaCCCooldown
+    ResetCrowdControl(arenaFrame)
+
+    arenaFrame:RegisterEvent("PLAYER_LOGIN")
+    arenaFrame:RegisterEvent("ARENA_OPPONENT_UPDATE")
+    arenaFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", "arena" .. i)
+
+    arenaFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+
+    arenaFrame:RegisterUnitEvent("UNIT_FACTION", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_MAXHEALTH", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_HEALTH", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_HEALTH_FREQUENT", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_CONNECTION", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_THREAT_LIST_UPDATE", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_HEAL_PREDICTION", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_ABSORB_AMOUNT_CHANGED", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_MAXPOWER", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_POWER_BAR_HIDE", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("UNIT_AURA", "arena" .. i)
+
+    arenaFrame:RegisterUnitEvent("ARENA_COOLDOWNS_UPDATE", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("ARENA_CROWD_CONTROL_SPELL_UPDATE", "arena" .. i)
+
+    ---@param self Button
+    arenaFrame:SetScript("OnEvent", function(self, event, ...)
+        if event == "PLAYER_LOGIN" then
+            UpdateArenaFrame(self)
+            ResetCrowdControl(self)
+            self:UnregisterEvent(event)
+        elseif event == "ARENA_OPPONENT_UPDATE" or event == "UNIT_NAME_UPDATE" then
+            UpdateArenaFrame(self)
+        elseif event == "PLAYER_TARGET_CHANGED" then
+            UpdateHighlight(self)
+        elseif event == "UNIT_FACTION" then
+            UpdateHealthBarColor(self)
+        elseif event == "UNIT_MAXHEALTH" then
+            UpdateMaxHealth(self)
+            UpdateHealth(self)
+            UpdateHealPrediction(self)
+            UpdatePercentHealthLabel(self)
+            UpdateHealthLabel(self)
+        elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
+            UpdateHealth(self)
+            UpdateHealPrediction(self)
+            UpdatePercentHealthLabel(self)
+            UpdateHealthLabel(self)
+        elseif event == "UNIT_CONNECTION" then
+            UpdateHealthBarColor(self)
+            UpdatePowerBarColor(self)
+        elseif event == "UNIT_THREAT_LIST_UPDATE" then
+            UpdateHealthBarColor(self)
+        elseif event == "UNIT_HEAL_PREDICTION" or event == "UNIT_HEAL_ABSORB_AMOUNT_CHANGED" then
+            UpdateHealPrediction(self)
+        elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
+            UpdateHealPrediction(self)
+            UpdateAbsorbLabel(self)
+        elseif event == "UNIT_MAXPOWER" then
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePercentPowerLabel(self)
+        elseif event == "UNIT_POWER_UPDATE" then
+            UpdatePower(self)
+            UpdatePercentPowerLabel(self)
+        elseif event == "UNIT_DISPLAYPOWER" then
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePowerBarColor(self)
+            UpdatePercentPowerLabel(self)
+        elseif event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
+            UpdateMaxPower(self)
+            UpdatePower(self)
+            UpdatePowerBarColor(self)
+            UpdatePercentPowerLabel(self)
+        elseif event == "UNIT_AURA" then
+            UpdateAuras(self)
+        elseif event == "ARENA_COOLDOWNS_UPDATE" then
+            UpdateCrowdControl(self)
+        elseif event == "ARENA_CROWD_CONTROL_SPELL_UPDATE" then
+            local _, spellID = ...
+            if spellID ~= self.CC.spellID then
+                local _, spellTextureNoOverride = GetSpellTexture(spellID)
+                self.CC.spellID = spellID
+                self.CC.icon:SetTexture(spellTextureNoOverride)
+            end
+        end
+    end)
+
+    return arenaFrame
+end
+
+for i = 1, MAX_ARENA_ENEMIES do
+    local arenaFrame = CreateArenaFrame(i)
+    arenaFrame:SetPoint("BOTTOMLEFT", 1350 + 2 + 30, 315 + 17 + 2 + (arenaFrame:GetHeight() + 2 + size + 17 + 2)
+            * (i - 1))
+end
+
+local prepFrameHeight = 36
+for i = 1, MAX_ARENA_ENEMIES do
+    ---@type Frame
+    local arenaPrepFrame = CreateFrame("Frame", "WLK_ArenaPrepFrame" .. i, UIParent)
+    arenaPrepFrame:SetSize(GetScreenWidth() - 1350 - 298 - 1 - 30 - prepFrameHeight, prepFrameHeight)
+    arenaPrepFrame:SetPoint("BOTTOMLEFT", 1350, 315 + 17 + 2 + (prepFrameHeight + 2 + size + 17 + 2) * (i - 1))
+    arenaPrepFrame:SetBackdrop({ bgFile = "Interface/RaidFrame/Raid-Bar-Hp-Fill", })
+    arenaPrepFrame:Hide()
+    ---@type Texture
+    local classIcon = arenaPrepFrame:CreateTexture()
+    classIcon:SetSize(prepFrameHeight, prepFrameHeight)
+    classIcon:SetPoint("LEFT", arenaPrepFrame, "RIGHT")
+    arenaPrepFrame.classIcon = classIcon
+    ---@type Texture
+    local specIcon = arenaPrepFrame:CreateTexture()
+    specIcon:SetSize(30, 30)
+    specIcon:SetPoint("LEFT", classIcon, "RIGHT")
+    arenaPrepFrame.specIcon = specIcon
+    ---@type FontString
+    local specLabel = arenaPrepFrame:CreateFontString(nil, "ARTWORK", "Game15Font_o1")
+    specLabel:SetPoint("CENTER")
+    arenaPrepFrame.specLabel = specLabel
+end
+
+--- 更新竞技场单位预览框架
+local function UpdateArenaPrepFrames()
+    local numOpps = GetNumArenaOpponentSpecs()
+    for i = 1, MAX_ARENA_ENEMIES do
+        ---@type Frame
+        local prepFrame = _G["WLK_ArenaPrepFrame" .. i]
+        if i <= numOpps then
+            local specID, gender = GetArenaOpponentSpec(i)
+            if specID > 0 then
+                local _, name, _, icon, _, class = GetSpecializationInfoByID(specID, gender)
+                if class then
+                    ---@type Texture
+                    local classIcon = prepFrame.classIcon
+                    classIcon:SetTexture("Interface/TargetingFrame/UI-Classes-Circles")
+                    classIcon:SetTexCoord(unpack(CLASS_ICON_TCOORDS[class]))
+                    local r, g, b = GetClassColor(class)
+                    prepFrame:SetBackdropColor(r, g, b)
+                end
+                ---@type Texture
+                local specIcon = prepFrame.specIcon
+                specIcon:SetTexture(icon)
+                ---@type FontString
+                local specLabel = prepFrame.specLabel
+                specLabel:SetText(name)
+                prepFrame:Show()
+            else
+                prepFrame:Hide()
+            end
+        else
+            prepFrame:Hide()
+        end
+    end
+end
+
+local addonName = ...
+---@type Frame
+local eventListener = CreateFrame("Frame")
+
+eventListener:RegisterEvent("ADDON_LOADED")
+eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventListener:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
+
+---@param self Frame
+eventListener:SetScript("OnEvent", function(self, event, ...)
+    if event == "ADDON_LOADED" and ... == addonName then
+        -- 将光环过滤器保存在文件中
+        if not WLK_UnitAuraFilter then
+            WLK_UnitAuraFilter = {
+                ["blacklist"] = {
+                    ["Buff"] = {},
+                    ["Debuff"] = {},
+                },
+                ["whitelist"] = {
+                    ["Buff"] = {
+                        -- 嗜血術
+                        ["2825"] = true,
+                        -- 英勇氣概
+                        ["32182"] = true,
+                        -- 時間扭曲
+                        ["80353"] = true,
+                        -- 靈風
+                        ["160452"] = true,
+                        -- 上古狂亂
+                        ["90355"] = true,
+                        -- 野性之怒
+                        ["264667"] = true,
+                        -- 狂怒之鼓
+                        ["178207"] = true,
+                    },
+                    ["Debuff"] = {},
+                },
+            }
+        end
+        self:UnregisterEvent(event)
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        local numOpps = GetNumArenaOpponentSpecs()
+        if numOpps and numOpps > 0 then
+            UpdateArenaPrepFrames()
+        end
+    elseif event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" then
+        UpdateArenaPrepFrames()
+    end
+end)
