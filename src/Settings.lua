@@ -78,6 +78,8 @@ local hiddenCVars = {
     floatingCombatTextCombatHealing = 0,
     -- 进入/离开战斗
     floatingCombatTextCombatState = 1,
+    -- 显示竞技场单位框架
+    showArenaEnemyFrames = 0,
 }
 
 --- 声音设置的控制台变量
