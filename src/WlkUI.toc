@@ -1,8 +1,0 @@
-## Interface: 80205
-## Title: WlkUI
-## Notes: 自用魔兽世界插件
-## Author: czy211
-## Version: 2.0.0
-## RequiredDeps: Blizzard_DebugTools
-
-Copy.lua
