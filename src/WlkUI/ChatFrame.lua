@@ -11,12 +11,15 @@ chatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", 2 + 29 + 3 + 2, 330 - 32 
 chatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", 540 - 24, 116 + 6)
 chatFrame1.SetPoint = nop
 
+local DEFENSE = "本地防務"
+local TEAM = "組隊頻道"
+
 local abbrevs = {
     [COMMUNITIES_DEFAULT_CHANNEL_NAME] = "綜合",
     [TRADE] = "交易",
-    ["本地防務"] = "防務",
+    [DEFENSE] = "防務",
     [LOOK_FOR_GROUP] = "尋組",
-    ["組隊頻道"] = "組隊",
+    [TEAM] = "組隊",
 }
 
 --- 聊天窗口内容的频道名使用简称
