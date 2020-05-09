@@ -241,7 +241,6 @@ objectiveItemFrame:RegisterEvent("QUEST_REMOVED")
 ---@param self Frame
 objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
-        self:UnregisterEvent(event)
         SetBindingKey()
         UpdateAllItemButtons()
     elseif event == "GET_ITEM_INFO_RECEIVED" then
