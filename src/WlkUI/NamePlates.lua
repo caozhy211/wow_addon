@@ -251,12 +251,10 @@ eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 eventListener:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
 eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 
----@param self Frame
-eventListener:SetScript("OnEvent", function(self, event, ...)
+eventListener:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_ENTERING_WORLD" or event == "UNIT_QUEST_LOG_CHANGED" then
         if event == "PLAYER_ENTERING_WORLD" then
             UpdateQuestTitles()
-            self:UnregisterEvent(event)
         end
         local namePlates = C_NamePlate.GetNamePlates()
         for i = 1, #namePlates do
