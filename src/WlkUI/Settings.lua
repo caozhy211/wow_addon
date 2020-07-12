@@ -376,6 +376,8 @@ local function ApplyWlkSettings()
     for i = 2, #channelList, 3 do
         ChatFrame_AddChannel(ChatFrame1, channelList[i])
     end
+    -- 综合聊天窗口设置勾选 “战斗” 中的 “经验值”
+    ChatFrame_AddMessageGroup(ChatFrame1, "COMBAT_XP_GAIN")
     -- 综合聊天窗口设置取消勾选 “其他” 中的 “频道”
     ChatFrame_RemoveMessageGroup(ChatFrame1, "CHANNEL")
 end
