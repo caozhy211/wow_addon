@@ -6,6 +6,7 @@ local performanceFrame = CreateFrame("Frame", "WLK_PerformanceFrame", UIParent)
 performanceFrame:SetSize(298 - 4 - 40 - 30 * NUM_BAG_SLOTS - 2 * (NUM_BAG_SLOTS - 1) - 4 - 4, 88 - 4 - 40)
 performanceFrame:SetPoint("TOPLEFT", MicroButtonAndBagsBar)
 performanceFrame:SetBackdrop({ bgFile = "Interface/DialogFrame/UI-DialogBox-Background", })
+performanceFrame:SetFrameStrata("LOW")
 
 local offset = 2
 ---@type FontString
@@ -48,6 +49,7 @@ end
 
 ---@type StatusBar
 local memoryBar = CreateFrame("StatusBar", "WLK_MemoryBar", UIParent)
+memoryBar:SetFrameStrata("LOW")
 --- CharacterBagSlot 右边相对 MainMenuBarBackpackButton 左边垂直偏移 -4px
 memoryBar:SetSize(30 * NUM_BAG_SLOTS + 2 * (NUM_BAG_SLOTS - 1) + 4 + 1, (40 - 30) / 2 - 2 + 4 + 4)
 memoryBar:SetPoint("TOPLEFT", performanceFrame, "TOPRIGHT")
