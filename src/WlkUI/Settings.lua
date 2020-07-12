@@ -139,12 +139,6 @@ local function ApplyDefaultSettings()
     if chatConfigFrame:IsShown() then
         ChatConfig_ResetChatSettings()
     end
-
-    -- 设置小地图追踪类型
-    for i = 1, GetNumTrackingTypes() do
-        local _, texture = GetTrackingInfo(i)
-        SetTracking(i, defaultMinimapTracking[tostring(texture)])
-    end
 end
 
 --- 应用默认设置对话框
@@ -165,6 +159,12 @@ defaultButton:SetScript("OnClick", function()
     end
     DisableButtons()
     ApplyDefaultSettings()
+
+    -- 设置小地图追踪类型
+    for i = 1, GetNumTrackingTypes() do
+        local _, texture = GetTrackingInfo(i)
+        SetTracking(i, defaultMinimapTracking[tostring(texture)])
+    end
 
     -- 关闭背包的 “忽视这个背包”
     if GetBackpackAutosortDisabled() then
@@ -378,14 +378,6 @@ local function ApplyWlkSettings()
     end
     -- 综合聊天窗口设置取消勾选 “其他” 中的 “频道”
     ChatFrame_RemoveMessageGroup(ChatFrame1, "CHANNEL")
-    -- 设置小地图追踪类型
-    for i = 1, GetNumTrackingTypes() do
-        local _, texture = GetTrackingInfo(i)
-        -- 136458：旅店老板，524052：目标，613074：追踪宠物，136466：兽栏管理员
-        if texture == 136458 or texture == 524052 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
-            SetTracking(i, true)
-        end
-    end
 end
 
 --- 重新载入界面
@@ -416,6 +408,17 @@ wlkButton:SetScript("OnClick", function()
     -- 应用自定义设置前先应用一次默认设置，因为自定义设置是基于默认设置修改的
     ApplyDefaultSettings()
     ApplyWlkSettings()
+
+    -- 设置小地图追踪类型
+    for i = 1, GetNumTrackingTypes() do
+        local _, texture = GetTrackingInfo(i)
+        -- 136458：旅店老板，524052：目标，613074：追踪宠物，136466：兽栏管理员
+        if texture == 136458 or texture == 524052 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
+            SetTracking(i, true)
+        else
+            SetTracking(i, defaultMinimapTracking[tostring(texture)])
+        end
+    end
 
     -- 关闭背包的 “忽视这个背包”
     if GetBackpackAutosortDisabled() then
