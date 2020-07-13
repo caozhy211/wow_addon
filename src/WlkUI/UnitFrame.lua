@@ -1205,8 +1205,14 @@ petFrame:SetScript("OnUpdate", function(self, elapsed)
     end
     self.elapsed = 0
 
-    -- 755：生命通道，45 码
-    self:SetAlpha(IsSpellInRange(GetSpellInfo(755), self.unit) == 1 and 1 or 0.55)
+    local spell = GetSpellInfo(755)
+    if spell and IsUsableSpell(spell) then
+        -- 755：生命通道，45 码
+        self:SetAlpha(IsSpellInRange(GetSpellInfo(755), self.unit) == 1 and 1 or 0.55)
+    else
+        -- 根据是否在跟随范围内判断，28 码
+        self:SetAlpha(CheckInteractDistance(self.unit, 4) and 1 or 0.55)
+    end
 end)
 
 ---@type Texture
