@@ -1,8 +1,8 @@
 ## Interface: 80300
-## Title: WlkUI
-## Notes: 自用魔兽世界插件
+## Title: |cff8686ecWlkUI
+## Notes: |cff8686ec術士|r專用介面
 ## Author: czy211
-## Version: 2.0.0
+## Version: 2.1.0
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
 ## SavedVariables: WLK_UnitAuraFilter, WLK_AdFilter
 ## SavedVariablesPerCharacter: WLK_DamageDB
