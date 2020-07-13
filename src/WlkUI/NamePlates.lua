@@ -168,8 +168,7 @@ scanner:SetOwner(UIParent, "ANCHOR_NONE")
 local function IsQuestUnit(unit)
     scanner:SetUnit(unit)
 
-    local isQuestTitle, isPlayerName, isPlayerQuest
-    local isCompleted = true
+    local isQuestTitle, isPlayerName, isPlayerQuest, progress
     for i = 3, scanner:NumLines() do
         ---@type FontString
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
@@ -190,8 +189,10 @@ local function IsQuestUnit(unit)
         elseif isQuestTitle and isPlayerName ~= false then
             local current, goal = strmatch(text, "(%d+)/(%d+)")
             local currentPercent = strmatch(text, "%((%d+)%%%)") or strmatch(text, "(%d+)%%$")
-            if (current and goal and current ~= goal) or (currentPercent and currentPercent ~= "100") then
-                isCompleted = false
+            if current and goal and current ~= goal then
+                progress = tonumber(goal) - tonumber(current)
+            elseif currentPercent and currentPercent ~= "100" then
+                progress = currentPercent .. "%"
             end
         end
     end
@@ -200,7 +201,9 @@ local function IsQuestUnit(unit)
         isPlayerQuest = true
     end
     -- 该单位是任务单位，且任务是玩家自己的未完成任务
-    return isQuestTitle and isPlayerQuest and not isCompleted
+    if isQuestTitle and isPlayerQuest and progress then
+        return progress
+    end
 end
 
 --- 更新任务图标
@@ -211,10 +214,13 @@ local function UpdateQuestIcon(namePlate)
     if frame then
         ---@type Texture
         local icon = frame.questIcon
+        local progress = IsQuestUnit(frame.unit)
 
-        if IsQuestUnit(frame.unit) then
+        if progress then
             if icon then
                 icon:Show()
+                frame.questProgress:Show()
+                frame.questProgress:SetText(progress)
             else
                 icon = frame:CreateTexture()
                 icon:SetSize(22, 22)
@@ -222,9 +228,15 @@ local function UpdateQuestIcon(namePlate)
                 icon:SetTexture("Interface/WorldMap/UI-WorldMap-QuestIcon")
                 icon:SetAtlas("QuestNormal")
                 frame.questIcon = icon
+                ---@type FontString
+                local label = frame:CreateFontString(nil, "ARTWORK", "Game12Font_o1")
+                label:SetPoint("LEFT", icon, "RIGHT", -7, 0)
+                label:SetText(progress)
+                frame.questProgress = label
             end
         elseif icon then
             icon:Hide()
+            frame.questProgress:Hide()
         end
     end
 end
