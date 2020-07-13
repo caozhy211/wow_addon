@@ -86,6 +86,8 @@ local hiddenCVars = {
     audioLocale = "enUS",
     -- 反和谐
     overrideArchive = 0,
+    -- 关闭聊天气泡
+    chatBubbles = 0,
 }
 
 --- 声音设置的控制台变量
