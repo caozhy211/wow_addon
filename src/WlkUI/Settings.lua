@@ -80,6 +80,12 @@ local hiddenCVars = {
     floatingCombatTextCombatState = 1,
     -- 显示竞技场单位框架
     showArenaEnemyFrames = 0,
+    -- 设置游戏文字为繁体中文
+    textLocale = "zhTW",
+    -- 设置游戏语音为英文
+    audioLocale = "enUS",
+    -- 反和谐
+    overrideArchive = 0,
 }
 
 --- 声音设置的控制台变量
@@ -99,7 +105,11 @@ local voiceCVars = {
 ---@param toDefault boolean 是否设置为默认值
 local function SetCVars(cvars, toDefault)
     for name, value in pairs(cvars) do
-        SetCVar(name, toDefault and GetCVarDefault(name) or value)
+        if name == "textLocale" or name == "audioLocale" then
+            SetCVar(name, toDefault and "zhCN" or name == "textLocale" and "zhTW" or "enUS")
+        else
+            SetCVar(name, toDefault and GetCVarDefault(name) or value)
+        end
     end
 end
 
@@ -143,7 +153,7 @@ end
 
 --- 应用默认设置对话框
 StaticPopupDialogs["APPLY_DEFAULT_SETTINGS"] = {
-    text = "你必須重新載入才能使默認設置生效",
+    text = "你必須重新載入才能使默認設置生效（系統文字和語音設置以及反和谐需要重啟遊戲才能生效）",
     button1 = RELOADUI,
     OnAccept = ReloadUI,
     OnCancel = ReloadUI,
@@ -392,7 +402,7 @@ end
 
 --- 应用自定义设置对话框
 StaticPopupDialogs["APPLY_WLK_SETTINGS"] = {
-    text = "你必須重新載入才能使自定義設置生效",
+    text = "你必須重新載入才能使自定義設置生效（系統文字和語音設置以及反和谐需要重啟遊戲才能生效）",
     button1 = RELOADUI,
     OnAccept = ReloadForSettings,
     OnCancel = ReloadForSettings,
