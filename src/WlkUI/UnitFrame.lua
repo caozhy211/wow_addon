@@ -172,7 +172,7 @@ local function UpdateStatusLabel(unitFrame)
     if UnitIsAFK(unit) then
         statusLabel:SetText(YELLOW_FONT_COLOR_CODE .. CHAT_FLAG_AFK .. FONT_COLOR_CODE_CLOSE)
     elseif UnitIsDND(unit) then
-        statusLabel:SetText(RED_FONT_COLOR .. CHAT_FLAG_DND .. FONT_COLOR_CODE_CLOSE)
+        statusLabel:SetText(RED_FONT_COLOR_CODE .. CHAT_FLAG_DND .. FONT_COLOR_CODE_CLOSE)
     else
         statusLabel:SetText("")
     end
