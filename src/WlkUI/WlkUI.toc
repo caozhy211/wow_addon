@@ -28,7 +28,6 @@ NamePlates.lua
 Notification.lua
 ObjectiveItem.lua
 Performance.lua
-PetBattle.lua
 Position.lua
 PVPTalent.lua
 Settings.lua

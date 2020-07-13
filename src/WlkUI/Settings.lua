@@ -194,9 +194,6 @@ defaultButton:SetScript("OnClick", function()
     StaticPopup_Show("APPLY_DEFAULT_SETTINGS")
 end)
 
---- 通过是否学会技能 “复活战宠” 及宠物日志是否解锁来判断玩家是不是宠物训练师
-local isPetTrainer = IsSpellKnown(125439) and C_PetJournal.IsJournalUnlocked()
-
 --- 袋子从右到左的分类依次是商品、商品、消耗品、装备
 local wlkBagFilter = {
     LE_BAG_FILTER_FLAG_TRADE_GOODS,
@@ -426,8 +423,8 @@ wlkButton:SetScript("OnClick", function()
     -- 设置小地图追踪类型
     for i = 1, GetNumTrackingTypes() do
         local _, texture = GetTrackingInfo(i)
-        -- 136458：旅店老板，524052：目标，613074：追踪宠物，136466：兽栏管理员
-        if texture == 136458 or texture == 524052 or (isPetTrainer and (texture == 613074 or texture == 136466)) then
+        -- 136458：旅店老板，524052：目标
+        if texture == 136458 or texture == 524052 then
             SetTracking(i, true)
         else
             SetTracking(i, defaultMinimapTracking[tostring(texture)])
@@ -451,26 +448,6 @@ wlkButton:SetScript("OnClick", function()
 
     StaticPopup_Show("APPLY_WLK_SETTINGS")
 end)
-
-if not isPetTrainer then
-    -- 玩家不是宠物训练师时，注册 SPELLS_CHANGED 事件
-    wlkButton:RegisterEvent("SPELLS_CHANGED")
-
-    ---@param self Button
-    wlkButton:SetScript("OnEvent", function(self, event)
-        -- 成为宠物训练师时，小地图追踪勾选 “宠物追踪” 和 “兽栏管理员”
-        if IsSpellKnown(125439) and C_PetJournal.IsJournalUnlocked() then
-            for i = 1, GetNumTrackingTypes() do
-                local _, texture = GetTrackingInfo(i)
-                if texture == 613074 or texture == 136466 then
-                    SetTracking(i, true)
-                end
-            end
-            -- 取消注册 SPELLS_CHANGED 事件
-            self:UnregisterEvent(event)
-        end
-    end)
-end
 
 --- 分辨率不是 1920X1080 时，缩放界面
 if abs(GetScreenWidth() - 1920) > 0.01 then
