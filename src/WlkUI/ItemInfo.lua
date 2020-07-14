@@ -282,6 +282,66 @@ hooksecurefunc("GuildBankFrame_Update", function()
     end
 end)
 
+--- 任务窗口物品按钮显示物品信息，选择奖励物品时，标记售价最高的物品
+hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
+    local link, numItems, _
+    local highestIndex = 0
+    local highestValue = 0
+    local numChoices = mapView and GetNumQuestLogChoices() or GetNumQuestChoices();
+    local rewardsFrame = QuestInfoFrame.rewardsFrame
+    for i = 1, numChoices do
+        local button = QuestInfo_GetRewardButton(rewardsFrame, i)
+        if mapView then
+            link = GetQuestLogItemLink("choice", i)
+            _, _, numItems = GetQuestLogChoiceInfo(i)
+        else
+            link = GetQuestItemLink("choice", i)
+            _, _, numItems = GetQuestItemInfo("choice", i)
+        end
+        ShowItemInfo(button, link)
+        -- 移动右边的标签至图标右边位置
+        ---@type FontString
+        local label
+        if button.typeTopLabel then
+            label = button.typeTopLabel
+            label:SetPoint("TOPRIGHT", button.IconBorder, 3, 1)
+        end
+        if button.typeBottomLabel then
+            label = button.typeBottomLabel
+            label:SetPoint("BOTTOMRIGHT", button.IconBorder, 3, -1)
+        end
+        -- 比较物品的售价
+        if numChoices > 1 and link then
+            local vendorPrice = select(11, GetItemInfo(link))
+            if vendorPrice * numItems > highestValue then
+                highestValue = vendorPrice * numItems
+                highestIndex = i
+            end
+        end
+    end
+    -- 显示或隐藏最高售价标记
+    for i = 1, numChoices do
+        ---@type Button
+        local button = QuestInfo_GetRewardButton(rewardsFrame, i)
+        ---@type Texture
+        local icon = button.highestValueIcon
+        if i == highestIndex then
+            if icon then
+                icon:Show()
+            else
+                icon = button:CreateTexture()
+                button.highestValueIcon = icon
+                icon:SetTexture("Interface/Icons/INV_Misc_Coin_02")
+                icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                icon:SetSize(12, 12)
+                icon:SetPoint("BOTTOMRIGHT", -3, 3)
+            end
+        elseif icon then
+            icon:Hide()
+        end
+    end
+end)
+
 --- 商人界面物品按钮显示物品信息
 ---@param self Frame
 hooksecurefunc("MerchantFrameItem_UpdateQuality", function(self, link)
