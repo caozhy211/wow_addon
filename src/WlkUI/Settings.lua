@@ -88,6 +88,8 @@ local hiddenCVars = {
     overrideArchive = 0,
     -- 关闭聊天气泡
     chatBubbles = 0,
+    -- 世界地图不显示宠物对战
+    showTamers = 0,
 }
 
 --- 声音设置的控制台变量
