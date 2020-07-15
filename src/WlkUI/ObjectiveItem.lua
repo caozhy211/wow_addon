@@ -153,14 +153,6 @@ local function IsInventoryObjectiveItem(slot)
     end
 end
 
---- 检查背包中的任务追踪物品
-local function IsQuestObjectiveItem(link)
-    if questObjectiveItems[link] then
-        local count, _, icon = select(8, GetItemInfo(link))
-        return count, icon
-    end
-end
-
 local firstUpdate
 
 --- 检查装备和背包中的追踪物品，更新 itemButtons
@@ -197,17 +189,13 @@ local function UpdateAllItemButtons()
     if index <= numItemButtons then
         for bagID = 0, NUM_BAG_FRAMES do
             for slot = 1, GetContainerNumSlots(bagID) do
-                local link = GetContainerItemLink(bagID, slot)
-                local itemID = link and GetItemInfoFromHyperlink(link)
-                if itemID then
-                    local count, icon = IsQuestObjectiveItem(link)
-                    if count and icon then
-                        UpdateItemButton(index, itemID, count, icon, slot, bagID)
-                        shownBagIDs[bagID] = true
-                        index = index + 1
-                        if index > numItemButtons then
-                            return
-                        end
+                local icon, count, _, _, _, _, link, _, _, itemID = GetContainerItemInfo(bagID, slot)
+                if itemID and questObjectiveItems[link] then
+                    UpdateItemButton(index, itemID, count, icon, slot, bagID)
+                    shownBagIDs[bagID] = true
+                    index = index + 1
+                    if index > numItemButtons then
+                        return
                     end
                 end
             end
