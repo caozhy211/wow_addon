@@ -287,9 +287,13 @@ hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
     local link, numItems, _
     local highestIndex = 0
     local highestValue = 0
-    local numChoices = mapView and GetNumQuestLogChoices() or GetNumQuestChoices();
+    local rewardsCount = 0
     local rewardsFrame = QuestInfoFrame.rewardsFrame
+
+    -- 显示选择物品信息
+    local numChoices = mapView and GetNumQuestLogChoices() or GetNumQuestChoices()
     for i = 1, numChoices do
+        rewardsCount = rewardsCount + 1
         local button = QuestInfo_GetRewardButton(rewardsFrame, i)
         if mapView then
             link = GetQuestLogItemLink("choice", i)
@@ -338,6 +342,28 @@ hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
             end
         elseif icon then
             icon:Hide()
+        end
+    end
+
+    -- 显示奖励物品信息
+    local numRewards = mapView and GetNumQuestLogRewards() or GetNumQuestRewards()
+    for i = 1, numRewards do
+        local index = rewardsCount + i;
+        local button = QuestInfo_GetRewardButton(rewardsFrame, index)
+        if button.objectType == "item" then
+            link = mapView and GetQuestLogItemLink("reward", i) or GetQuestItemLink("reward", i)
+            ShowItemInfo(button, link)
+            -- 移动右边的标签至图标右边位置
+            ---@type FontString
+            local label
+            if button.typeTopLabel then
+                label = button.typeTopLabel
+                label:SetPoint("TOPRIGHT", button.IconBorder, 3, 1)
+            end
+            if button.typeBottomLabel then
+                label = button.typeBottomLabel
+                label:SetPoint("BOTTOMRIGHT", button.IconBorder, 3, -1)
+            end
         end
     end
 end)
