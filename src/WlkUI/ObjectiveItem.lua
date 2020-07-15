@@ -119,6 +119,7 @@ end
 
 local shownSlots = {}
 local shownBagIDs = {}
+local shownItems = {}
 local questObjectiveItems = {}
 
 --- 更新按钮的属性并显示按钮
@@ -168,6 +169,7 @@ local function UpdateAllItemButtons()
 
     wipe(shownSlots)
     wipe(shownBagIDs)
+    wipe(shownItems)
 
     local index = 1
     -- 检查装备界面的所有装备
@@ -193,6 +195,7 @@ local function UpdateAllItemButtons()
                 if itemID and questObjectiveItems[link] then
                     UpdateItemButton(index, itemID, count, icon, slot, bagID)
                     shownBagIDs[bagID] = true
+                    shownItems[link] = true
                     index = index + 1
                     if index > numItemButtons then
                         return
@@ -277,8 +280,12 @@ end)
 hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
     local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
     local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
-    if shouldShowItem and not questObjectiveItems[link] then
-        questObjectiveItems[link] = true
-        UpdateAllItemButtons()
+    if shouldShowItem then
+        if not questObjectiveItems[link] then
+            questObjectiveItems[link] = true
+        end
+        if not shownItems[link] then
+            UpdateAllItemButtons()
+        end
     end
 end)
