@@ -184,7 +184,7 @@ hooksecurefunc("ActionButton_OnUpdate", function(self)
 end)
 
 local numDivs = 10
-local width = 380
+local width = 360
 ---@type Texture
 local xpMid = OverrideActionBar.xpBar.XpMid
 ---@type Texture
@@ -197,8 +197,9 @@ hooksecurefunc("OverrideActionBar_CalcSize", function()
     for i = 1, 19 do
         ---@type Texture
         local texture = OverrideActionBar.xpBar["XpDiv" .. i]
+        texture:ClearAllPoints()
         if i < numDivs then
-            texture:SetPoint("CENTER", xpMid, "LEFT", floor(width / numDivs * i), 1)
+            texture:SetPoint("CENTER", xpBar, "LEFT", floor(width / numDivs * i), 1)
         else
             texture:Hide()
         end
