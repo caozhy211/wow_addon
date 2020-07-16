@@ -143,7 +143,12 @@ local function GetItemInformation(link, levelOnly, arg, slot)
         -- 其他物品
         scanner:SetHyperlink(link)
     end
-    for i = 2, min(7, scanner:NumLines()) do
+    local lines = scanner:NumLines();
+    -- 部分物品在玩家升级后 linkLevel 会发生变化，如果鼠标提示信息的行数为 0，则需要重新扫描
+    if lines == 0 then
+        return GetItemInformation(link, levelOnly, arg, slot)
+    end
+    for i = 2, min(7, lines) do
         while true do
             ---@type FontString
             local textLeftLabel = _G[scanner:GetName() .. "TextLeft" .. i]
