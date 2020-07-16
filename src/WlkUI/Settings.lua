@@ -395,8 +395,8 @@ end
 
 --- 重新载入界面
 local function ReloadForSettings()
-    -- 总是显示姓名板，因为调用 InterfaceOptionsFrame_SetAllToDefaults() 方法后设置 “nameplateShowAll” 会出现脚本错误，
-    -- 所以移至此处设置
+    -- 设置总是显示姓名板。当有敌对姓名板显示时，调用 InterfaceOptionsFrame_SetAllToDefaults() 函数后设置 “nameplateShowAll”
+    -- 会有姓名板 lua 错误，所以在此处进行设置
     SetCVar("nameplateShowAll", 1)
     ReloadUI()
 end
@@ -420,7 +420,10 @@ wlkButton:SetScript("OnClick", function()
     DisableButtons()
     -- 应用自定义设置前先应用一次默认设置，因为自定义设置是基于默认设置修改的
     ApplyDefaultSettings()
-    ApplyWlkSettings()
+    -- 当有中立姓名板显示时，立即应用自定义设置会有姓名板 lua 错误，延迟 0.1 秒应用则不会
+    C_Timer.After(0.1, function()
+        ApplyWlkSettings()
+    end)
 
     -- 设置小地图追踪类型
     for i = 1, GetNumTrackingTypes() do
