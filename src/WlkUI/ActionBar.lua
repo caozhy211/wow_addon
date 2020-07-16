@@ -83,6 +83,21 @@ eventListener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
+        local alwaysShowActionBars = GetCVar("alwaysShowActionBars")
+        if alwaysShowActionBars == "1" then
+            -- 显示主动作按钮
+            for i = 1, NUM_ACTIONBAR_BUTTONS do
+                ---@type Button
+                local button = _G["ActionButton" .. i]
+                button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+                ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+            end
+            -- 显示右下方动作条前 6 个按钮
+            for i = 1, 6 do
+                _G["MultiBarBottomRightButton" .. i].noGrid = nil
+            end
+        end
+
         -- 设置 PlayerPowerBarAlt 位置
         playerPowerBarAlt:ClearAllPoints()
         -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
@@ -209,18 +224,10 @@ end)
 --- MicroButtonAndBagsBar 左边相对屏幕右边偏移 -298px，ObjectiveTrackerBlocksFrame 的宽度是 235px，MultiBarRightButton 右边
 --- 相对屏幕右边偏移 -2px，PoiButton 的大小是（20px，20px），PoiButton.Icon 的大小是（24px，24px），PoiButton.Icon 中心相对
 --- PoiButton 中心水平偏移 -1px，PoiButton 右边相对 ObjectiveTrackerBlocksFrame 左边偏移 -6px
-local size = 298 - 235 - 2 - ((24 - 20) / 2 + 1 + 20 + 6)
-local buttonNamePrefix = "MultiBarRightButton"
+local size = 298 - 235 - 2 * 2 - ((24 - 20) / 2 + 1 + 20 + 6)
 for i = 1, NUM_ACTIONBAR_BUTTONS do
     ---@type Button
-    local button = _G[buttonNamePrefix .. i]
+    local button = _G["MultiBarRightButton" .. i]
     -- 设置 MultiBarRightButton 大小
     button:SetSize(size, size)
-    -- 隐藏 MultiBarRightButton 纹理
-    ---@type Texture
-    local texture = _G[buttonNamePrefix .. i .. "NormalTexture"]
-    texture:SetTexture(nil)
-    ---@type Texture
-    local bg = _G[buttonNamePrefix .. i .. "FloatingBG"]
-    bg:Hide()
 end
