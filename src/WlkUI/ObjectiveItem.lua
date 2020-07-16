@@ -120,7 +120,6 @@ end
 local shownSlots = {}
 local shownBagIDs = {}
 local shownItems = {}
-local questObjectiveItems = {}
 
 --- 更新按钮的属性并显示按钮
 local function UpdateItemButton(index, itemID, count, icon, slot, bagID)
@@ -192,7 +191,7 @@ local function UpdateAllItemButtons()
         for bagID = 0, NUM_BAG_FRAMES do
             for slot = 1, GetContainerNumSlots(bagID) do
                 local icon, count, _, _, _, _, link, _, _, itemID = GetContainerItemInfo(bagID, slot)
-                if itemID and questObjectiveItems[link] then
+                if itemID and GetContainerItemQuestInfo(bagID, slot) and IsUsableItem(link) then
                     UpdateItemButton(index, itemID, count, icon, slot, bagID)
                     shownBagIDs[bagID] = true
                     shownItems[link] = true
@@ -211,28 +210,19 @@ local function UpdateAllItemButtons()
     end
 end
 
---- 更新任务追踪物品
-local function UpdateQuestObjectiveItem()
-    wipe(questObjectiveItems)
-    for i = 1, GetNumQuestLogEntries() do
-        local link = GetQuestLogSpecialItemInfo(i)
-        if link then
-            questObjectiveItems[link] = true
-        end
-    end
-end
-
 objectiveItemFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+objectiveItemFrame:RegisterEvent("PLAYER_LOGIN")
 objectiveItemFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
 objectiveItemFrame:RegisterEvent("BAG_UPDATE_COOLDOWN")
 objectiveItemFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 objectiveItemFrame:RegisterEvent("BAG_UPDATE")
-objectiveItemFrame:RegisterEvent("QUEST_REMOVED")
 
 ---@param self Frame
 objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_ENTERING_WORLD" then
+    if event == "PLAYER_LOGIN" then
         SetBindingKey()
+        self:UnregisterEvent(event)
+    elseif event == "PLAYER_ENTERING_WORLD" then
         UpdateAllItemButtons()
     elseif event == "GET_ITEM_INFO_RECEIVED" then
         -- 第一次登录时 IsUsableItem 一定返回 false，需要在触发 GET_ITEM_INFO_RECEIVED 事件且成功时更新
@@ -263,8 +253,6 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
         if shownBagIDs[bagID] then
             UpdateAllItemButtons()
         end
-    elseif event == "QUEST_REMOVED" then
-        UpdateQuestObjectiveItem()
     elseif event == "PLAYER_REGEN_ENABLED" then
         UpdateAllItemButtons()
         self:UnregisterEvent(event)
@@ -280,12 +268,7 @@ end)
 hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
     local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
     local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
-    if shouldShowItem then
-        if not questObjectiveItems[link] then
-            questObjectiveItems[link] = true
-        end
-        if not shownItems[link] then
-            UpdateAllItemButtons()
-        end
+    if shouldShowItem and not shownItems[link] then
+        UpdateAllItemButtons()
     end
 end)
