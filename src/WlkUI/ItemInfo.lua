@@ -283,7 +283,7 @@ hooksecurefunc("GuildBankFrame_Update", function()
 end)
 
 --- 任务窗口物品按钮显示物品信息，选择奖励物品时，标记售价最高的物品
-hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
+local function ShowQuestRewardItemInfo(mapView)
     local link, numItems, _
     local highestIndex = 0
     local highestValue = 0
@@ -352,6 +352,13 @@ hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
         local button = QuestInfo_GetRewardButton(rewardsFrame, index)
         if button.objectType == "item" then
             link = mapView and GetQuestLogItemLink("reward", i) or GetQuestItemLink("reward", i)
+            -- 首次登录时会获取不到 link
+            if not link then
+                C_Timer.After(0.1, function()
+                    ShowQuestRewardItemInfo(mapView)
+                end)
+                return
+            end
             ShowItemInfo(button, link)
             -- 移动右边的标签至图标右边位置
             ---@type FontString
@@ -366,6 +373,10 @@ hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
             end
         end
     end
+end
+
+hooksecurefunc("QuestInfo_Display", function(_, _, _, _, mapView)
+    ShowQuestRewardItemInfo(mapView)
 end)
 
 --- 商人界面物品按钮显示物品信息
