@@ -277,9 +277,9 @@ castingBar:HookScript("OnEvent", function(self, event, arg)
         end
     elseif event == "UNIT_SPELLCAST_CHANNEL_UPDATE" and arg == "player" then
         local startTime, endTime = GetCastingSpellInfo(self)
-        if self.channeling and startTime and endTime and endTime > tickEndTime then
+        if self.channeling and startTime and endTime and tickEndTime and endTime > tickEndTime then
             local duration = endTime - startTime
-            if tickDuration and duration > tickDuration and numTicks > 0 then
+            if tickDuration and duration > tickDuration and numTicks and numTicks > 0 then
                 local extraTime = duration - tickDuration
                 for i = 1, numTicks do
                     tickTime[i] = tickTime[i] + extraTime
