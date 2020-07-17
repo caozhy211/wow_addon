@@ -317,54 +317,6 @@ local function SpellMissed(_, _, srcGUID, srcName, srcFlags, dstGUID, dstName, _
     end
 end
 
---- 战斗事件对应的函数
-local combatFunctions = {
-    DAMAGE_SHIELD = SpellDamage,
-    SPELL_DAMAGE = SpellDamage,
-    SPELL_PERIODIC_DAMAGE = SpellDamage,
-    SPELL_BUILDING_DAMAGE = SpellDamage,
-    RANGE_DAMAGE = SpellDamage,
-    SPELL_ABSORBED = SpellAbsorbed,
-    SWING_DAMAGE = SwingDamage,
-    SWING_MISSED = SwingMissed,
-    SPELL_MISSED = SpellMissed,
-    SPELL_PERIODIC_MISSED = SpellMissed,
-    RANGE_MISSED = SpellMissed,
-    SPELL_BUILDING_MISSED = SpellMissed,
-}
-
-local PET_FLAGS = bit.bor(COMBATLOG_OBJECT_TYPE_PET, COMBATLOG_OBJECT_TYPE_GUARDIAN)
-local RAID_FLAGS = bit.bor(COMBATLOG_OBJECT_AFFILIATION_MINE, COMBATLOG_OBJECT_AFFILIATION_PARTY,
-        COMBATLOG_OBJECT_AFFILIATION_RAID)
-
---- 处理战斗日志事件
-local function HandleCombatLogEvent(timestamp, eventType, _, srcGUID, srcName, srcFlags, _, dstGUID, dstName, dstFlags,
-                                    _, ...)
-    local srcFilter, dstFilter
-    local func = combatFunctions[eventType]
-    if current and func then
-        srcFilter = bit.band(srcFlags, RAID_FLAGS) ~= 0 or (bit.band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
-                or characters[srcGUID]
-        dstFilter = bit.band(dstFlags, RAID_FLAGS) ~= 0 or (bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
-                or characters[dstGUID]
-        if srcFilter and not dstFilter then
-            func(timestamp, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
-        end
-    end
-    if current and srcFilter and not current.gotBoss and bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) == 0
-            and not current.targetName then
-        current.targetName = dstName
-    end
-    if eventType == "SPELL_SUMMON" and (bit.band(srcFlags, RAID_FLAGS) ~= 0 or bit.band(srcFlags, PET_FLAGS) ~= 0
-            or bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID]) then
-        pets[dstGUID] = { id = srcGUID, name = srcName, }
-        if pets[srcGUID] then
-            pets[dstGUID].id = pets[srcGUID].id
-            pets[dstGUID].name = pets[srcGUID].name
-        end
-    end
-end
-
 ---@type Frame
 local title = CreateFrame("Frame", "WLK_DamageMeterTitle", UIParent)
 title:SetSize(540 - 116 / 4 * 3, 20)
@@ -1091,6 +1043,57 @@ local function CombatStart()
     end)
 end
 
+--- 战斗事件对应的函数
+local combatFunctions = {
+    DAMAGE_SHIELD = SpellDamage,
+    SPELL_DAMAGE = SpellDamage,
+    SPELL_PERIODIC_DAMAGE = SpellDamage,
+    SPELL_BUILDING_DAMAGE = SpellDamage,
+    RANGE_DAMAGE = SpellDamage,
+    SPELL_ABSORBED = SpellAbsorbed,
+    SWING_DAMAGE = SwingDamage,
+    SWING_MISSED = SwingMissed,
+    SPELL_MISSED = SpellMissed,
+    SPELL_PERIODIC_MISSED = SpellMissed,
+    RANGE_MISSED = SpellMissed,
+    SPELL_BUILDING_MISSED = SpellMissed,
+}
+
+local PET_FLAGS = bit.bor(COMBATLOG_OBJECT_TYPE_PET, COMBATLOG_OBJECT_TYPE_GUARDIAN)
+local RAID_FLAGS = bit.bor(COMBATLOG_OBJECT_AFFILIATION_MINE, COMBATLOG_OBJECT_AFFILIATION_PARTY,
+        COMBATLOG_OBJECT_AFFILIATION_RAID)
+
+--- 处理战斗日志事件
+local function HandleCombatLogEvent(timestamp, eventType, _, srcGUID, srcName, srcFlags, _, dstGUID, dstName, dstFlags,
+                                    _, ...)
+    local srcFilter, dstFilter
+    local func = combatFunctions[eventType]
+    if func then
+        srcFilter = bit.band(srcFlags, RAID_FLAGS) ~= 0 or (bit.band(srcFlags, PET_FLAGS) ~= 0 and pets[srcGUID])
+                or characters[srcGUID]
+        dstFilter = bit.band(dstFlags, RAID_FLAGS) ~= 0 or (bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
+                or characters[dstGUID]
+        if srcFilter and not dstFilter then
+            if not current then
+                CombatStart()
+            end
+            func(timestamp, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
+        end
+    end
+    if current and srcFilter and not current.gotBoss and bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_FRIENDLY) == 0
+            and not current.targetName then
+        current.targetName = dstName
+    end
+    if eventType == "SPELL_SUMMON" and (bit.band(srcFlags, RAID_FLAGS) ~= 0 or bit.band(srcFlags, PET_FLAGS) ~= 0
+            or bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID]) then
+        pets[dstGUID] = { id = srcGUID, name = srcName, }
+        if pets[srcGUID] then
+            pets[dstGUID].id = pets[srcGUID].id
+            pets[dstGUID].name = pets[srcGUID].name
+        end
+    end
+end
+
 --- 显示视图
 local function DisplayView(view)
     ClearWindow()
@@ -1107,7 +1110,6 @@ window:RegisterEvent("PLAYER_ENTERING_WORLD")
 window:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 window:RegisterEvent("ENCOUNTER_START")
 window:RegisterEvent("ENCOUNTER_END")
-window:RegisterEvent("PLAYER_REGEN_DISABLED")
 window:RegisterEvent("PLAYER_LOGOUT")
 
 ---@param self Frame
@@ -1147,10 +1149,6 @@ window:SetScript("OnEvent", function(self, event, ...)
         if current and not current.gotBoss then
             current.targetName = encounterName
             current.gotBoss = true
-        end
-    elseif event == "PLAYER_REGEN_DISABLED" then
-        if not current then
-            CombatStart()
         end
     elseif event == "PLAYER_LOGOUT" then
         for i = 1, #combats do
