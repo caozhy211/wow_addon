@@ -3,6 +3,7 @@ local combats
 local wasInParty
 local characters = {}
 local pets = {}
+local UPDATE_INTERVAL = 1
 
 --- 获取队伍类型和成员数量
 local function GetGroupTypeAndCount()
@@ -726,6 +727,51 @@ local function AddSubviewToTooltip(view, id, label)
     end
 end
 
+--- 滑鼠移至数据条
+local function EnterBar(bar)
+    GameTooltip:SetOwner(window, "ANCHOR_NONE")
+    GameTooltip:SetPoint("BOTTOMLEFT", window, "BOTTOMRIGHT")
+
+    if windowView ~= combatView then
+        GameTooltip:ClearLines()
+        local hasClick = windowView.next1
+
+        if windowView.tooltip then
+            local numLines = GameTooltip:NumLines()
+            windowView["tooltip"](bar.id, bar.text)
+            if GameTooltip:NumLines() ~= numLines and hasClick then
+                GameTooltip:AddLine(" ")
+            end
+        end
+
+        if windowView.next1 then
+            tooltipView = windowView.next1
+            AddSubviewToTooltip(tooltipView, bar.id, bar.text)
+        end
+        if windowView.next2 then
+            tooltipView = windowView.next2
+            AddSubviewToTooltip(tooltipView, bar.id, bar.text)
+        end
+
+        if windowView.extraTooltip then
+            local numLines = GameTooltip:NumLines()
+            windowView["extraTooltip"](bar.id, bar.text)
+            if GameTooltip:NumLines() ~= numLines and hasClick then
+                GameTooltip:AddLine(" ")
+            end
+        end
+
+        if windowView.next1 then
+            GameTooltip:AddLine("點擊後爲 " .. windowView.next1.name .. ".", 0.2, 1, 0.2)
+        end
+        if windowView.next2 then
+            GameTooltip:AddLine("Shift+點擊後爲 " .. windowView.next2.name .. ".", 0.2, 1, 0.2)
+        end
+
+        GameTooltip:Show()
+    end
+end
+
 --- 创建数据条
 local function CreateBar(data)
     ---@type StatusBar
@@ -778,51 +824,22 @@ local function CreateBar(data)
     end)
 
     bar:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(window, "ANCHOR_NONE")
-        GameTooltip:SetPoint("BOTTOMLEFT", window, "BOTTOMRIGHT")
+        EnterBar(self)
 
-        if windowView ~= combatView then
-            GameTooltip:ClearLines()
-            local hasClick = windowView.next1
+        self:SetScript("OnUpdate", function(_, elapsed)
+            self.elapsed = (self.elapsed or 0) + elapsed
+            if self.elapsed < UPDATE_INTERVAL then
+                return
+            end
+            self.elapsed = 0
 
-            if windowView.tooltip then
-                local numLines = GameTooltip:NumLines()
-                windowView["tooltip"](self.id, self.text)
-                if GameTooltip:NumLines() ~= numLines and hasClick then
-                    GameTooltip:AddLine(" ")
-                end
-            end
-
-            if windowView.next1 then
-                tooltipView = windowView.next1
-                AddSubviewToTooltip(tooltipView, self.id, self.text)
-            end
-            if windowView.next2 then
-                tooltipView = windowView.next2
-                AddSubviewToTooltip(tooltipView, self.id, self.text)
-            end
-
-            if windowView.extraTooltip then
-                local numLines = GameTooltip:NumLines()
-                windowView["extraTooltip"](self.id, self.text)
-                if GameTooltip:NumLines() ~= numLines and hasClick then
-                    GameTooltip:AddLine(" ")
-                end
-            end
-
-            if windowView.next1 then
-                GameTooltip:AddLine("點擊後爲 " .. windowView.next1.name .. ".", 0.2, 1, 0.2)
-            end
-            if windowView.next2 then
-                GameTooltip:AddLine("Shift+點擊後爲 " .. windowView.next2.name .. ".", 0.2, 1, 0.2)
-            end
-
-            GameTooltip:Show()
-        end
+            EnterBar(self)
+        end)
     end)
 
-    bar:SetScript("OnLeave", function()
+    bar:SetScript("OnLeave", function(self)
         GameTooltip:Hide()
+        self:SetScript("OnUpdate", nil)
     end)
 
     return bar
@@ -901,6 +918,9 @@ local function UpdateData(force)
             local combat = GetCombat()
             if combat then
                 windowView["update"](window, combat)
+                --if tooltipView then
+                --    tooltipView["update"](tooltip, combat)
+                --end
             end
         else
             barMaxValue = 1
@@ -1035,10 +1055,10 @@ local function CombatStart()
         encounterTimeSaved = nil
     end
     UpdateData(true)
-    updateTicker = C_Timer.NewTicker(1, function()
+    updateTicker = C_Timer.NewTicker(UPDATE_INTERVAL, function()
         UpdateData()
     end)
-    checkTicker = C_Timer.NewTicker(1, function()
+    checkTicker = C_Timer.NewTicker(UPDATE_INTERVAL, function()
         CheckCombat()
     end)
 end
