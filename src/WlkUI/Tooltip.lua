@@ -35,7 +35,6 @@ end)
 
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_InventoryScanner", UIParent, "GameTooltipTemplate")
-scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 local inspectUnit, inspectGUID
 
@@ -52,6 +51,7 @@ local function GetUnitAverageItemLevel()
     for i = INVSLOT_FIRST_EQUIPPED, INVSLOT_OFFHAND do
         -- 不计算衬衫的等级
         if i ~= INVSLOT_BODY then
+            scanner:SetOwner(UIParent, "ANCHOR_NONE")
             scanner:SetInventoryItem(inspectUnit, i)
             local link = GetInventoryItemLink(inspectUnit, i) or select(2, scanner:GetItem())
             if link then

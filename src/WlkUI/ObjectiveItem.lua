@@ -138,10 +138,10 @@ end
 local locale = GetLocale()
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_ObjectiveItemScanner", UIParent, "GameTooltipTemplate")
-scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 --- 检查装备物品是否是追踪物品
 local function IsInventoryObjectiveItem(slot)
+    scanner:SetOwner(UIParent, "ANCHOR_NONE")
     scanner:SetInventoryItem("player", slot, false, true)
     for i = 2, scanner:NumLines() do
         ---@type FontString

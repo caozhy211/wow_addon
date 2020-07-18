@@ -116,7 +116,6 @@ end
 
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_ItemScanner", UIParent, "GameTooltipTemplate")
-scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 --- 获取物品信息
 local function GetItemInformation(link, levelOnly, arg, slot)
@@ -129,6 +128,8 @@ local function GetItemInformation(link, levelOnly, arg, slot)
             return level
         end
     end
+    -- 清除之前的设置。GameTooltip 的设置函数如果使用相同的 link，会关闭 GameTooltip，导致 NumLines 为 0，无法获取信息
+    scanner:SetOwner(UIParent, "ANCHOR_NONE")
     -- 其他物品等级和绑定信息通过扫描鼠标提示信息获取
     if type(arg) == "number" and slot then
         -- 背包中的物品
@@ -143,12 +144,7 @@ local function GetItemInformation(link, levelOnly, arg, slot)
         -- 其他物品
         scanner:SetHyperlink(link)
     end
-    local lines = scanner:NumLines();
-    -- 部分物品在玩家升级后 linkLevel 会发生变化，如果鼠标提示信息的行数为 0，则需要重新扫描
-    if lines == 0 then
-        return GetItemInformation(link, levelOnly, arg, slot)
-    end
-    for i = 2, min(7, lines) do
+    for i = 2, min(7, scanner:NumLines()) do
         while true do
             ---@type FontString
             local textLeftLabel = _G[scanner:GetName() .. "TextLeft" .. i]
