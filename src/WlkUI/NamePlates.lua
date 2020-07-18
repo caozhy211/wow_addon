@@ -162,10 +162,10 @@ local questTitles = {}
 
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_NamePlateScanner", UIParent, "GameTooltipTemplate")
-scanner:SetOwner(UIParent, "ANCHOR_NONE")
 
 --- 检查 unit 是否是任务单位
 local function IsQuestUnit(unit)
+    scanner:SetOwner(UIParent, "ANCHOR_NONE")
     scanner:SetUnit(unit)
 
     local isQuestTitle, isPlayerName, isPlayerQuest, progress

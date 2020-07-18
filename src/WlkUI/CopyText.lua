@@ -305,8 +305,7 @@ local function GetEquippedItems()
 end
 
 ---@type GameTooltip
-local tooltip = CreateFrame("GameTooltip", "WLK_BagScanner", UIParent, "GameTooltipTemplate")
-tooltip:SetOwner(UIParent, "ANCHOR_NONE")
+local scanner = CreateFrame("GameTooltip", "WLK_BagScanner", UIParent, "GameTooltipTemplate")
 
 --- 获取背包中的物品
 local function GetBagItems()
@@ -341,9 +340,10 @@ local function GetBagItems()
                         local name, link, quality = GetItemInfo(itemLink)
                         if IsEquippableItem(itemLink) and quality ~= LE_ITEM_QUALITY_ARTIFACT then
                             local level
-                            tooltip:SetBagItem(container, slot)
+                            scanner:SetOwner(UIParent, "ANCHOR_NONE")
+                            scanner:SetBagItem(container, slot)
                             for j = 2, 5 do
-                                local lineText = _G[tooltip:GetName() .. "TextLeft" .. j]:GetText() or ""
+                                local lineText = _G[scanner:GetName() .. "TextLeft" .. j]:GetText() or ""
                                 level = strmatch(lineText, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)"))
                                         or strmatch(lineText, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
                                 if level then
