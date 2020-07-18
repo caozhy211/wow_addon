@@ -381,6 +381,9 @@ local function ShowGCD()
         end
         self.elapsed = 0
 
+        if not self.startTime then
+            HideGCD()
+        end
         local percent = (GetTime() - self.startTime) / self.duration
         if percent > 1 then
             HideGCD()
@@ -395,8 +398,10 @@ gcd:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "vehicle")
 
 gcd:SetScript("OnEvent", function(self, ...)
     local _, _, _, spellID = ...
-    self.startTime, self.duration = GetSpellCooldown(spellID)
-    if self.duration and self.duration > 0 and self.duration <= 1.5 then
+    local startTime, duration = GetSpellCooldown(spellID)
+    if duration and duration > 0 and duration <= 1.5 then
+        self.startTime = startTime
+        self.duration = duration
         ShowGCD()
     end
 end)
