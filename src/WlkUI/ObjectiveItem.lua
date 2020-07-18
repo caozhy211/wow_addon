@@ -139,10 +139,14 @@ local locale = GetLocale()
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_ObjectiveItemScanner", UIParent, "GameTooltipTemplate")
 
---- 检查装备物品是否是追踪物品
-local function IsInventoryObjectiveItem(slot)
+--- 检查物品是否是追踪物品
+local function IsObjectiveItem(slot, bagID)
     scanner:SetOwner(UIParent, "ANCHOR_NONE")
-    scanner:SetInventoryItem("player", slot, false, true)
+    if bagID then
+        scanner:SetBagItem(bagID, slot)
+    else
+        scanner:SetInventoryItem("player", slot, false, true)
+    end
     for i = 2, scanner:NumLines() do
         ---@type FontString
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
@@ -175,7 +179,7 @@ local function UpdateAllItemButtons()
     for slot = INVSLOT_HEAD, INVSLOT_OFFHAND do
         local link = GetInventoryItemLink("player", slot)
         local itemID = link and GetItemInfoFromHyperlink(link)
-        if itemID and (IsUsableItem(link) or IsInventoryObjectiveItem(slot)) then
+        if itemID and (IsUsableItem(link) or IsObjectiveItem(slot)) then
             local icon = GetInventoryItemTexture("player", slot)
             UpdateItemButton(index, itemID, 1, icon, slot)
             shownSlots[slot] = true
@@ -191,7 +195,8 @@ local function UpdateAllItemButtons()
         for bagID = 0, NUM_BAG_FRAMES do
             for slot = 1, GetContainerNumSlots(bagID) do
                 local icon, count, _, _, _, _, link, _, _, itemID = GetContainerItemInfo(bagID, slot)
-                if itemID and GetContainerItemQuestInfo(bagID, slot) and IsUsableItem(link) then
+                if itemID and GetContainerItemQuestInfo(bagID, slot) and (IsUsableItem(link)
+                        or IsObjectiveItem(slot, bagID)) then
                     UpdateItemButton(index, itemID, count, icon, slot, bagID)
                     shownBagIDs[bagID] = true
                     shownItems[link] = true
@@ -244,7 +249,7 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
         local equipmentSlot = ...
         local link = GetInventoryItemLink("player", equipmentSlot)
         -- 该装备槽位现在是追踪物品或该装备槽位之前有追踪物品，都需要更新
-        if shownSlots[equipmentSlot] or link and IsUsableItem(link) or IsInventoryObjectiveItem(equipmentSlot) then
+        if shownSlots[equipmentSlot] or link and IsUsableItem(link) or IsObjectiveItem(equipmentSlot) then
             UpdateAllItemButtons()
         end
     elseif event == "BAG_UPDATE" then
