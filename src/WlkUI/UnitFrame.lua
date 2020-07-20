@@ -686,72 +686,6 @@ local function UpdatePowerLabel(unitFrame)
     end
 end
 
----@type Frame
-local playerComboPoints = CreateFrame("Frame", nil, playerFrame)
-playerComboPoints:SetSize(playerFrame:GetWidth() - height, 9)
-playerComboPoints:SetPoint("BOTTOMRIGHT")
-
----@param self Frame
-playerComboPoints:SetScript("OnShow", function(self)
-    playerPowerBar:SetHeight((height - self:GetHeight()) / 3)
-    playerHealthBar:SetHeight(height - playerPowerBar:GetHeight() - self:GetHeight())
-end)
-
-playerComboPoints:SetScript("OnHide", function()
-    playerPowerBar:SetHeight(height / 3)
-    playerHealthBar:SetHeight(height * 2 / 3)
-end)
-
-playerFrame.comboPoints = {}
---- 连击点之间的水平间距
-local spacing = 5
-
---- 更新 ComboPoints
-local function UpdateComboPoints(unitFrame)
-    local unit = unitFrame.unit
-
-    local show
-    if UnitIsUnit(unit, "vehicle") then
-        show = PlayerVehicleHasComboPoints()
-    else
-        local _, class = UnitClass(unit)
-        show = class == "ROGUE" or class == "DRUID"
-    end
-    if show then
-        local maxPoints = UnitPowerMax(unit, Enum.PowerType.ComboPoints)
-        if #(playerFrame.comboPoints) ~= maxPoints then
-            -- 创建 ComboPoints 纹理
-            for i = 1, maxPoints do
-                ---@type Texture
-                local point = playerComboPoints:CreateTexture()
-                point:SetSize((playerComboPoints:GetWidth() - spacing * (maxPoints - 1)) / maxPoints,
-                        playerComboPoints:GetHeight())
-                point:SetPoint("LEFT", (point:GetWidth() + spacing) * (i - 1), 0)
-                point:SetColorTexture(GetTableColor(PowerBarColor["COMBO_POINTS"]))
-                playerFrame.comboPoints[i] = point
-            end
-        end
-
-        -- 获取当前 ComboPoints
-        local points
-        if UnitExists("target") then
-            points = GetComboPoints(unit)
-        else
-            points = UnitPower(unit, Enum.PowerType.ComboPoints)
-        end
-
-        -- 显示当前 ComboPoints
-        for i = 1, #(playerFrame.comboPoints) do
-            ---@type Texture
-            local point = playerFrame.comboPoints[i]
-            point:SetAlpha(i > points and 0.15 or 1)
-        end
-        playerComboPoints:Show()
-    else
-        playerComboPoints:Hide()
-        wipe(playerFrame.comboPoints)
-    end
-end
 
 --- 更新光环按钮
 local function UpdateAuraButton(auraFrame, index, name, icon, count, duration, expirationTime, source, spellID)
@@ -965,7 +899,7 @@ end
 local maxNum = 8
 local numPerLine = 8
 local rows = ceil(maxNum / numPerLine)
-spacing = 4
+local spacing = 4
 
 ---@type Frame
 local playerDebuffFrame = CreateFrame("Frame", nil, playerFrame)
@@ -1092,7 +1026,6 @@ local function UpdatePlayerFrame()
     UpdatePowerBarColor(playerFrame)
     UpdatePercentPowerLabel(playerFrame)
     UpdatePowerLabel(playerFrame)
-    UpdateComboPoints(playerFrame)
     UpdateAuras(playerFrame)
 end
 
@@ -1154,7 +1087,6 @@ playerFrame:SetScript("OnEvent", function(self, event)
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
         UpdatePowerLabel(self)
-        UpdateComboPoints(self)
     elseif event == "UNIT_POWER_UPDATE" then
         UpdatePower(self)
         UpdatePercentPowerLabel(self)

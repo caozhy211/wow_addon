@@ -13,6 +13,7 @@ CastingBar.lua
 CharacterStats.lua
 ChatCommands.lua
 ChatFrame.lua
+ClassPowerBar.lua
 Cooldown.lua
 Coordinate.lua
 CopyText.lua
@@ -32,6 +33,5 @@ Performance.lua
 Position.lua
 PVPTalent.lua
 Settings.lua
-SoulShards.lua
 Tooltip.lua
 UnitFrame.lua
