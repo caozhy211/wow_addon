@@ -918,9 +918,6 @@ local function UpdateData(force)
             local combat = GetCombat()
             if combat then
                 windowView["update"](window, combat)
-                --if tooltipView then
-                --    tooltipView["update"](tooltip, combat)
-                --end
             end
         else
             barMaxValue = 1
@@ -1093,7 +1090,7 @@ local function HandleCombatLogEvent(timestamp, eventType, _, srcGUID, srcName, s
                 or characters[srcGUID]
         dstFilter = bit.band(dstFlags, RAID_FLAGS) ~= 0 or (bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
                 or characters[dstGUID]
-        if srcFilter and not dstFilter then
+        if srcFilter and not dstFilter and (InCombatLockdown() or IsRaidInCombat()) then
             if not current then
                 CombatStart()
             end
