@@ -1220,6 +1220,7 @@ local petFrameUnitEvents = {
     "UNIT_MAXPOWER",
 
     "UNIT_POWER_UPDATE",
+    "UNIT_POWER_FREQUENT",
 
     "UNIT_DISPLAYPOWER",
     "UNIT_POWER_BAR_SHOW",
@@ -1287,7 +1288,7 @@ petFrame:SetScript("OnEvent", function(self, event)
         UpdateMaxPower(self)
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
-    elseif event == "UNIT_POWER_UPDATE" then
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
@@ -1596,6 +1597,7 @@ targetFrame:RegisterUnitEvent("UNIT_LEVEL", "target")
 targetFrame:RegisterUnitEvent("UNIT_MAXPOWER", "target")
 
 targetFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "target")
+targetFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "target")
 
 targetFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "target")
 targetFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "target")
@@ -1692,7 +1694,7 @@ targetFrame:SetScript("OnEvent", function(self, event, ...)
             UpdatePercentPowerLabel(self)
             UpdatePowerLabel(self)
         end
-    elseif event == "UNIT_POWER_UPDATE" then
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
             UpdateAltPowerBar(self)
@@ -1829,6 +1831,7 @@ targetTargetFrame:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "targetTa
 targetTargetFrame:RegisterUnitEvent("UNIT_MAXPOWER", "targetTarget")
 
 targetTargetFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "targetTarget")
+targetTargetFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "targetTarget")
 
 targetTargetFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "targetTarget")
 targetTargetFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "targetTarget")
@@ -1888,7 +1891,7 @@ targetTargetFrame:SetScript("OnEvent", function(self, event)
         UpdateMaxPower(self)
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
-    elseif event == "UNIT_POWER_UPDATE" then
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
@@ -2129,6 +2132,7 @@ focusFrame:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "focus")
 focusFrame:RegisterUnitEvent("UNIT_MAXPOWER", "focus")
 
 focusFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "focus")
+focusFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "focus")
 
 focusFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "focus")
 focusFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "focus")
@@ -2191,7 +2195,7 @@ focusFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
         UpdateHealPrediction(self)
         UpdateAbsorbLabel(self)
-    elseif event == "UNIT_MAXPOWER" then
+    elseif event == "UNIT_MAXPOWER" or event == "UNIT_POWER_FREQUENT" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
             UpdateAltPowerBar(self)
@@ -2403,6 +2407,7 @@ local function CreateBossFrame(i)
     bossFrame:RegisterUnitEvent("UNIT_MAXPOWER", "boss" .. i)
 
     bossFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "boss" .. i)
+    bossFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "boss" .. i)
 
     bossFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "boss" .. i)
     bossFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "boss" .. i)
@@ -2445,7 +2450,7 @@ local function CreateBossFrame(i)
         elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
             UpdateHealPrediction(self)
             UpdateAbsorbLabel(self)
-        elseif event == "UNIT_MAXPOWER" then
+        elseif event == "UNIT_MAXPOWER" or event == "UNIT_POWER_FREQUENT" then
             local _, powerType = ...
             if powerType == "ALTERNATE" then
                 UpdateAltPowerBar(self)
@@ -2720,6 +2725,7 @@ local function CreateArenaFrame(i)
     arenaFrame:RegisterUnitEvent("UNIT_MAXPOWER", "arena" .. i)
 
     arenaFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "arena" .. i)
 
     arenaFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "arena" .. i)
     arenaFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "arena" .. i)
@@ -2767,7 +2773,7 @@ local function CreateArenaFrame(i)
             UpdateMaxPower(self)
             UpdatePower(self)
             UpdatePercentPowerLabel(self)
-        elseif event == "UNIT_POWER_UPDATE" then
+        elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
             UpdatePower(self)
             UpdatePercentPowerLabel(self)
         elseif event == "UNIT_DISPLAYPOWER" then
