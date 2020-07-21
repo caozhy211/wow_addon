@@ -48,7 +48,7 @@ local function UpdateCharactersAndPets()
     end
 end
 
-local current
+local current, temp
 local selectedCombat = 0
 local encounterNameSaved, encounterTimeSaved
 local dmg = {}
@@ -127,10 +127,12 @@ end
 
 --- 记录伤害
 local function LogDamage()
-    local character = GetCharacter(current, dmg.playerID, dmg.playerName)
+    -- current 存在时，记录到 current 中，不存在时记录到临时表中
+    local combat = current or temp
+    local character = GetCharacter(combat, dmg.playerID, dmg.playerName)
     if character then
         local amount = dmg.amount
-        current.damage = current.damage + amount
+        combat.damage = combat.damage + amount
         character.damage = character.damage + amount
 
         if not character.spells[dmg.spellName] then
@@ -893,9 +895,11 @@ end
 
 --- 清除窗口
 local function ClearWindow()
+    -- 清除数据
     for i = 1, #window.data do
         wipe(window.data[i])
     end
+    -- 清除数据条
     barOffset = 0
     for _, bar in pairs(bars) do
         bar:Hide()
@@ -1031,19 +1035,28 @@ local function CheckCombat()
     end
 end
 
+--- 初始化记录战斗数据的表
+local function InitialCombatTable()
+    return {
+        characters = {},
+        start = time(),
+        duration = 0,
+        damage = 0,
+    }
+end
+
 --- 战斗开始
 local function CombatStart()
     if updateTicker then
         CombatEnd()
     end
     ClearWindow()
-    if not current then
-        current = {
-            characters = {},
-            start = time(),
-            duration = 0,
-            damage = 0,
-        }
+    if temp and temp.start == time() then
+        -- 有临时数据且该次数据的记录时间和战斗开始时间相同时，使用此次临时数据
+        current = temp
+    else
+        -- 没有临时数据时，创建新的
+        current = InitialCombatTable()
     end
     if encounterNameSaved and GetTime() < (encounterTimeSaved or 0) + 15 then
         current.targetName = encounterNameSaved
@@ -1090,9 +1103,11 @@ local function HandleCombatLogEvent(timestamp, eventType, _, srcGUID, srcName, s
                 or characters[srcGUID]
         dstFilter = bit.band(dstFlags, RAID_FLAGS) ~= 0 or (bit.band(dstFlags, PET_FLAGS) ~= 0 and pets[dstGUID])
                 or characters[dstGUID]
-        if srcFilter and not dstFilter and (InCombatLockdown() or IsRaidInCombat()) then
+        if srcFilter and not dstFilter then
+            -- current 不存在时，使用临时表记录此次伤害数据，目前只发现第一次伤害有时候会比触发 PLAYER_REGEN_DISABLED 早，导致记
+            -- 录不到数据
             if not current then
-                CombatStart()
+                temp = InitialCombatTable()
             end
             func(timestamp, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, ...)
         end
@@ -1124,6 +1139,7 @@ window:RegisterEvent("ADDON_LOADED")
 window:RegisterEvent("GROUP_ROSTER_UPDATE")
 window:RegisterEvent("UNIT_PET")
 window:RegisterEvent("PLAYER_ENTERING_WORLD")
+window:RegisterEvent("PLAYER_REGEN_DISABLED")
 window:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 window:RegisterEvent("ENCOUNTER_START")
 window:RegisterEvent("ENCOUNTER_END")
@@ -1150,6 +1166,10 @@ window:SetScript("OnEvent", function(self, event, ...)
             end)
         end
         DisplayView(windowView)
+    elseif event == "PLAYER_REGEN_DISABLED" then
+        if not current then
+            CombatStart()
+        end
     elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
         HandleCombatLogEvent(CombatLogGetCurrentEventInfo())
     elseif event == "ENCOUNTER_START" then
@@ -1219,12 +1239,7 @@ resetButton:SetScript("OnClick", function()
     UpdateCharactersAndPets()
     if current then
         wipe(current)
-        current = {
-            characters = {},
-            start = time(),
-            duration = 0,
-            damage = 0,
-        }
+        current = InitialCombatTable()
     end
     wipe(combats)
     selectedCombat = 0
