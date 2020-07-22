@@ -21,7 +21,7 @@ local buttonTables = {
     { text = "副", color = "PALADIN", command = "/i ", },
     { text = "綜", color = "WARRIOR", command = COMMUNITIES_DEFAULT_CHANNEL_NAME, },
     { text = "尋", color = "DEMONHUNTER", command = LOOK_FOR_GROUP, },
-    { text = "組", color = "SHAMAN", command = "組隊頻道", },
+    { text = "世", color = "SHAMAN", command = "大腳世界頻道", },
     { text = "骰", color = "ROGUE", command = "/roll", },
     { text = "清", color = "HUNTER", command = "/clear", },
     { text = "重", color = "MAGE", command = "/reload", },
