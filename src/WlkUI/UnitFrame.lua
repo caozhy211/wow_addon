@@ -209,6 +209,8 @@ local function UpdateHealth(unitFrame)
     healthBar:SetValue(UnitHealth(unit))
 end
 
+local _, playerClass = UnitClass("player")
+
 --- 更新生命条颜色
 local function UpdateHealthBarColor(unitFrame)
     local unit = unitFrame.unit
@@ -227,8 +229,7 @@ local function UpdateHealthBarColor(unitFrame)
         color = DIM_GREEN_FONT_COLOR
     elseif UnitIsPlayer(unit) then
         -- 玩家单位，使用职业着色
-        local _, class = UnitClass(unit)
-        color = C_ClassColor.GetClassColor(class)
+        color = C_ClassColor.GetClassColor(playerClass)
     elseif not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) then
         -- 非玩家控制且无法点击的单位
         color = QUEST_OBJECTIVE_FONT_COLOR
@@ -612,7 +613,20 @@ local function UpdateMaxPower(unitFrame)
     ---@type StatusBar
     local powerBar = unitFrame.powerBar
 
-    powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
+    local maxPower = UnitPowerMax(unit, powerBar.powerType)
+    if unit == "target" then
+        ---@type StatusBar
+        local healthBar = unitFrame.healthBar
+        if maxPower == 0 then
+            -- 目标框架的最大能量值为 0 时，隐藏能量条并调整生命条的高度
+            powerBar:Hide()
+            healthBar:SetHeight(height)
+        else
+            powerBar:Show()
+            healthBar:SetHeight(height * 2 / 3)
+        end
+    end
+    powerBar:SetMinMaxValues(0, maxPower)
 end
 
 --- 更新能量值
@@ -621,7 +635,7 @@ local function UpdatePower(unitFrame)
     ---@type StatusBar
     local powerBar = unitFrame.powerBar
 
-    powerBar:SetValue(UnitPower(unit))
+    powerBar:SetValue(UnitPower(unit, powerBar.powerType))
 end
 
 --- 更新能量条颜色
@@ -633,15 +647,19 @@ local function UpdatePowerBarColor(unitFrame)
     if not UnitIsConnected(unit) then
         powerBar:SetStatusBarColor(GetTableColor(DISABLED_FONT_COLOR))
     else
-        local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
-        local info = PowerBarColor[powerToken]
-        if info then
-            powerBar:SetStatusBarColor(GetTableColor(info))
-        elseif not altR then
-            info = PowerBarColor[powerType] or PowerBarColor["MANA"]
-            powerBar:SetStatusBarColor(GetTableColor(info))
+        if powerBar.powerType then
+            powerBar:SetStatusBarColor(GetTableColor(PowerBarColor[powerBar.powerType]))
         else
-            powerBar:SetStatusBarColor(altR, altG, altB)
+            local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
+            local info = PowerBarColor[powerToken]
+            if info then
+                powerBar:SetStatusBarColor(GetTableColor(info))
+            elseif not altR then
+                info = PowerBarColor[powerType] or PowerBarColor["MANA"]
+                powerBar:SetStatusBarColor(GetTableColor(info))
+            else
+                powerBar:SetStatusBarColor(altR, altG, altB)
+            end
         end
     end
 end
@@ -657,8 +675,8 @@ local function UpdatePercentPowerLabel(unitFrame)
     ---@type FontString
     local percentPowerLabel = unitFrame.percentPowerLabel
 
-    local power = UnitPower(unit)
-    local maxPower = UnitPowerMax(unit)
+    local power = UnitPower(unit, unitFrame.powerBar.powerType)
+    local maxPower = UnitPowerMax(unit, unitFrame.powerBar.powerType)
     if maxPower > 0 then
         percentPowerLabel:SetFormattedText("%d%%", power / maxPower * 100)
     else
@@ -677,8 +695,8 @@ local function UpdatePowerLabel(unitFrame)
     ---@type FontString
     local powerLabel = unitFrame.powerLabel
 
-    local power = UnitPower(unit)
-    local maxPower = UnitPowerMax(unit)
+    local power = UnitPower(unit, unitFrame.powerBar.powerType)
+    local maxPower = UnitPowerMax(unit, unitFrame.powerBar.powerType)
     if maxPower > 0 then
         powerLabel:SetText(FormatNumber(power) .. "/" .. FormatNumber(maxPower))
     else
@@ -686,6 +704,160 @@ local function UpdatePowerLabel(unitFrame)
     end
 end
 
+---@type StatusBar
+local staggerBar
+
+--- 检查玩家是否有额外的能量条
+local function PlayerHasAlternatePower()
+    local spec = GetSpecialization()
+
+    local powerType = UnitPowerType("player")
+    if powerType == Enum.PowerType.LunarPower or powerType == Enum.PowerType.Insanity
+            or powerType == Enum.PowerType.Maelstrom then
+        -- 玩家的主要能量是星能、狂乱值或漩涡值时，设置玩家能量条的能量类型为法力
+        playerPowerBar.powerType = Enum.PowerType.Mana
+        playerPowerBar:Show()
+        playerHealthBar:SetHeight(height * 2 / 3)
+        if staggerBar then
+            staggerBar:Hide()
+        end
+
+        -- 立即更新一次
+        UpdateMaxPower(playerFrame)
+        UpdatePower(playerFrame)
+        UpdatePowerBarColor(playerFrame)
+        UpdatePowerLabel(playerFrame)
+        UpdatePercentPowerLabel(playerFrame)
+    elseif playerClass == "MONK" and spec == SPEC_MONK_BREWMASTER then
+        -- 玩家专精是酒仙时，隐藏能量条，显示醉仙缓劲条
+        staggerBar:Show()
+        playerPowerBar:Hide()
+        playerHealthBar:SetHeight(height * 2 / 3)
+    else
+        -- 没有额外能量条则隐藏
+        playerPowerBar:Hide()
+        playerHealthBar:SetHeight(height)
+        if staggerBar then
+            staggerBar:Hide()
+        end
+    end
+end
+
+local function UpdateBarVisibility(isInitialLogin)
+    ---@type Frame
+    local frame = WLK_ClassResourceFrame
+    if frame:GetAlpha() == 1 then
+        -- 职业资源框架显示时，显示玩家能量条
+        playerPowerBar.powerType = nil
+        playerPowerBar:Show()
+        playerHealthBar:SetHeight(height * 2 / 3)
+        if staggerBar then
+            staggerBar:Hide()
+        end
+    elseif playerFrame.unit == "player" then
+        -- 初始化登录调用 UnitPowerType 函数返回的是 0，延迟调用获取正确的 powerType。非初始化登录如果延迟调用，变形时返回
+        -- WLK_ClassResourceFrame 的显示状态不一样会导致之前的结果覆盖后面的结果
+        if isInitialLogin then
+            C_Timer.After(0.1, function()
+                PlayerHasAlternatePower()
+            end)
+        else
+            PlayerHasAlternatePower()
+        end
+    else
+        -- 玩家框架当前的单位不是 “player” 则隐藏
+        playerPowerBar:Hide()
+        playerHealthBar:SetHeight(height)
+        if staggerBar then
+            staggerBar:Hide()
+        end
+    end
+end
+
+if playerClass == "MONK" then
+    -- 职业是武僧，则创建醉仙缓劲条
+    staggerBar = CreateFrame("StatusBar", nil, playerFrame)
+    staggerBar:SetSize(playerFrame:GetWidth() - height, height / 3)
+    staggerBar:SetPoint("TOPRIGHT", playerHealthBar, "BOTTOMRIGHT")
+    staggerBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
+    staggerBar.background = staggerBar:CreateTexture(nil, "BACKGROUND")
+    staggerBar.background:SetAllPoints()
+    staggerBar.background:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+    ---@type FontString
+    staggerBar.leftLabel = staggerBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    staggerBar.leftLabel:SetPoint("LEFT")
+    ---@type FontString
+    staggerBar.rightLabel = staggerBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    staggerBar.rightLabel:SetPoint("RIGHT")
+
+    local function UpdateMaxStagger()
+        local maxHealth = UnitHealthMax("player")
+        staggerBar:SetMinMaxValues(0, maxHealth)
+        local stagger = UnitStagger("player")
+        staggerBar.leftLabel:SetText(FormatNumber(stagger) .. "/" .. FormatNumber(maxHealth))
+        staggerBar.rightLabel:SetFormattedText("%d%%", stagger / maxHealth * 100)
+    end
+
+    local function UpdateStagger()
+        local stagger = UnitStagger("player")
+        if not stagger then
+            return
+        end
+        staggerBar:SetValue(stagger)
+        UpdateMaxStagger()
+
+        local _, maxStagger = staggerBar:GetMinMaxValues()
+        local percent = stagger / maxStagger
+        local info = PowerBarColor[BREWMASTER_POWER_BAR_NAME]
+        if percent >= STAGGER_RED_TRANSITION then
+            info = info[STAGGER_RED_INDEX]
+        elseif percent >= STAGGER_YELLOW_TRANSITION then
+            info = info[STAGGER_YELLOW_INDEX]
+        else
+            info = info[STAGGER_GREEN_INDEX]
+        end
+        staggerBar:SetStatusBarColor(GetTableColor(info))
+    end
+
+    staggerBar:SetScript("OnUpdate", function(self, elapsed)
+        self.elapsed = (self.elapsed or 0) + elapsed
+        if self.elapsed < 0.01 then
+            return
+        end
+        self.elapsed = 0
+
+        UpdateStagger()
+    end)
+
+    staggerBar:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+    staggerBar:SetScript("OnEvent", function()
+        UpdateBarVisibility()
+    end)
+end
+
+playerPowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
+if playerClass == "SHAMAN" or playerClass == "PRIEST" then
+    -- 有额外法力条的职业需要注册 PLAYER_SPECIALIZATION_CHANGED 事件，玩家更改专精时，更新能量条显示
+    playerPowerBar:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+elseif playerClass == "DRUID" then
+    playerPowerBar:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+    -- 德鲁伊需要注册 UPDATE_SHAPESHIFT_FORM 事件，更改形态时，更新能量条显示
+    playerPowerBar:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+end
+
+playerPowerBar:SetScript("OnEvent", function(_, event, ...)
+    local isInitialLogin
+    if event == "PLAYER_ENTERING_WORLD" then
+        isInitialLogin = ...
+    end
+    -- 初始化更新能量条显示
+    UpdateBarVisibility(isInitialLogin)
+end)
+
+hooksecurefunc(WLK_ClassResourceFrame, "SetAlpha", function()
+    -- 资源框架更新显示时，更新能量条显示
+    UpdateBarVisibility()
+end)
 
 --- 更新光环按钮
 local function UpdateAuraButton(auraFrame, index, name, icon, count, duration, expirationTime, source, spellID)
