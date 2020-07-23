@@ -144,7 +144,7 @@ local function GetItemInformation(link, levelOnly, arg, slot)
         -- 其他物品
         scanner:SetHyperlink(link)
     end
-    for i = 2, min(7, scanner:NumLines()) do
+    for i = 2, min(9, scanner:NumLines()) do
         while true do
             ---@type FontString
             local textLeftLabel = _G[scanner:GetName() .. "TextLeft" .. i]
