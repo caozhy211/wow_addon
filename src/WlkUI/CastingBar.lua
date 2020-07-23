@@ -406,149 +406,287 @@ gcd:SetScript("OnEvent", function(self, ...)
     end
 end)
 
----@type StatusBar
-local swing = CreateFrame("StatusBar", "WLK_SwingBar", UIParent)
+---@type Frame
+local swing = CreateFrame("Frame", "WLK_SwingBar", UIParent)
 swing:SetSize(228, 6)
 swing:SetPoint("TOPRIGHT", castingBar, "BOTTOMRIGHT")
-swing:SetStatusBarTexture("Interface/TargetingFrame/UI-StatusBar")
-swing:SetStatusBarColor(GetTableColor(YELLOW_FONT_COLOR))
-swing:SetMinMaxValues(0, 1)
-swing:SetAlpha(0)
 
+---@type StatusBar
+local mainSwing = CreateFrame("StatusBar", "WLK_MainSwingBar", swing)
+mainSwing:SetSize(swing:GetWidth() / 2, swing:GetHeight())
+mainSwing:SetPoint("LEFT")
+mainSwing:SetStatusBarTexture("Interface/TargetingFrame/UI-StatusBar")
+mainSwing:SetStatusBarColor(GetTableColor(YELLOW_FONT_COLOR))
+mainSwing:SetMinMaxValues(0, 1)
+mainSwing:SetAlpha(0)
 ---@type Texture
-local swingBackground = swing:CreateTexture(nil, "BACKGROUND")
-swingBackground:SetAllPoints()
-swingBackground:SetTexture("Interface/DialogFrame/UI-DialogBox-Background-Dark")
-
+mainSwing.background = mainSwing:CreateTexture(nil, "BACKGROUND")
+mainSwing.background:SetAllPoints()
+mainSwing.background:SetTexture("Interface/DialogFrame/UI-DialogBox-Background-Dark")
 ---@type FontString
-local swingTimeLabel = swing:CreateFontString()
-swingTimeLabel:SetFont("Fonts/blei00d.TTF", 9, "OUTLINE")
-swingTimeLabel:SetPoint("CENTER")
-swingTimeLabel:SetTextColor(GetTableColor(HIGHLIGHT_FONT_COLOR))
+mainSwing.label = mainSwing:CreateFontString()
+mainSwing.label:SetFont("Fonts/blei00d.TTF", 9, "OUTLINE")
+mainSwing.label:SetPoint("CENTER")
+mainSwing.label:SetTextColor(GetTableColor(HIGHLIGHT_FONT_COLOR))
 
---- 隐藏 Swing
-local function HideSwing()
-    swing:SetAlpha(0)
-    swing:SetScript("OnUpdate", nil)
-end
+---@type StatusBar
+local offSwing = CreateFrame("StatusBar", "WLK_OffSwingBar", swing)
+offSwing:SetSize(swing:GetWidth() / 2, swing:GetHeight())
+offSwing:SetPoint("RIGHT")
+offSwing:SetStatusBarTexture("Interface/TargetingFrame/UI-StatusBar")
+offSwing:SetStatusBarColor(GetTableColor(YELLOW_FONT_COLOR))
+offSwing:SetMinMaxValues(0, 1)
+offSwing:SetAlpha(0)
+---@type Texture
+offSwing.background = offSwing:CreateTexture(nil, "BACKGROUND")
+offSwing.background:SetAllPoints()
+offSwing.background:SetTexture("Interface/DialogFrame/UI-DialogBox-Background-Dark")
+---@type FontString
+offSwing.label = offSwing:CreateFontString()
+offSwing.label:SetFont("Fonts/blei00d.TTF", 9, "OUTLINE")
+offSwing.label:SetPoint("CENTER")
+offSwing.label:SetTextColor(GetTableColor(HIGHLIGHT_FONT_COLOR))
 
-local slamStart
-
---- 显示 Swing
-local function ShowSwing()
-    swing:SetAlpha(1)
-    swing:SetScript("OnUpdate", function(self, elapsed)
-        self.elapsed = (self.elapsed or 0) + elapsed
-        if self.elapsed < 0.01 then
-            return
-        end
-        self.elapsed = 0
-
-        if slamStart then
-            return
-        end
-        local remainingTime = self.startTime + self.duration - GetTime()
-        swingTimeLabel:SetFormattedText("%.1f/%.1f", remainingTime, self.duration)
-        local percent = (GetTime() - self.startTime) / self.duration
-        if percent > 1 then
-            HideSwing()
-        else
-            swing:SetValue(percent)
-        end
-    end)
-end
+mainSwing.remainTime = 0
+mainSwing.prevSpeed = 0
+mainSwing.speed = 0
+mainSwing.itemID = GetInventoryItemID("player", INVSLOT_MAINHAND)
+offSwing.remainTime = 0
+offSwing.prevSpeed = 0
+offSwing.speed = 0
+offSwing.itemID = GetInventoryItemID("player", INVSLOT_OFFHAND)
 
 local _, class = UnitClass("player")
-local swingMode
-local MELEE = 0
-local AUTO_SHOOT = 1
---- 猛击
-local SLAM_SPELL_ID = 1464
---- 自动射击
-local AUTO_SHOOT_SPELL_ID = 75
+local hasOffhand
+local isRangeAttack
 
-swing:RegisterEvent("PLAYER_ENTER_COMBAT")
-swing:RegisterEvent("PLAYER_LEAVE_COMBAT")
-swing:RegisterEvent("START_AUTOREPEAT_SPELL")
-swing:RegisterEvent("STOP_AUTOREPEAT_SPELL")
-swing:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
-swing:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-swing:RegisterUnitEvent("UNIT_ATTACK", "player")
-if class == "WARRIOR" then
-    swing:RegisterUnitEvent("UNIT_SPELLCAST_START", "player")
-    swing:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player")
+--- 具有攻击速度的法术
+local spellsWithSpeed = {
+    DRUID = {
+        6807, -- 槌击
+    },
+    HUNTER = {
+        186270, -- 猛禽一击
+    },
+    WARRIOR = {
+        1464, -- 猛击
+        845, -- 顺劈斩
+    },
+}
+local spellSpeed -- 法术的攻击速度
+local checkSpeedChange = true -- 是否要检查攻击速度变化
+
+--- 检查法术是否具有攻击速度
+local function IsSpellWithSpeed(spellID)
+    local spells = spellsWithSpeed[class]
+    if spells then
+        for i = 1, #spells do
+            if spellID == spells[i] then
+                return true
+            end
+        end
+    end
+    return false
 end
 
-swing:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_ENTER_COMBAT" then
-        local _, _, offhandLow, offhandHigh = UnitDamage("player")
-        if abs(offhandLow - offhandHigh) <= 0.1 or class == "DRUID" then
-            swingMode = MELEE
+--- 更新主手攻击速度
+local function UpdateMainSpeed()
+    mainSwing.prevSpeed = mainSwing.speed
+    -- 法术攻击速度存在时，使用法术攻击速度，远程攻击使用 UnitRangedDamage 获取攻击速度，近战攻击使用 UnitAttackSpeed 获取
+    mainSwing.speed = spellSpeed or isRangeAttack and UnitRangedDamage("player") or UnitAttackSpeed("player")
+    -- 跳过一次攻击速度变化检查，检查之后的变化
+    if checkSpeedChange then
+        mainSwing.speedChanged = mainSwing.speed ~= mainSwing.prevSpeed
+    elseif mainSwing.speed ~= mainSwing.prevSpeed then
+        checkSpeedChange = true
+    end
+end
+
+--- 更新副手攻击速度
+local function UpdateOffSpeed()
+    offSwing.prevSpeed = offSwing.speed
+    offSwing.speed = select(2, UnitAttackSpeed("player"))
+    offSwing.speedChanged = offSwing.speed ~= offSwing.prevSpeed
+    hasOffhand = offSwing.speed and offSwing.speed ~= 0
+end
+
+--- 重置主手剩余时间为主手攻击速度
+local function ResetMainRemainTime()
+    mainSwing.remainTime = mainSwing.speed
+end
+
+--- 重置副手剩余时间为副手攻击速度
+local function ResetOffRemainTime()
+    if hasOffhand then
+        offSwing.remainTime = offSwing.speed
+    end
+end
+
+--- 更新主手剩余时间
+local function UpdateMainRemainTime(elapsed)
+    if mainSwing.remainTime > 0 then
+        mainSwing.remainTime = mainSwing.remainTime - elapsed
+        if mainSwing.remainTime < 0 then
+            mainSwing.remainTime = 0
         end
-    elseif event == "PLAYER_LEAVE_COMBAT" then
-        if swingMode == MELEE then
-            swingMode = nil
+    end
+end
+
+--- 更新副手剩余时间
+local function UpdateOffRemainTime(elapsed)
+    if offSwing.remainTime > 0 then
+        offSwing.remainTime = offSwing.remainTime - elapsed
+        if offSwing.remainTime < 0 then
+            offSwing.remainTime = 0
+        end
+    end
+end
+
+--- 显示 swing 计时条
+---@param bar StatusBar
+local function ShowSwing(bar)
+    bar:SetAlpha(1)
+    bar:SetValue((bar.speed - bar.remainTime) / bar.speed)
+    bar.label:SetFormattedText("%.1f/%.1f", bar.remainTime, bar.speed)
+end
+
+--- 隐藏 swing 计时条
+---@param bar StatusBar
+local function HideSwing(bar)
+    bar:SetAlpha(0)
+    bar:SetValue(0)
+    bar.label:SetText("")
+end
+
+--- 更新 swing 计时条显示
+local function UpdateSwingVisibility()
+    if mainSwing.remainTime > 0 then
+        if hasOffhand and offSwing.remainTime > 0 then
+            ShowSwing(offSwing)
+            mainSwing:SetWidth(swing:GetWidth() / 2)
+        else
+            HideSwing(offSwing)
+            mainSwing:SetWidth(swing:GetWidth())
+        end
+        ShowSwing(mainSwing)
+    else
+        HideSwing(mainSwing)
+        HideSwing(offSwing)
+        swing:SetScript("OnUpdate", nil)
+    end
+end
+
+--- 更新数据
+local function SwingOnUpdate(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 0.005 then
+        return
+    end
+    self.elapsed = 0
+
+    -- 更新攻击速度
+    UpdateMainSpeed()
+    UpdateOffSpeed()
+
+    -- 攻击速度变化时，剩余时间按照比例变化
+    if mainSwing.speedChanged or offSwing.speedChanged then
+        mainSwing.remainTime = mainSwing.remainTime * mainSwing.speed / mainSwing.prevSpeed
+        if hasOffhand then
+            offSwing.remainTime = offSwing.remainTime * offSwing.speed / offSwing.prevSpeed
+        end
+    end
+
+    -- 更新剩余时间
+    UpdateMainRemainTime(elapsed)
+    UpdateOffRemainTime(elapsed)
+
+    UpdateSwingVisibility()
+end
+
+swing:SetScript("OnUpdate", SwingOnUpdate)
+
+swing:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
+swing:RegisterEvent("START_AUTOREPEAT_SPELL")
+swing:RegisterEvent("STOP_AUTOREPEAT_SPELL")
+swing:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
+swing:RegisterUnitEvent("UNIT_INVENTORY_CHANGED", "player")
+
+---@param self Frame
+swing:SetScript("OnEvent", function(self, event, ...)
+    if event == "COMBAT_LOG_EVENT_UNFILTERED" then
+        local info = { CombatLogGetCurrentEventInfo() }
+        local _, combatEvent, _, srcGUID = unpack(info)
+        if srcGUID == UnitGUID("player") then
+            if combatEvent == "SWING_DAMAGE" or combatEvent == "SWING_MISSED" then
+                -- 如果法术攻击速度存在，则应该更新为近战攻击速度
+                if spellSpeed then
+                    spellSpeed = nil
+                    -- 攻击速度由法术变为近战，不检查此次攻速变化
+                    checkSpeedChange = false
+                    -- 更新攻击速度
+                    UpdateMainSpeed()
+                end
+
+                local index = combatEvent == "SWING_DAMAGE" and 21 or 13
+                local isOffhand = select(index, unpack(info))
+                if isOffhand then
+                    ResetOffRemainTime()
+                else
+                    ResetMainRemainTime()
+                end
+
+                if not self:GetScript("OnUpdate") then
+                    self:SetScript("OnUpdate", SwingOnUpdate)
+                end
+            elseif combatEvent == "SPELL_DAMAGE" or combatEvent == "SPELL_MISSED" then
+                local spellID = select(12, unpack(info))
+                -- 施放具有攻速的法术，修改攻击速度为法术攻速
+                if IsSpellWithSpeed(spellID) then
+                    -- 法术攻速为此次攻击的剩余时间
+                    spellSpeed = mainSwing.remainTime
+                    -- 攻速由近战变为法术，不检查此次攻速变化
+                    checkSpeedChange = false
+                    UpdateMainSpeed()
+                    ResetMainRemainTime()
+                end
+            end
+        elseif UnitExists("target") and srcGUID == UnitGUID("target") then
+            if combatEvent == "SWING_MISSED" then
+                local missType = select(12, unpack(info))
+                if missType == "PARRY" then
+                    local minRemainTime = mainSwing.speed * 0.2
+                    if mainSwing.remainTime > minRemainTime then
+                        mainSwing.remainTime = minRemainTime
+                    end
+                end
+            end
         end
     elseif event == "START_AUTOREPEAT_SPELL" then
-        swingMode = AUTO_SHOOT
+        isRangeAttack = true
     elseif event == "STOP_AUTOREPEAT_SPELL" then
-        if swingMode == MELEE then
-            swingMode = nil
-        end
-    elseif event == "COMBAT_LOG_EVENT_UNFILTERED" then
-        if swingMode ~= MELEE then
-            return
-        end
-        local _, combatEvent, _, _, _, srcFlags, _, _, _, dstFlags, _, spellID = CombatLogGetCurrentEventInfo()
-        if (combatEvent == "SWING_DAMAGE" or combatEvent == "SWING_MISSED") and bit.band(srcFlags, COMBATLOG_FILTER_ME)
-                == COMBATLOG_FILTER_ME then
-            self.duration = UnitAttackSpeed("player")
-            if not self.duration or self.duration == 0 then
-                self.duration = nil
-                self.startTime = nil
-                HideSwing()
-            else
-                self.startTime = GetTime()
-                ShowSwing()
-            end
-        elseif combatEvent == "SWING_MISSED" and bit.band(dstFlags, COMBATLOG_FILTER_ME) == COMBATLOG_FILTER_ME
-                and spellID == "PARRY" and self.duration then
-            self.duration = self.duration * 0.6
-        end
+        isRangeAttack = false
     elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
         local _, _, spellID = ...
-        if swingMode == MELEE and spellID == SLAM_SPELL_ID and slamStart then
-            self.startTime = self.startTime + GetTime() - slamStart
-            slamStart = nil
-        elseif swingMode == AUTO_SHOOT and spellID == AUTO_SHOOT_SPELL_ID then
-            self.duration = UnitRangedDamage("player")
-            if not self.duration or self.duration == 0 then
-                self.duration = nil
-                self.startTime = nil
-                HideSwing()
-            else
-                self.startTime = GetTime()
-                ShowSwing()
+        if isRangeAttack and spellID == 5019 or spellID == 75 then
+            -- 5019：魔杖的射击，75：远程武器的自动射击
+            ResetMainRemainTime()
+            if not self:GetScript("OnUpdate") then
+                self:SetScript("OnUpdate", SwingOnUpdate)
             end
         end
-    elseif event == "UNIT_SPELLCAST_START" then
-        local _, _, spellID = ...
-        if spellID == SLAM_SPELL_ID then
-            slamStart = GetTime()
+    elseif event == "UNIT_INVENTORY_CHANGED" then
+        local mainItemID = GetInventoryItemID("player", INVSLOT_MAINHAND)
+        local offItemID = GetInventoryItemID("player", INVSLOT_OFFHAND)
+        if mainItemID ~= mainSwing.itemID then
+            UpdateMainSpeed()
+            ResetMainRemainTime()
         end
-    elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
-        local _, _, spellID = ...
-        if spellID == SLAM_SPELL_ID and slamStart then
-            slamStart = nil
+        mainSwing.itemID = mainItemID
+        if offItemID ~= offSwing.itemID then
+            UpdateOffSpeed()
+            ResetOffRemainTime()
         end
-    elseif event == "UNIT_ATTACK" then
-        if not swingMode then
-            return
-        elseif swingMode == MELEE then
-            self.duration = UnitAttackSpeed("player")
-        else
-            self.duration = UnitRangedDamage("player")
-        end
+        offSwing.itemID = offItemID
     end
 end)
 
