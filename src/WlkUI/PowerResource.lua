@@ -459,18 +459,27 @@ local function FormatNumber(number)
 end
 
 local function UpdateMaxPower()
-    local power = UnitPower(bar.unit)
     local maxPower = UnitPowerMax(bar.unit)
-    bar:SetMinMaxValues(0, maxPower)
-    leftLabel:SetText(FormatNumber(power) .. "/" .. FormatNumber(maxPower))
+    if maxPower > 0 then
+        local power = UnitPower(bar.unit)
+        bar:SetMinMaxValues(0, maxPower)
+        leftLabel:SetText(FormatNumber(power) .. "/" .. FormatNumber(maxPower))
+        if not bar:IsShown() and frame:GetAlpha() == 0 then
+            bar:Show()
+        end
+    else
+        bar:Hide()
+    end
 end
 
 local function UpdatePower()
-    local power = UnitPower(bar.unit)
     local maxPower = UnitPowerMax(bar.unit)
-    bar:SetValue(power)
-    leftLabel:SetText(FormatNumber(power) .. "/" .. FormatNumber(maxPower))
-    rightLabel:SetFormattedText("%d%%", power / maxPower * 100)
+    if maxPower > 0 then
+        local power = UnitPower(bar.unit)
+        bar:SetValue(power)
+        leftLabel:SetText(FormatNumber(power) .. "/" .. FormatNumber(maxPower))
+        rightLabel:SetFormattedText("%d%%", power / maxPower * 100)
+    end
 end
 
 local function UpdateBarColor()
