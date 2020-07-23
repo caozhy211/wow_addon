@@ -19,13 +19,13 @@ wlkButton:SetPoint("RIGHT", 0, 255)
 wlkButton:SetText("WLK")
 wlkButton:SetAlpha(0)
 
---- 显示设置按钮，战斗中使用 Show() 会造成插件污染
+--- 显示设置按钮，战斗中使用 Show() 会造成界面污染
 local function ShowButtons()
     defaultButton:SetAlpha(1)
     wlkButton:SetAlpha(1)
 end
 
---- 隐藏设置按钮，战斗中使用 Hide() 会造成插件污染
+--- 隐藏设置按钮，战斗中使用 Hide() 会造成界面污染
 local function HideButtons()
     defaultButton:SetAlpha(0)
     wlkButton:SetAlpha(0)
@@ -60,15 +60,15 @@ end
 local hiddenCVars = {
     -- 显示脚本错误
     scriptErrors = 1,
-    -- 记录插件污染日志
+    -- 记录界面污染日志
     taintLog = 1,
-    -- 启用魔兽世界鼠标，防止鼠标有时候会回到屏幕中间的问题
+    -- 启用原生鼠标，防止鼠标有时候会回到屏幕中间
     rawMouseEnable = 1,
     -- 关闭死亡效果
     ffxDeath = 0,
     -- 姓名板显示的最大距离
     nameplateMaxDistance = 40,
-    -- 启用物品对比
+    -- 总是显示物品对比
     alwaysCompareItems = 1,
     -- 最远视距
     cameraDistanceMaxZoomFactor = 2.6,
@@ -76,9 +76,9 @@ local hiddenCVars = {
     floatingCombatTextFloatMode = 3,
     -- 隐藏浮动战斗信息的治疗量
     floatingCombatTextCombatHealing = 0,
-    -- 进入/离开战斗
+    -- 显示进入/离开战斗
     floatingCombatTextCombatState = 1,
-    -- 显示竞技场单位框架
+    -- 隐藏竞技场单位框架
     showArenaEnemyFrames = 0,
     -- 设置游戏文字为繁体中文
     textLocale = "zhTW",
@@ -180,13 +180,13 @@ defaultButton:SetScript("OnClick", function()
         SetTracking(i, defaultMinimapTracking[tostring(texture)])
     end
 
-    -- 关闭背包的 “忽视这个背包”
+    -- 关闭初始背包的 “忽视这个背包”
     if GetBackpackAutosortDisabled() then
         SetBackpackAutosortDisabled(false)
     end
     for i = 1, NUM_BAG_SLOTS do
         for j = LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, LE_BAG_FILTER_FLAG_TRADE_GOODS do
-            -- 关闭袋子的 “忽视这个背包” 和取消分类
+            -- 关闭其他背包的 “忽视这个背包” 和取消分类
             if GetBagSlotFlag(i, j) then
                 SetBagSlotFlag(i, j, false)
             end
@@ -396,7 +396,7 @@ end
 --- 重新载入界面
 local function ReloadForSettings()
     -- 设置总是显示姓名板。当有敌对姓名板显示时，调用 InterfaceOptionsFrame_SetAllToDefaults() 函数后设置 “nameplateShowAll”
-    -- 会有姓名板 lua 错误，所以在此处进行设置
+    -- 会有脚本错误，所以在此处进行设置
     SetCVar("nameplateShowAll", 1)
     ReloadUI()
 end
@@ -420,7 +420,7 @@ wlkButton:SetScript("OnClick", function()
     DisableButtons()
     -- 应用自定义设置前先应用一次默认设置，因为自定义设置是基于默认设置修改的
     ApplyDefaultSettings()
-    -- 当屏幕中有任务目标显示时，立即应用自定义设置会有姓名板 lua 错误，延迟 0.1 秒应用则不会
+    -- 当屏幕中有任务目标显示时，立即应用自定义设置会有脚本错误
     C_Timer.After(0.1, function()
         ApplyWlkSettings()
     end)
@@ -436,16 +436,16 @@ wlkButton:SetScript("OnClick", function()
         end
     end
 
-    -- 关闭背包的 “忽视这个背包”
+    -- 关闭起始背包的 “忽视这个背包”
     if GetBackpackAutosortDisabled() then
         SetBackpackAutosortDisabled(false)
     end
     for i = 1, NUM_BAG_SLOTS do
-        -- 关闭袋子的 “忽视这个背包”
+        -- 关闭背包的 “忽视这个背包”
         if GetBagSlotFlag(i, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP) then
             SetBagSlotFlag(i, LE_BAG_FILTER_FLAG_IGNORE_CLEANUP, false)
         end
-        -- 设置袋子分类
+        -- 设置背包分类
         if not GetBagSlotFlag(i, wlkBagFilter[i]) then
             SetBagSlotFlag(i, wlkBagFilter[i], true)
         end
