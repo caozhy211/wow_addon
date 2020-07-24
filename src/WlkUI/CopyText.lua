@@ -402,3 +402,52 @@ SlashCmdList["SCT"] = function()
     ShowCopyFrame(GetSimCText())
 end
 SLASH_SCT1 = "/sct"
+
+--- 在聊天框内容前添加 “CopyLink” 用于打开复制窗口
+---@param chatFrame MessageFrame
+local function AddCopyLink(chatFrame)
+    local origAddMessage = chatFrame.AddMessage
+    chatFrame.AddMessage = function(self, text, ...)
+        text = format("|cffffffff|Hcopy|h%s|h|r%s", "@", text)
+        return origAddMessage(self, text, ...)
+    end
+end
+
+for i = 1, NUM_CHAT_WINDOWS do
+    if i ~= 2 then
+        AddCopyLink(_G["ChatFrame" .. i])
+    end
+end
+
+--- 获取鼠标指针所在行的文字内容
+local function GetTextOfCursorLine(...)
+    for i = 1, select("#", ...) do
+        ---@type FontString
+        local line = select(i, ...)
+        local text = line:GetText()
+        if text and MouseIsOver(line) then
+            return text
+        end
+    end
+end
+
+local origChatFrame_OnHyperlinkShow = ChatFrame_OnHyperlinkShow
+--- 修改点击链接的函数
+ChatFrame_OnHyperlinkShow = function(self, link, text, button)
+    if link == "copy" then
+        -- 链接是 “CopyLink”，则复制聊天内容
+        ---@type ScrollingMessageFrame
+        local container = self.FontStringContainer
+        local lineText = GetTextOfCursorLine(container:GetRegions())
+        if lineText then
+            local _, index = strfind(lineText, "|h%[.+%]|h.-：")
+            if not index then
+                _, index = strfind(lineText, "|Hcopy|h@|h|r")
+            end
+            ShowCopyFrame(strsub(lineText, index + 1))
+        end
+    else
+        -- 其它链接调用原始函数
+        return origChatFrame_OnHyperlinkShow(self, link, text, button)
+    end
+end
