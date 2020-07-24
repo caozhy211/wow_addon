@@ -337,7 +337,7 @@ InitData()
 
 ---@param self Frame
 frame:SetScript("OnEvent", function(self, event, ...)
-    if event == "UNIT_ENTERED_VEHICLE" and UnitHasVehiclePlayerFrameUI("player") then
+    if event == "UNIT_ENTERED_VEHICLE" and UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
         unit = "vehicle"
         -- 取消注册之前的监听事件
         UnregisterEvents(checkEvents, updateEvents)
@@ -502,7 +502,7 @@ end
 RegisterPowerEvents()
 
 bar:SetScript("OnEvent", function(self, event, ...)
-    if event == "UNIT_ENTERED_VEHICLE" and UnitHasVehiclePlayerFrameUI("player") then
+    if event == "UNIT_ENTERED_VEHICLE" and UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
         self.unit = "vehicle"
         UnregisterPowerEvents()
         RegisterPowerEvents()
