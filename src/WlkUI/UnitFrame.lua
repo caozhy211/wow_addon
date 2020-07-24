@@ -81,7 +81,7 @@ end
 
 ---@type Texture
 local playerPvPIcon = playerPortrait:CreateTexture(nil, "OVERLAY")
-playerPvPIcon:SetPoint("BOTTOMRIGHT", 10, -7)
+playerPvPIcon:SetPoint("BOTTOMRIGHT", 7, -7)
 playerFrame.pvpIcon = playerPvPIcon
 
 --- 更新 PVP 图标
@@ -1586,7 +1586,7 @@ targetFrame.raidTargetIcon = targetRaidTargetIcon
 
 ---@type Texture
 local targetPvPIcon = targetPortrait:CreateTexture(nil, "OVERLAY")
-targetPvPIcon:SetPoint("BOTTOMLEFT", -7, -7)
+targetPvPIcon:SetPoint("BOTTOMLEFT", -4, -7)
 targetFrame.pvpIcon = targetPvPIcon
 
 ---@type Texture
