@@ -1301,6 +1301,59 @@ petFrame:SetScript("OnLeave", function(self)
     UnitFrame_OnLeave(self)
 end)
 
+local inRangeSpells = {
+    WARRIOR = {
+        attack = { 355, 355, 355, },
+        assist = {},
+    },
+    PALADIN = {
+        attack = { 62124, 62124, 62124, },
+        assist = { 19750, 19750, 19750, },
+    },
+    HUNTER = {
+        attack = { 193455, 185358, 259491, },
+        assist = {},
+        pet = 136,
+    },
+    ROGUE = {
+        attack = { 185565, 185763, 114014, },
+        assist = {},
+    },
+    PRIEST = {
+        attack = { 585, 585, 589, },
+        assist = { 17, 2061, 17, },
+    },
+    SHAMAN = {
+        attack = { 187837, 187837, 187837, },
+        assist = { 188070, 188070, 188070, },
+    },
+    MAGE = {
+        attack = { 44425, 133, 116, },
+        assist = { 130, 130, 130, },
+    },
+    WARLOCK = {
+        attack = { 232670, 232670, 232670, },
+        assist = { 20707, 20707, 20707, },
+        pet = 755,
+    },
+    MONK = {
+        attack = { 115546, 115546, 115546, },
+        assist = { 116670, 116670, 116670, },
+    },
+    DRUID = {
+        attack = { 8921, 8921, 8921, 8921, },
+        assist = { 8936, 8936, 8936, 8936, },
+    },
+    DEMONHUNTER = {
+        attack = { 185123, 185123, },
+        assist = {},
+    },
+    DEATHKNIGHT = {
+        attack = { 49576, 49576, 49576, },
+        assist = { 61999, 61999, 61999, },
+    },
+}
+
 ---@param self Button
 petFrame:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
@@ -1309,12 +1362,12 @@ petFrame:SetScript("OnUpdate", function(self, elapsed)
     end
     self.elapsed = 0
 
-    local spell = GetSpellInfo(755)
-    if spell and IsUsableSpell(spell) then
-        -- 755：生命通道，45 码
-        self:SetAlpha(IsSpellInRange(GetSpellInfo(755), self.unit) == 1 and 1 or 0.55)
+    local spellID = inRangeSpells[playerClass].pet
+    local spellName = spellID and GetSpellInfo(spellID)
+
+    if spellName and IsUsableSpell(spellName) then
+        self:SetAlpha(IsSpellInRange(spellName, self.unit) == 1 and 1 or 0.55)
     else
-        -- 根据是否在跟随范围内判断，28 码
         self:SetAlpha(CheckInteractDistance(self.unit, 4) and 1 or 0.55)
     end
 end)
@@ -1503,17 +1556,13 @@ local function UpdateInRange(unitFrame, elapsed)
 
     local unit = unitFrame.unit
 
-    local spell
-    if UnitCanAssist("player", unit) then
-        -- 20707：灵魂石，40 码
-        spell = GetSpellInfo(20707)
-    elseif UnitCanAttack("player", unit) then
-        -- 232670：所有专精术士的暗影箭，40 码
-        spell = GetSpellInfo(232670)
-    end
+    local spec = GetSpecialization()
+    local spellID = UnitCanAssist("player", unit) and inRangeSpells[playerClass].assist[spec]
+            or UnitCanAttack("player", unit) and inRangeSpells[playerClass].attack[spec]
+    local spellName = spellID and GetSpellInfo(spellID)
 
-    if spell and IsUsableSpell(spell) then
-        unitFrame:SetAlpha(IsSpellInRange(spell, unit) == 1 and 1 or 0.55)
+    if spellName and IsUsableSpell(spellName) then
+        unitFrame:SetAlpha(IsSpellInRange(spellName, unit) == 1 and 1 or 0.55)
     else
         -- 不可施放法术的单位，根据是否在跟随范围内判断，28 码
         unitFrame:SetAlpha(CheckInteractDistance(unit, 4) and 1 or 0.55)
