@@ -146,6 +146,10 @@ end
 
 --- 更新资源块显示
 local function UpdateBlocks()
+    -- 初始化登录时，创建的资源块可能会比资源最大值小
+    if #blocks < UnitPowerMax(unit, powerType) then
+        ShowBlocks()
+    end
     -- 灵魂碎片
     if powerType == Enum.PowerType.SoulShards then
         local power = WarlockPowerBar_UnitPower("player")
