@@ -393,13 +393,13 @@ gcdBackground:SetTexture("Interface/DialogFrame/UI-DialogBox-Background-Dark")
 
 --- 隐藏 GCD
 local function HideGCD()
-    gcd:SetAlpha(0)
     gcd:SetScript("OnUpdate", nil)
+    gcd:SetAlpha(0)
+    gcd:SetValue(0)
 end
 
 --- 显示 GCD
 local function ShowGCD()
-    gcd:SetAlpha(1)
     gcd:SetScript("OnUpdate", function(self, elapsed)
         self.elapsed = (self.elapsed or 0) + elapsed
         if self.elapsed < 0.01 then
@@ -415,6 +415,7 @@ local function ShowGCD()
             HideGCD()
         else
             gcd:SetValue(percent)
+            gcd:SetAlpha(1)
         end
     end)
 end
@@ -571,9 +572,9 @@ end
 --- 显示 swing 计时条
 ---@param bar StatusBar
 local function ShowSwing(bar)
-    bar:SetAlpha(1)
     bar:SetValue((bar.speed - bar.remainTime) / bar.speed)
     bar.label:SetFormattedText("%.1f/%.1f", bar.remainTime, bar.speed)
+    bar:SetAlpha(1)
 end
 
 --- 隐藏 swing 计时条
@@ -588,17 +589,17 @@ end
 local function UpdateSwingVisibility()
     if mainSwing.remainTime > 0 then
         if hasOffhand and offSwing.remainTime > 0 then
-            ShowSwing(offSwing)
             mainSwing:SetWidth(swing:GetWidth() / 2)
+            ShowSwing(offSwing)
         else
             HideSwing(offSwing)
             mainSwing:SetWidth(swing:GetWidth())
         end
         ShowSwing(mainSwing)
     else
+        swing:SetScript("OnUpdate", nil)
         HideSwing(mainSwing)
         HideSwing(offSwing)
-        swing:SetScript("OnUpdate", nil)
     end
 end
 
