@@ -209,8 +209,6 @@ local function UpdateHealth(unitFrame)
     healthBar:SetValue(UnitHealth(unit))
 end
 
-local _, playerClass = UnitClass("player")
-
 --- 更新生命条颜色
 local function UpdateHealthBarColor(unitFrame)
     local unit = unitFrame.unit
@@ -229,7 +227,8 @@ local function UpdateHealthBarColor(unitFrame)
         color = DIM_GREEN_FONT_COLOR
     elseif UnitIsPlayer(unit) then
         -- 玩家单位，使用职业着色
-        color = C_ClassColor.GetClassColor(playerClass)
+        local _, class = UnitClass(unit)
+        color = C_ClassColor.GetClassColor(class)
     elseif not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) then
         -- 非玩家控制且无法点击的单位
         color = QUEST_OBJECTIVE_FONT_COLOR
@@ -773,6 +772,8 @@ local function UpdateBarVisibility(isInitialLogin)
         end
     end
 end
+
+local _, playerClass = UnitClass("player")
 
 if playerClass == "MONK" then
     -- 职业是武僧，则创建醉仙缓劲条
