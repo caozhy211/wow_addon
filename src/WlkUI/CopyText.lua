@@ -403,13 +403,14 @@ SlashCmdList["SCT"] = function()
 end
 SLASH_SCT1 = "/sct"
 
+local copyLinkString = "|cffffffff|Hcopy|h@|h|r"
+
 --- 在聊天框内容前添加 “CopyLink” 用于打开复制窗口
 ---@param chatFrame MessageFrame
 local function AddCopyLink(chatFrame)
     local origAddMessage = chatFrame.AddMessage
     chatFrame.AddMessage = function(self, text, ...)
-        text = format("|cffffffff|Hcopy|h%s|h|r%s", "@", text)
-        return origAddMessage(self, text, ...)
+        return origAddMessage(self, copyLinkString .. text, ...)
     end
 end
 
@@ -440,10 +441,7 @@ ChatFrame_OnHyperlinkShow = function(self, link, text, button)
         local container = self.FontStringContainer
         local lineText = GetTextOfCursorLine(container:GetRegions())
         if lineText then
-            local _, index = strfind(lineText, "|h%[.+%]|h.-：")
-            if not index then
-                _, index = strfind(lineText, "|Hcopy|h@|h|r")
-            end
+            local _, index = strfind(lineText, copyLinkString)
             ShowCopyFrame(strsub(lineText, index + 1))
         end
     else
