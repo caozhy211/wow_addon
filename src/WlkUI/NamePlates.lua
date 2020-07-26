@@ -241,17 +241,6 @@ local function UpdateQuestIcon(namePlate)
     end
 end
 
---- 更新 questTitles
-local function UpdateQuestTitles()
-    wipe(questTitles)
-    for i = 1, GetNumQuestLogEntries() do
-        local title, _, _, isHeader = GetQuestLogTitle(i)
-        if not isHeader then
-            questTitles[title] = true
-        end
-    end
-end
-
 ---@type Frame
 local eventListener = CreateFrame("Frame")
 
@@ -259,14 +248,17 @@ eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 eventListener:RegisterEvent("QUEST_ACCEPTED")
 eventListener:RegisterEvent("QUEST_REMOVED")
-eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 eventListener:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
-eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 
 eventListener:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_ENTERING_WORLD" or event == "UNIT_QUEST_LOG_CHANGED" then
         if event == "PLAYER_ENTERING_WORLD" then
-            UpdateQuestTitles()
+            for i = 1, GetNumQuestLogEntries() do
+                local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
+                if not isHeader and not questTitles[title] then
+                    questTitles[title] = questID
+                end
+            end
         end
         local namePlates = C_NamePlate.GetNamePlates()
         for i = 1, #namePlates do
@@ -276,12 +268,18 @@ eventListener:SetScript("OnEvent", function(_, event, ...)
         local unitToken = ...
         UpdateQuestIcon(C_NamePlate.GetNamePlateForUnit(unitToken))
     elseif event == "QUEST_ACCEPTED" then
-        local questIndex = ...
+        local questIndex, questID = ...
         local title = GetQuestLogTitle(questIndex)
         if title and not questTitles[title] then
-            questTitles[title] = true
+            questTitles[title] = questID
         end
     elseif event == "QUEST_REMOVED" then
-        UpdateQuestTitles()
+        local questID = ...
+        for title, id in pairs(questTitles) do
+            if id == questID then
+                questTitles[title] = nil
+                break
+            end
+        end
     end
 end)
