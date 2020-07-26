@@ -585,8 +585,13 @@ local function HideSwing(bar)
     bar.label:SetText("")
 end
 
+local showSwing
+
 --- 更新 swing 计时条显示
 local function UpdateSwingVisibility()
+    if not showSwing then
+        return
+    end
     if mainSwing.remainTime > 0 then
         if hasOffhand and offSwing.remainTime > 0 then
             mainSwing:SetWidth(swing:GetWidth() / 2)
@@ -645,6 +650,10 @@ swing:SetScript("OnEvent", function(self, event, ...)
         local _, combatEvent, _, srcGUID = unpack(info)
         if srcGUID == UnitGUID("player") then
             if combatEvent == "SWING_DAMAGE" or combatEvent == "SWING_MISSED" then
+                if not showSwing then
+                    showSwing = true
+                end
+
                 -- 如果法术攻击速度存在，则应该更新为近战攻击速度
                 if spellSpeed then
                     spellSpeed = nil
@@ -689,6 +698,9 @@ swing:SetScript("OnEvent", function(self, event, ...)
             end
         end
     elseif event == "START_AUTOREPEAT_SPELL" then
+        if not showSwing then
+            showSwing = true
+        end
         isRangeAttack = true
     elseif event == "STOP_AUTOREPEAT_SPELL" then
         isRangeAttack = false
