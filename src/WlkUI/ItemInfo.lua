@@ -105,10 +105,12 @@ local subtypes = {
     },
 }
 
+local _, class = UnitClass("player")
+
 --- 获取 16 进制的颜色字符串
 local function GetColorStr(equipLoc, r, g, b)
-    -- 双手武器显示为白色
-    if equipLoc == "INVTYPE_2HWEAPON" then
+    -- 玩家职业是术士时，双手武器显示为白色
+    if equipLoc == "INVTYPE_2HWEAPON" and class == "WARLOCK" then
         return "ffffffff"
     end
     return format("ff%.2x%.2x%.2x", r * 255, g * 255, b * 255)
