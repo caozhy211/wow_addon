@@ -117,10 +117,6 @@ local function UpdateCooldown()
     end
 end
 
-local shownSlots = {}
-local shownBagIDs = {}
-local shownItems = {}
-
 --- 更新按钮的属性并显示按钮
 local function UpdateItemButton(index, itemID, count, icon, slot, bagID)
     local button = itemButtons[index]
@@ -139,14 +135,10 @@ local locale = GetLocale()
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_ObjectiveItemScanner", UIParent, "GameTooltipTemplate")
 
---- 检查物品是否是追踪物品
-local function IsObjectiveItem(slot, bagID)
+--- 检查装备物品是否是追踪物品
+local function IsInventoryObjectiveItem(slot)
     scanner:SetOwner(UIParent, "ANCHOR_NONE")
-    if bagID then
-        scanner:SetBagItem(bagID, slot)
-    else
-        scanner:SetInventoryItem("player", slot, false, true)
-    end
+    scanner:SetInventoryItem("player", slot, false, true)
     for i = 2, scanner:NumLines() do
         ---@type FontString
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
@@ -157,7 +149,13 @@ local function IsObjectiveItem(slot, bagID)
     end
 end
 
+--- 判断物品是否是任务追踪物品。有两种情况要把之前的任务追踪物品标记为不是任务追踪物品：1. 移除任务；2. 任务完成且不显示
+local questObjectiveItems = {}
+
 local firstUpdate
+local shownSlots = {}
+local shownBagIDs = {}
+local shownItems = {}
 
 --- 检查装备和背包中的追踪物品，更新 itemButtons
 local function UpdateAllItemButtons()
@@ -179,7 +177,7 @@ local function UpdateAllItemButtons()
     for slot = INVSLOT_HEAD, INVSLOT_OFFHAND do
         local link = GetInventoryItemLink("player", slot)
         local itemID = link and GetItemInfoFromHyperlink(link)
-        if itemID and (IsUsableItem(link) or IsObjectiveItem(slot)) then
+        if itemID and (IsUsableItem(link) or IsInventoryObjectiveItem(slot)) then
             local icon = GetInventoryItemTexture("player", slot)
             UpdateItemButton(index, itemID, 1, icon, slot)
             shownSlots[slot] = true
@@ -195,8 +193,7 @@ local function UpdateAllItemButtons()
         for bagID = 0, NUM_BAG_FRAMES do
             for slot = 1, GetContainerNumSlots(bagID) do
                 local icon, count, _, _, _, _, link, _, _, itemID = GetContainerItemInfo(bagID, slot)
-                if itemID and GetContainerItemQuestInfo(bagID, slot) and (IsUsableItem(link)
-                        or IsObjectiveItem(slot, bagID)) then
+                if itemID and questObjectiveItems[link] then
                     UpdateItemButton(index, itemID, count, icon, slot, bagID)
                     shownBagIDs[bagID] = true
                     shownItems[link] = true
@@ -215,12 +212,33 @@ local function UpdateAllItemButtons()
     end
 end
 
+--- 把物品标记为任务追踪物品
+local function AddQuestObjectiveItem(link, questIndex)
+    if not questObjectiveItems[link] then
+        questObjectiveItems[link] = select(8, GetQuestLogTitle(questIndex))
+    end
+    -- 如果此物品没有显示，则更新显示它
+    if not shownItems[link] then
+        UpdateAllItemButtons()
+    end
+end
+
+--- 取消把物品标记为任务追踪物品
+local function RemoveQuestObjectiveItem(link)
+    questObjectiveItems[link] = nil
+    -- 如果此物品之前已显示，则更新不再显示它
+    if shownItems[link] then
+        UpdateAllItemButtons()
+    end
+end
+
 objectiveItemFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 objectiveItemFrame:RegisterEvent("PLAYER_LOGIN")
 objectiveItemFrame:RegisterEvent("GET_ITEM_INFO_RECEIVED")
 objectiveItemFrame:RegisterEvent("BAG_UPDATE_COOLDOWN")
 objectiveItemFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 objectiveItemFrame:RegisterEvent("BAG_UPDATE")
+objectiveItemFrame:RegisterEvent("QUEST_REMOVED")
 
 ---@param self Frame
 objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
@@ -249,7 +267,7 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
         local equipmentSlot = ...
         local link = GetInventoryItemLink("player", equipmentSlot)
         -- 该装备槽位现在是追踪物品或该装备槽位之前有追踪物品，都需要更新
-        if shownSlots[equipmentSlot] or link and IsUsableItem(link) or IsObjectiveItem(equipmentSlot) then
+        if shownSlots[equipmentSlot] or link and IsUsableItem(link) or IsInventoryObjectiveItem(equipmentSlot) then
             UpdateAllItemButtons()
         end
     elseif event == "BAG_UPDATE" then
@@ -267,13 +285,23 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
                 UpdateAllItemButtons()
             end)
         end
+    elseif event == "QUEST_REMOVED" then
+        local questID = ...
+        for link, id in pairs(questObjectiveItems) do
+            if id == questID then
+                RemoveQuestObjectiveItem(link)
+                return
+            end
+        end
     end
 end)
 
 hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
     local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
     local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
-    if shouldShowItem and not shownItems[link] then
-        UpdateAllItemButtons()
+    if shouldShowItem then
+        AddQuestObjectiveItem(link, questLogIndex)
+    elseif questObjectiveItems[link] and not shouldShowItem then
+        RemoveQuestObjectiveItem(link)
     end
 end)
