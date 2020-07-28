@@ -616,13 +616,12 @@ local function UpdateMaxPower(unitFrame)
     if unit == "target" then
         ---@type StatusBar
         local healthBar = unitFrame.healthBar
-        if maxPower == 0 then
-            -- 目标框架的最大能量值为 0 时，隐藏能量条并调整生命条的高度
-            powerBar:Hide()
-            healthBar:SetHeight(height)
-        else
+        if maxPower > 0 then
             powerBar:Show()
             healthBar:SetHeight(height * 2 / 3)
+        else
+            powerBar:Hide()
+            healthBar:SetHeight(height)
         end
     end
     powerBar:SetMinMaxValues(0, maxPower)
@@ -705,6 +704,7 @@ end
 
 ---@type StatusBar
 local staggerBar
+local _, playerClass = UnitClass("player")
 
 --- 检查玩家是否有额外的能量条
 local function PlayerHasAlternatePower()
@@ -753,8 +753,8 @@ local function UpdateBarVisibility(isInitialLogin)
         if staggerBar then
             staggerBar:Hide()
         end
-    elseif playerFrame.unit == "player" then
-        -- 初始化登录调用 UnitPowerType 函数返回的是 0，延迟调用获取正确的 powerType。非初始化登录如果延迟调用，变形时返回
+    elseif WLK_ClassPowerBar.unit == "player" then
+        -- 初始化登录调用 UnitPowerType 函数返回的是 0，延迟调用获取正确的 powerType。非初始化登录如果延迟调用，德鲁伊变形时返回
         -- WLK_ClassResourceFrame 的显示状态不一样会导致之前的结果覆盖后面的结果
         if isInitialLogin then
             C_Timer.After(0.1, function()
@@ -764,7 +764,7 @@ local function UpdateBarVisibility(isInitialLogin)
             PlayerHasAlternatePower()
         end
     else
-        -- 玩家框架当前的单位不是 “player” 则隐藏
+        -- 职业能量条当前的单位不是 “player” 则隐藏
         playerPowerBar:Hide()
         playerHealthBar:SetHeight(height)
         if staggerBar then
@@ -772,8 +772,6 @@ local function UpdateBarVisibility(isInitialLogin)
         end
     end
 end
-
-local _, playerClass = UnitClass("player")
 
 if playerClass == "MONK" then
     -- 职业是武僧，则创建醉仙缓劲条
@@ -851,12 +849,20 @@ playerPowerBar:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
         isInitialLogin = ...
     end
-    -- 初始化更新能量条显示
+    -- 更新能量条显示
     UpdateBarVisibility(isInitialLogin)
 end)
 
 hooksecurefunc(WLK_ClassResourceFrame, "SetAlpha", function()
     -- 资源框架更新显示时，更新能量条显示
+    UpdateBarVisibility()
+end)
+
+hooksecurefunc(WLK_ClassPowerBar, "Show", function()
+    UpdateBarVisibility()
+end)
+
+hooksecurefunc(WLK_ClassPowerBar, "Hide", function()
     UpdateBarVisibility()
 end)
 
