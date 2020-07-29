@@ -1156,7 +1156,7 @@ local playerFrameUnitEvents = {
     "UNIT_AURA",
 }
 
-playerFrame:RegisterEvent("PLAYER_LOGIN")
+playerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 
@@ -1210,9 +1210,8 @@ end
 
 ---@param self Button
 playerFrame:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_LOGIN" then
+    if event == "PLAYER_ENTERING_WORLD" then
         UpdatePlayerFrame()
-        self:UnregisterEvent(event)
     elseif event == "UNIT_ENTERED_VEHICLE" and UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
         -- 进入载具且有载具界面时，更新 playerFrame.unit 为 "vehicle"
         self.unit = "vehicle"
@@ -1788,7 +1787,7 @@ for i = 1, maxNum do
     tinsert(targetBuffFrame.buttons, button)
 end
 
-targetFrame:RegisterEvent("PLAYER_LOGIN")
+targetFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "target")
 
@@ -1863,10 +1862,8 @@ end
 
 ---@param self Button
 targetFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" then
-        UpdateTargetFrame()
-        self:UnregisterEvent(event)
-    elseif event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
+    if event == event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED"
+            or event == "UNIT_TARGETABLE_CHANGED" then
         UpdateTargetFrame()
     elseif event == "UNIT_PORTRAIT_UPDATE" or event == "UNIT_MODEL_CHANGED" or event == "PORTRAITS_UPDATED" then
         UpdatePortrait(self)
@@ -2036,7 +2033,7 @@ local targetTargetNameLabel = targetTargetPowerBar:CreateFontString(nil, "ARTWOR
 targetTargetNameLabel:SetPoint("RIGHT")
 targetTargetFrame.nameLabel = targetTargetNameLabel
 
-targetTargetFrame:RegisterEvent("PLAYER_LOGIN")
+targetTargetFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 targetTargetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetTargetFrame:RegisterUnitEvent("UNIT_TARGET", "target")
 
@@ -2084,10 +2081,7 @@ end
 
 ---@param self Button
 targetTargetFrame:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_LOGIN" then
-        UpdateTargetTargetFrame()
-        self:UnregisterEvent(event)
-    elseif event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGET" then
+    if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGET" then
         UpdateTargetTargetFrame()
     elseif event == "RAID_TARGET_UPDATE" then
         UpdateRaidTargetIcon(self)
@@ -2335,7 +2329,7 @@ for i = 1, maxNum do
     tinsert(focusBuffFrame.buttons, button)
 end
 
-focusFrame:RegisterEvent("PLAYER_LOGIN")
+focusFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "focus")
 
@@ -2390,10 +2384,7 @@ end
 
 ---@param self Button
 focusFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" then
-        UpdateFocusFrame()
-        self:UnregisterEvent(event)
-    elseif event == "PLAYER_FOCUS_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
+    if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_FOCUS_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
         UpdateFocusFrame()
     elseif event == "PLAYER_TARGET_CHANGED" then
         UpdateHighlight(self)
@@ -2610,7 +2601,7 @@ local function CreateBossFrame(i)
         tinsert(bossDebuffFrame.buttons, button)
     end
 
-    bossFrame:RegisterEvent("PLAYER_LOGIN")
+    bossFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     bossFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "boss" .. i)
 
@@ -2645,10 +2636,8 @@ local function CreateBossFrame(i)
 
     ---@param self Button
     bossFrame:SetScript("OnEvent", function(self, event, ...)
-        if event == "PLAYER_LOGIN" then
-            UpdateBossFrame(self)
-            self:UnregisterEvent(event)
-        elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or event == "UNIT_TARGETABLE_CHANGED" then
+        if event == "PLAYER_ENTERING_WORLD" or event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
+                or event == "UNIT_TARGETABLE_CHANGED" then
             UpdateBossFrame(self)
         elseif event == "PLAYER_TARGET_CHANGED" then
             UpdateHighlight(self)
@@ -2930,7 +2919,7 @@ local function CreateArenaFrame(i)
     arenaFrame.CC.cooldown = arenaCCCooldown
     ResetCrowdControl(arenaFrame)
 
-    arenaFrame:RegisterEvent("PLAYER_LOGIN")
+    arenaFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     arenaFrame:RegisterEvent("ARENA_OPPONENT_UPDATE")
     arenaFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", "arena" .. i)
 
@@ -2966,10 +2955,9 @@ local function CreateArenaFrame(i)
 
     ---@param self Button
     arenaFrame:SetScript("OnEvent", function(self, event, ...)
-        if event == "PLAYER_LOGIN" then
+        if event == "PLAYER_ENTERING_WORLD" then
             UpdateArenaFrame(self)
             ResetCrowdControl(self)
-            self:UnregisterEvent(event)
         elseif event == "ARENA_OPPONENT_UPDATE" or event == "UNIT_NAME_UPDATE" then
             UpdateArenaFrame(self)
         elseif event == "PLAYER_TARGET_CHANGED" then
