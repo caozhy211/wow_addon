@@ -240,17 +240,6 @@ local interfaceCVars = {
     useCompactPartyFrames = 1,
 }
 
---- 显示左下方动作条、右下方动作条和右方动作条
-local function ShowMultiActionBar()
-    InterfaceOptionsActionBarsPanelBottomLeft.value = "1"
-    InterfaceOptionsActionBarsPanelBottomRight.value = "1"
-    InterfaceOptionsActionBarsPanelRight.value = "1"
-    SHOW_MULTI_ACTIONBAR_1 = true
-    SHOW_MULTI_ACTIONBAR_2 = true
-    SHOW_MULTI_ACTIONBAR_3 = true
-    InterfaceOptions_UpdateMultiActionBars()
-end
-
 --- 获取团队单位的大小
 local function GetCompactUnitFrameProfilesSize()
     local resizeVerticalOutsets = 7
@@ -298,7 +287,8 @@ end
 --- 自定义界面设置
 local function SetWlkInterfaceOptions()
     SetCVars(interfaceCVars)
-    ShowMultiActionBar()
+    -- 显示左下方动作条、右下方动作条和右方动作条
+    SetActionBarToggles(true, true, true, false)
     SetRaidOptions(CompactUnitFrameProfiles.selectedProfile)
     -- 自动拾取键设置为 “无”
     SetModifiedClick("AUTOLOOTTOGGLE", "NONE")
