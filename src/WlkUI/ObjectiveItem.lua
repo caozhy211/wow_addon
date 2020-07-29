@@ -118,7 +118,7 @@ local function UpdateCooldown()
 end
 
 --- 更新按钮的属性并显示按钮
-local function UpdateItemButton(index, itemID, count, icon, slot, bagID)
+local function ShowItemButton(index, itemID, count, icon, slot, bagID)
     local button = itemButtons[index]
     button.itemID = itemID
     ---@type FontString
@@ -135,10 +135,14 @@ local locale = GetLocale()
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_ObjectiveItemScanner", UIParent, "GameTooltipTemplate")
 
---- 检查装备物品是否是追踪物品
-local function IsInventoryObjectiveItem(slot)
+--- 检查物品是否是追踪物品
+local function IsObjectiveItem(slot, bagID)
     scanner:SetOwner(UIParent, "ANCHOR_NONE")
-    scanner:SetInventoryItem("player", slot, false, true)
+    if bagID then
+        scanner:SetBagItem(bagID, slot)
+    else
+        scanner:SetInventoryItem("player", slot, false, true)
+    end
     for i = 2, scanner:NumLines() do
         ---@type FontString
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
@@ -149,12 +153,10 @@ local function IsInventoryObjectiveItem(slot)
     end
 end
 
---- 判断物品是否是任务追踪物品。有两种情况要把之前的任务追踪物品标记为不是任务追踪物品：1. 移除任务；2. 任务完成且不显示
 local questObjectiveItems = {}
 
 local firstUpdate
 local shownSlots = {}
-local shownBagIDs = {}
 local shownItems = {}
 
 --- 检查装备和背包中的追踪物品，更新 itemButtons
@@ -169,7 +171,6 @@ local function UpdateAllItemButtons()
     end
 
     wipe(shownSlots)
-    wipe(shownBagIDs)
     wipe(shownItems)
 
     local index = 1
@@ -177,9 +178,9 @@ local function UpdateAllItemButtons()
     for slot = INVSLOT_HEAD, INVSLOT_OFFHAND do
         local link = GetInventoryItemLink("player", slot)
         local itemID = link and GetItemInfoFromHyperlink(link)
-        if itemID and (IsUsableItem(link) or IsInventoryObjectiveItem(slot)) then
+        if itemID and (IsUsableItem(link) or IsObjectiveItem(slot)) then
             local icon = GetInventoryItemTexture("player", slot)
-            UpdateItemButton(index, itemID, 1, icon, slot)
+            ShowItemButton(index, itemID, 1, icon, slot)
             shownSlots[slot] = true
             index = index + 1
             if index > numItemButtons then
@@ -193,13 +194,18 @@ local function UpdateAllItemButtons()
         for bagID = 0, NUM_BAG_FRAMES do
             for slot = 1, GetContainerNumSlots(bagID) do
                 local icon, count, _, _, _, _, link, _, _, itemID = GetContainerItemInfo(bagID, slot)
-                if itemID and questObjectiveItems[link] then
-                    UpdateItemButton(index, itemID, count, icon, slot, bagID)
-                    shownBagIDs[bagID] = true
-                    shownItems[link] = true
-                    index = index + 1
-                    if index > numItemButtons then
-                        return
+                if itemID then
+                    local item = questObjectiveItems[link]
+                    -- 如果该物品在任务追踪物品表中且对应的任务未完成或不在任务追踪物品表中的可主动使用的任务物品（“战损之剑”），显
+                    -- 示该物品。不在任务追踪物品表中的物品只要在背包中就会一直显示，因为无法获取到与它关联的任务
+                    if item and not item.completed or not item and GetContainerItemQuestInfo(bagID, slot)
+                            and (IsUsableItem(link) or IsObjectiveItem(slot, bagID)) then
+                        ShowItemButton(index, itemID, count, icon, slot, bagID)
+                        shownItems[link] = true
+                        index = index + 1
+                        if index > numItemButtons then
+                            return
+                        end
                     end
                 end
             end
@@ -209,26 +215,6 @@ local function UpdateAllItemButtons()
     -- 隐藏没有物品的按钮
     for i = index, numItemButtons do
         itemButtons[i]:Hide()
-    end
-end
-
---- 把物品标记为任务追踪物品
-local function AddQuestObjectiveItem(link, questIndex)
-    if not questObjectiveItems[link] then
-        questObjectiveItems[link] = select(8, GetQuestLogTitle(questIndex))
-    end
-    -- 如果此物品没有显示，则更新显示它
-    if not shownItems[link] then
-        UpdateAllItemButtons()
-    end
-end
-
---- 取消把物品标记为任务追踪物品
-local function RemoveQuestObjectiveItem(link)
-    questObjectiveItems[link] = nil
-    -- 如果此物品之前已显示，则更新不再显示它
-    if shownItems[link] then
-        UpdateAllItemButtons()
     end
 end
 
@@ -267,15 +253,12 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
         local equipmentSlot = ...
         local link = GetInventoryItemLink("player", equipmentSlot)
         -- 该装备槽位现在是追踪物品或该装备槽位之前有追踪物品，都需要更新
-        if shownSlots[equipmentSlot] or link and IsUsableItem(link) or IsInventoryObjectiveItem(equipmentSlot) then
+        if shownSlots[equipmentSlot] or link and IsUsableItem(link) or IsObjectiveItem(equipmentSlot) then
             UpdateAllItemButtons()
         end
     elseif event == "BAG_UPDATE" then
-        -- 物品更换位置或者被移除，更新的背包中有任务追踪物品时，需要更新
-        local bagID = ...
-        if shownBagIDs[bagID] then
-            UpdateAllItemButtons()
-        end
+        -- 背包更新（新增物品、更换位置、移除物品）就需要更新，因为有些可主动使用的任务物品不会出现在任务追踪栏，例如 “战损之剑”
+        UpdateAllItemButtons()
     elseif event == "PLAYER_REGEN_ENABLED" then
         UpdateAllItemButtons()
         self:UnregisterEvent(event)
@@ -287,9 +270,14 @@ objectiveItemFrame:SetScript("OnEvent", function(self, event, ...)
         end
     elseif event == "QUEST_REMOVED" then
         local questID = ...
-        for link, id in pairs(questObjectiveItems) do
-            if id == questID then
-                RemoveQuestObjectiveItem(link)
+        for link, item in pairs(questObjectiveItems) do
+            if item.questID == questID then
+                -- 从任务追踪物品表中移除该任务的物品
+                questObjectiveItems[link] = nil
+                -- 部分物品在任务移除后仍然在背包中，不会触发 BAG_UPDATE 事件，需要在此更新隐藏物品
+                if shownItems[link] then
+                    UpdateAllItemButtons()
+                end
                 return
             end
         end
@@ -298,10 +286,22 @@ end)
 
 hooksecurefunc("QuestObjectiveSetupBlockButton_Item", function(_, questLogIndex, isQuestComplete)
     local link, item, _, showItemWhenComplete = GetQuestLogSpecialItemInfo(questLogIndex)
+    -- 把物品添加至任务追踪物品表中
+    if link and not questObjectiveItems[link] then
+        questObjectiveItems[link] = { questID = select(8, GetQuestLogTitle(questLogIndex)), }
+    end
     local shouldShowItem = item and (not isQuestComplete or showItemWhenComplete)
     if shouldShowItem then
-        AddQuestObjectiveItem(link, questLogIndex)
-    elseif questObjectiveItems[link] and not shouldShowItem then
-        RemoveQuestObjectiveItem(link)
+        -- 更新显示该物品
+        if not shownItems[link] then
+            UpdateAllItemButtons()
+        end
+    elseif link and not shouldShowItem then
+        -- 在任务追踪物品中但不在任务追踪栏显示时，该任务已完成
+        questObjectiveItems[link].completed = true
+        -- 更新隐藏该物品
+        if shownItems[link] then
+            UpdateAllItemButtons()
+        end
     end
 end)
