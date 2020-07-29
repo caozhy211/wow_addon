@@ -241,6 +241,14 @@ local function UpdateQuestIcon(namePlate)
     end
 end
 
+--- 更新所有姓名板的任务图标
+local function UpdateAllNamePlateQuestIcon()
+    local namePlates = C_NamePlate.GetNamePlates()
+    for i = 1, #namePlates do
+        UpdateQuestIcon(namePlates[i])
+    end
+end
+
 ---@type Frame
 local eventListener = CreateFrame("Frame")
 
@@ -251,19 +259,16 @@ eventListener:RegisterEvent("QUEST_REMOVED")
 eventListener:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
 
 eventListener:SetScript("OnEvent", function(_, event, ...)
-    if event == "PLAYER_ENTERING_WORLD" or event == "UNIT_QUEST_LOG_CHANGED" then
-        if event == "PLAYER_ENTERING_WORLD" then
-            for i = 1, GetNumQuestLogEntries() do
-                local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
-                if not isHeader and not questTitles[title] then
-                    questTitles[title] = questID
-                end
+    if event == "PLAYER_ENTERING_WORLD" then
+        for i = 1, GetNumQuestLogEntries() do
+            local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
+            if not isHeader and not questTitles[title] then
+                questTitles[title] = questID
             end
         end
-        local namePlates = C_NamePlate.GetNamePlates()
-        for i = 1, #namePlates do
-            UpdateQuestIcon(namePlates[i])
-        end
+        UpdateAllNamePlateQuestIcon()
+    elseif event == "UNIT_QUEST_LOG_CHANGED" then
+        UpdateAllNamePlateQuestIcon()
     elseif event == "NAME_PLATE_UNIT_ADDED" then
         local unitToken = ...
         UpdateQuestIcon(C_NamePlate.GetNamePlateForUnit(unitToken))
@@ -272,6 +277,8 @@ eventListener:SetScript("OnEvent", function(_, event, ...)
         local title = GetQuestLogTitle(questIndex)
         if title and not questTitles[title] then
             questTitles[title] = questID
+            -- UNIT_QUEST_LOG_CHANGED 事件有时候会比 QUEST_ACCEPTED 触发早，所以接受任务后更新一次
+            UpdateAllNamePlateQuestIcon()
         end
     elseif event == "QUEST_REMOVED" then
         local questID = ...
