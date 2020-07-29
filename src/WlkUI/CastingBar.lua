@@ -244,6 +244,8 @@ local spellTicks = {
     [212640] = 6, -- 愈合弹幕
     -- 萨满
     [204437] = 5, -- 闪电套索
+    -- 亡灵
+    [20578] = 5, -- 食尸
 }
 
 ---@type table<number, Texture>
