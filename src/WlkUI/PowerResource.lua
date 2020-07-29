@@ -445,12 +445,6 @@ local function RegisterPowerEvents()
     end
 end
 
-local function UnregisterPowerEvents()
-    for event in pairs(POWER_EVENTS) do
-        bar:UnregisterEvent(event)
-    end
-end
-
 local function FormatNumber(number)
     if number >= 1e8 then
         return format("%.2f" .. SECOND_NUMBER_CAP, number / 1e8)
@@ -504,14 +498,12 @@ RegisterPowerEvents()
 bar:SetScript("OnEvent", function(self, event, ...)
     if event == "UNIT_ENTERED_VEHICLE" and UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
         self.unit = "vehicle"
-        UnregisterPowerEvents()
         RegisterPowerEvents()
         UpdateMaxPower()
         UpdatePower()
         UpdateBarColor()
     elseif event == "UNIT_EXITING_VEHICLE" then
         self.unit = "player"
-        UnregisterPowerEvents()
         RegisterPowerEvents()
         UpdateMaxPower()
         UpdatePower()
