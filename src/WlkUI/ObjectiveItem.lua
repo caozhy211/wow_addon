@@ -214,7 +214,11 @@ local function UpdateAllItemButtons()
 
     -- 隐藏没有物品的按钮
     for i = index, numItemButtons do
-        itemButtons[i]:Hide()
+        ---@type Button
+        local button = itemButtons[i]
+        button:Hide()
+        button:SetAttribute("bag", nil)
+        button:SetAttribute("slot", nil)
     end
 end
 
