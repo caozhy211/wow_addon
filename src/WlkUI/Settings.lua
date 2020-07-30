@@ -86,8 +86,6 @@ local hiddenCVars = {
     audioLocale = "enUS",
     -- 反和谐
     overrideArchive = 0,
-    -- 关闭聊天气泡
-    chatBubbles = 0,
     -- 世界地图不显示宠物对战
     showTamers = 0,
 }
@@ -214,6 +212,8 @@ local interfaceCVars = {
     -- 启用状态文字，并显示数值和百分比
     statusText = 1,
     statusTextDisplay = "BOTH",
+    -- 关闭聊天气泡
+    chatBubbles = 0,
     -- 关闭教学说明
     showTutorials = 0,
     -- 取消锁定动作条
