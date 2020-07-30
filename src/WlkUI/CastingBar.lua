@@ -520,7 +520,7 @@ end
 
 --- 更新主手攻击速度
 local function UpdateMainSpeed()
-    mainSwing.prevSpeed = mainSwing.speed
+    mainSwing.prevSpeed = mainSwing.speed or 0
     -- 法术攻击速度存在时，使用法术攻击速度，远程攻击使用 UnitRangedDamage 获取攻击速度，近战攻击使用 UnitAttackSpeed 获取
     mainSwing.speed = spellSpeed or isRangeAttack and UnitRangedDamage("player") or UnitAttackSpeed("player")
     -- 跳过一次攻击速度变化检查，检查之后的变化
@@ -533,7 +533,7 @@ end
 
 --- 更新副手攻击速度
 local function UpdateOffSpeed()
-    offSwing.prevSpeed = offSwing.speed
+    offSwing.prevSpeed = offSwing.speed or 0
     offSwing.speed = select(2, UnitAttackSpeed("player"))
     offSwing.speedChanged = offSwing.speed ~= offSwing.prevSpeed
     hasOffhand = offSwing.speed and offSwing.speed ~= 0
