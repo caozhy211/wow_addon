@@ -14,7 +14,7 @@ local maxPowerShown = 0 -- 已显示的最大能量值
 ---@type table<number, Frame>
 local blocks = {}
 local runeIndexes = {}
-local unit = UnitInVehicle("player") and "vehicle" or "player"
+local unit = UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") and "vehicle" or "player"
 local _, class = UnitClass("player")
 
 frame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
