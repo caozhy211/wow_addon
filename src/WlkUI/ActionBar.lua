@@ -78,39 +78,27 @@ playerPowerBarAlt:SetUserPlaced(true)
 local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("PLAYER_LOGIN")
-eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
 
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_LOGIN" then
-        if GetCVar("alwaysShowActionBars") == "1" then
-            -- 显示主动作按钮格子
-            for i = 1, NUM_ACTIONBAR_BUTTONS do
-                ---@type Button
-                local button = _G["ActionButton" .. i]
-                button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-                ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-            end
-            -- 显示右下方动作条前 6 个按钮格子
-            for i = 1, 6 do
-                _G["MultiBarBottomRightButton" .. i].noGrid = nil
-            end
+    if GetCVar("alwaysShowActionBars") == "1" then
+        -- 显示主动作按钮格子
+        for i = 1, NUM_ACTIONBAR_BUTTONS do
+            ---@type Button
+            local button = _G["ActionButton" .. i]
+            button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+            ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
         end
-
-        -- 设置 PlayerPowerBarAlt 位置
-        playerPowerBarAlt:ClearAllPoints()
-        -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
-        playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        -- 如果使用了自定义设置，检查动作条显示是否正确
-        if GetCVar("ffxDeath") ~= GetCVarDefault("ffxDeath") then
-            local bottomLeft, bottomRight, sideRight, sideRight2 = GetActionBarToggles()
-            -- 有时候动作条显示不正确，重新设置
-            if not bottomLeft or not bottomRight or not sideRight or sideRight2 then
-                SetActionBarToggles(true, true, true, false)
-            end
+        -- 显示右下方动作条前 6 个按钮格子
+        for i = 1, 6 do
+            _G["MultiBarBottomRightButton" .. i].noGrid = nil
         end
     end
+
+    -- 设置 PlayerPowerBarAlt 位置
+    playerPowerBarAlt:ClearAllPoints()
+    -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
+    playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
     self:UnregisterEvent(event)
 end)
 

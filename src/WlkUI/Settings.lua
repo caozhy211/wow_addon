@@ -193,6 +193,7 @@ defaultButton:SetScript("OnClick", function()
         end
     end
 
+    WLK_Settings = false
     StaticPopup_Show("APPLY_DEFAULT_SETTINGS")
 end)
 
@@ -441,6 +442,7 @@ wlkButton:SetScript("OnClick", function()
         end
     end
 
+    WLK_Settings = true
     StaticPopup_Show("APPLY_WLK_SETTINGS")
 end)
 
@@ -451,3 +453,34 @@ if abs(GetScreenWidth() - 1920) > 0.01 then
     BlizzardOptionsPanel_SetCVarSafe("uiScale", scale)
     UIParent:SetScale(scale)
 end
+
+local addonName = ...
+
+---@type Frame
+local eventListener = CreateFrame("Frame")
+
+eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
+eventListener:RegisterEvent("ADDON_LOADED")
+
+---@param self Frame
+eventListener:SetScript("OnEvent", function(self, event, ...)
+    if event == "ADDON_LOADED" and addonName == ... then
+        if WLK_Settings == nil then
+            WLK_Settings = false
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        -- 使用了自定义设置
+        if WLK_Settings then
+            -- 恢复成了默认设置
+            local defaultSettings = GetCVar("statusText") == GetCVarDefault("statusText")
+            local bottomLeft, bottomRight, sideRight, sideRight2 = GetActionBarToggles()
+            -- 正确的动作条显示状态
+            local actionBarDisplay = bottomLeft and bottomRight and sideRight and not sideRight2
+            -- 界面设置有时候会恢复成默认设置，动作条有时候会显示不正确，需要重新应用自定义界面设置
+            if defaultSettings or not actionBarDisplay then
+                SetWlkInterfaceOptions()
+            end
+        end
+    end
+    self:UnregisterEvent(event)
+end)
