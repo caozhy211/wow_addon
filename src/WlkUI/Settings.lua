@@ -482,5 +482,33 @@ eventListener:SetScript("OnEvent", function(self, event, ...)
             end
         end
     end
+
     self:UnregisterEvent(event)
+end)
+
+--- 如果启用了总是对比物品，当鼠标指针移至冒险指南建议内容的物品奖励范例上时，有可能会出现脚本错误
+hooksecurefunc("EncounterJournal_LoadUI", function()
+    if GetCVar("alwaysCompareItems") ~= GetCVarDefault("alwaysCompareItems") then
+        local value = GetCVar("alwaysCompareItems")
+        local defaultValue = GetCVarDefault("alwaysCompareItems")
+
+        ---@type Frame
+        local ejSuggestFrame = EncounterJournalSuggestFrame
+        -- 冒险指南的建议内容显示时，关闭总是对比物品
+        ejSuggestFrame:HookScript("OnShow", function()
+            SetCVar("alwaysCompareItems", defaultValue)
+        end)
+
+        -- 冒险指南的其他内容显示时，启用总是对比物品
+        hooksecurefunc(ejSuggestFrame, "Hide", function()
+            SetCVar("alwaysCompareItems", value)
+        end)
+
+        ---@type Frame
+        local ejFrame = EncounterJournal
+        -- 冒险指南关闭时，启用总是对比物品
+        ejFrame:HookScript("OnHide", function()
+            SetCVar("alwaysCompareItems", value)
+        end)
+    end
 end)
