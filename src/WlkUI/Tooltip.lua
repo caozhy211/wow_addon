@@ -9,18 +9,21 @@ local function AnchorGameTooltipCursor(tooltip)
     tooltip:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x + 30, y - 30)
 end
 
+---@type TickerPrototype
+local tooltipUpdateTicker
+
 ---@param tooltip GameTooltip
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
     tooltip:SetOwner(parent, "ANCHOR_CURSOR")
     AnchorGameTooltipCursor(tooltip)
-
-    ---@param self GameTooltip
-    tooltip:HookScript("OnUpdate", function(self)
-        if self:GetAnchorType() ~= "ANCHOR_CURSOR" then
-            return
+    tooltipUpdateTicker = C_Timer.NewTicker(0.01, function()
+        if tooltipUpdateTicker then
+            if not tooltip:IsShown() or tooltip:GetAnchorType() ~= "ANCHOR_CURSOR" then
+                tooltipUpdateTicker:Cancel()
+                tooltipUpdateTicker = nil
+            end
+            AnchorGameTooltipCursor(tooltip)
         end
-
-        AnchorGameTooltipCursor(self)
     end)
 end)
 
