@@ -6,7 +6,7 @@ local function AnchorGameTooltipCursor(tooltip)
     local x = floor(cx / scale)
     local y = floor(cy / scale)
     tooltip:ClearAllPoints()
-    tooltip:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x + 30, y - 30)
+    tooltip:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x + 30, y + 10)
 end
 
 ---@type TickerPrototype
