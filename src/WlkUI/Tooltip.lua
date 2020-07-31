@@ -238,30 +238,13 @@ end)
 ---@param tooltip GameTooltip
 local function ShowItemID(tooltip)
     local _, link = tooltip:GetItem()
-    local id = GetItemInfoFromHyperlink(link)
+    local id = link and GetItemInfoFromHyperlink(link)
     if id then
         tooltip:AddLine(" ")
         tooltip:AddLine(ITEMS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
         tooltip:Show()
     end
 end
-
-GameTooltip:HookScript("OnTooltipSetItem", ShowItemID)
----@type GameTooltip
-local itemRefTooltip = ItemRefTooltip
-itemRefTooltip:HookScript("OnTooltipSetItem", ShowItemID)
----@type GameTooltip
-local shoppingTooltip1 = ShoppingTooltip1
-shoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
----@type GameTooltip
-local shoppingTooltip2 = ShoppingTooltip2
-shoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
----@type GameTooltip
-local itemRefShoppingTooltip1 = ItemRefShoppingTooltip1
-itemRefShoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
----@type GameTooltip
-local itemRefShoppingTooltip2 = ItemRefShoppingTooltip2
-itemRefShoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
 
 --- 检查法术 ID 是否已经显示
 ---@param tooltip GameTooltip
@@ -279,16 +262,39 @@ local function SpellIDIsShown(tooltip)
 end
 
 --- 显示法术 ID
----@param self GameTooltip
-GameTooltip:HookScript("OnTooltipSetSpell", function(self)
-    local _, id = self:GetSpell()
+---@param tooltip GameTooltip
+local function ShowSpellID(tooltip)
+    local _, id = tooltip:GetSpell()
     -- 防止天赋技能显示两次 SpellID
-    if id and not SpellIDIsShown(self) then
-        self:AddLine(" ")
-        self:AddLine(SPELLS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
-        self:Show()
+    if id and not SpellIDIsShown(tooltip) then
+        tooltip:AddLine(" ")
+        tooltip:AddLine(SPELLS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
+        tooltip:Show()
     end
-end)
+end
+
+GameTooltip:HookScript("OnTooltipSetItem", ShowItemID)
+GameTooltip:HookScript("OnTooltipSetSpell", ShowSpellID)
+---@type GameTooltip
+local itemRefTooltip = ItemRefTooltip
+itemRefTooltip:HookScript("OnTooltipSetItem", ShowItemID)
+itemRefTooltip:HookScript("OnTooltipSetSpell", ShowSpellID)
+---@type GameTooltip
+local shoppingTooltip1 = ShoppingTooltip1
+shoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
+shoppingTooltip1:HookScript("OnTooltipSetSpell", ShowSpellID)
+---@type GameTooltip
+local shoppingTooltip2 = ShoppingTooltip2
+shoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
+shoppingTooltip2:HookScript("OnTooltipSetSpell", ShowSpellID)
+---@type GameTooltip
+local itemRefShoppingTooltip1 = ItemRefShoppingTooltip1
+itemRefShoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
+itemRefShoppingTooltip1:HookScript("OnTooltipSetSpell", ShowSpellID)
+---@type GameTooltip
+local itemRefShoppingTooltip2 = ItemRefShoppingTooltip2
+itemRefShoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
+itemRefShoppingTooltip2:HookScript("OnTooltipSetSpell", ShowSpellID)
 
 --- 显示光环 ID
 ---@param self GameTooltip
