@@ -159,6 +159,7 @@ hooksecurefunc("CompactUnitFrame_UpdateSelectionHighlight", function(frame)
 end)
 
 local questTitles = {}
+local scenarioName
 
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WLK_NamePlateScanner", UIParent, "GameTooltipTemplate")
@@ -174,9 +175,12 @@ local function IsQuestUnit(unit)
         local line = _G[scanner:GetName() .. "TextLeft" .. i]
         local r, g, b = line:GetTextColor()
         local text = line:GetText()
-        -- 黄色文字可能是任务名称、玩家名称或队友名称
+        -- 黄色文字可能是场景名称、任务名称、玩家名称或队友名称
         if r > 0.99 and g > 0.82 and b == 0 then
-            if questTitles[text] then
+            if text == scenarioName then
+                isQuestTitle = true
+                isPlayerName = true
+            elseif questTitles[text] then
                 isQuestTitle = true
             else
                 isPlayerName = text == UnitName("player")
@@ -185,8 +189,8 @@ local function IsQuestUnit(unit)
             if not isPlayerQuest and isPlayerName then
                 isPlayerQuest = true
             end
-            -- 检查玩家自己的任务是否已完成
         elseif isQuestTitle and isPlayerName ~= false then
+            -- 检查玩家自己的任务是否已完成
             local current, goal = strmatch(text, "(%d+)/(%d+)")
             local currentPercent = strmatch(text, "%((%d+)%%%)") or strmatch(text, "(%d+)%%$")
             if current and goal and current ~= goal then
@@ -256,10 +260,14 @@ eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
 eventListener:RegisterEvent("NAME_PLATE_UNIT_ADDED")
 eventListener:RegisterEvent("QUEST_ACCEPTED")
 eventListener:RegisterEvent("QUEST_REMOVED")
+eventListener:RegisterEvent("QUEST_REMOVED")
+eventListener:RegisterEvent("SCENARIO_UPDATE")
+eventListener:RegisterEvent("SCENARIO_CRITERIA_UPDATE")
 eventListener:RegisterUnitEvent("UNIT_QUEST_LOG_CHANGED", "player")
 
 eventListener:SetScript("OnEvent", function(_, event, ...)
     if event == "PLAYER_ENTERING_WORLD" then
+        scenarioName = C_Scenario.GetInfo()
         for i = 1, GetNumQuestLogEntries() do
             local title, _, _, isHeader, _, _, _, questID = GetQuestLogTitle(i)
             if not isHeader and not questTitles[title] then
@@ -288,5 +296,9 @@ eventListener:SetScript("OnEvent", function(_, event, ...)
                 break
             end
         end
+    elseif event == "SCENARIO_UPDATE" then
+        scenarioName = C_Scenario.GetInfo()
+    elseif event == "SCENARIO_CRITERIA_UPDATE" then
+        UpdateAllNamePlateQuestIcon()
     end
 end)
