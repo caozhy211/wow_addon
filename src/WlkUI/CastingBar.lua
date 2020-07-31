@@ -772,7 +772,35 @@ local function CreateShieldBorder(bar)
     bar.rightBorder = rightBorder
 end
 
-CastingBarFrame_OnLoad(targetCastingBar, "target", true, true)
+--- 施法条事件函数
+local function CastingBarFrameOnEvent(self, event, ...)
+    local arg1 = ...
+    if event == self.updateEvent then
+        local nameChannel  = UnitChannelInfo(self.unit)
+        local nameSpell  = UnitCastingInfo(self.unit)
+        if nameChannel then
+            event = "UNIT_SPELLCAST_CHANNEL_START"
+            arg1 = self.unit
+        elseif nameSpell  then
+            event = "UNIT_SPELLCAST_START"
+            arg1 = self.unit
+        else
+            self.casting = nil
+            self.channeling = nil
+            self:SetMinMaxValues(0, 0)
+            self:SetValue(0)
+            self:Hide()
+            return
+        end
+    end
+    CastingBarFrame_OnEvent(self, event, arg1, select(2, ...))
+end
+
+CastingBarFrame_SetUnit(targetCastingBar, "target", true, true)
+targetCastingBar.updateEvent = "PLAYER_TARGET_CHANGED"
+targetCastingBar:RegisterEvent(targetCastingBar.updateEvent)
+targetCastingBar:SetScript("OnEvent", CastingBarFrameOnEvent)
+
 SetTextures(targetCastingBar)
 ShowIcon(targetCastingBar)
 ShowTime(targetCastingBar)
@@ -805,7 +833,11 @@ focusCastingBar:SetSize(540 - 298 - 2 - 2 * 2 - height, height)
 focusCastingBar:SetPoint("BOTTOMRIGHT", -298 - 1 - 2, 156 + 2 + 2)
 focusCastingBar:Hide()
 
-CastingBarFrame_OnLoad(focusCastingBar, "focus", true, true)
+CastingBarFrame_SetUnit(focusCastingBar, "focus", true, true)
+focusCastingBar.updateEvent = "PLAYER_FOCUS_CHANGED"
+focusCastingBar:RegisterEvent(focusCastingBar.updateEvent)
+focusCastingBar:SetScript("OnEvent", CastingBarFrameOnEvent)
+
 SetTextures(focusCastingBar)
 ShowIcon(focusCastingBar)
 ShowTime(focusCastingBar)
@@ -842,7 +874,11 @@ local function CreateBossCastingBar(i)
     bossCastingBar:SetPoint("BOTTOMRIGHT", -298 - 1 - 2, 314 + 1 + 2 + (i - 1) * (13 + 2 + 2 + 36 + 2 + 33 + 2))
     bossCastingBar:Hide()
 
-    CastingBarFrame_OnLoad(bossCastingBar, "boss" .. i, false, true)
+    CastingBarFrame_SetUnit(bossCastingBar, "boss" .. i, true, true)
+    bossCastingBar.updateEvent = "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
+    bossCastingBar:RegisterEvent(bossCastingBar.updateEvent)
+    bossCastingBar:SetScript("OnEvent", CastingBarFrameOnEvent)
+
     SetTextures(bossCastingBar)
     ShowIcon(bossCastingBar)
     ShowTime(bossCastingBar)
