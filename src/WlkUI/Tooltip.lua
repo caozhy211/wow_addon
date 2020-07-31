@@ -1,7 +1,27 @@
 --- 设置鼠标提示位置跟随鼠标
 ---@param tooltip GameTooltip
+local function AnchorGameTooltipCursor(tooltip)
+    local scale = tooltip:GetEffectiveScale()
+    local cx, cy = GetCursorPosition()
+    local x = floor(cx / scale)
+    local y = floor(cy / scale)
+    tooltip:ClearAllPoints()
+    tooltip:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x + 30, y - 30)
+end
+
+---@param tooltip GameTooltip
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
-    tooltip:SetOwner(parent, "ANCHOR_CURSOR_RIGHT", 30, -30)
+    tooltip:SetOwner(parent, "ANCHOR_CURSOR")
+    AnchorGameTooltipCursor(tooltip)
+
+    ---@param self GameTooltip
+    tooltip:HookScript("OnUpdate", function(self)
+        if self:GetAnchorType() ~= "ANCHOR_CURSOR" then
+            return
+        end
+
+        AnchorGameTooltipCursor(self)
+    end)
 end)
 
 --- 格式化数字
