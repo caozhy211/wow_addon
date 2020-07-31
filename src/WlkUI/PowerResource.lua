@@ -513,8 +513,14 @@ bar:SetScript("OnEvent", function(self, event, ...)
         UpdatePower()
         UpdateBarColor()
     elseif event == "UNIT_POWER_FREQUENT" then
-        local _, powerToken = ...
-        if powerToken == select(2, UnitPowerType(self.unit)) then
+        if self.unit == "player" then
+            -- 单位是玩家时，需要 powerToken 和 UnitPowerType 返回的 powerToken 相同再更新
+            local _, powerToken = ...
+            if powerToken == select(2, UnitPowerType(self.unit)) then
+                UpdatePower()
+            end
+        else
+            -- 单位是载具时，不检查 powerToken， 因为和 UnitPowerType 返回的 powerToken 可能不一样
             UpdatePower()
         end
     end
