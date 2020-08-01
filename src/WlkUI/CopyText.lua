@@ -79,18 +79,18 @@ SlashCmdList["ENUMS"] = function()
 end
 SLASH_ENUMS1 = "/enums"
 
---- SimC 种族名
-local races = {
-    ["NightElf"] = "night_elf",
-    ["Scourge"] = "undead",
-    ["BloodElf"] = "blood_elf",
-    ["VoidElf"] = "void_elf",
-    ["LightforgedDraenei"] = "lightforged_draenei",
-    ["DarkIronDwarf"] = "dark_iron_dwarf",
-    ["HighmountainTauren"] = "highmountain_tauren",
-    ["MagharOrc"] = "maghar_orc",
-    ["ZandalariTroll"] = "zandalari_troll",
-}
+--- 获取玩家种族
+local function GetRace()
+    local _, race = UnitRace("player")
+    if race == "Scourge" then
+        return "undead"
+    end
+    local matches = {}
+    for s in gmatch(race, "%u%l*") do
+        tinsert(matches, s)
+    end
+    return strlower(table.concat(matches, "_"))
+end
 
 --- 赞达拉洛阿增益
 local zandalariLoaBuffs = {
@@ -106,12 +106,12 @@ local zandalariLoaBuffs = {
 local function GetZandalariLoa()
     local zandalariLoa
     for index = 1, BUFF_MAX_DISPLAY do
-        local _, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", index)
-        if spellId == nil then
+        local _, _, _, _, _, _, _, _, _, spellID = UnitBuff("player", index)
+        if spellID == nil then
             break
         end
-        if zandalariLoaBuffs[spellId] then
-            zandalariLoa = zandalariLoaBuffs[spellId]
+        if zandalariLoaBuffs[spellID] then
+            zandalariLoa = zandalariLoaBuffs[spellID]
             break
         end
     end
@@ -133,7 +133,7 @@ local specs = {
     [104] = "guardian", -- 守护
     [105] = "restoration", -- 恢复
     -- 猎人
-    [253] = "beast mastery", -- 野兽控制
+    [253] = "beast_mastery", -- 野兽控制
     [254] = "marksmanship", -- 射击
     [255] = "survival", -- 生存
     -- 法师
@@ -145,7 +145,7 @@ local specs = {
     [269] = "windwalker", -- 织雾
     [270] = "mistweaver", -- 踏风
     -- 圣骑士
-    [65] = "joly", -- 神圣
+    [65] = "holy", -- 神圣
     [66] = "protection", -- 防护
     [70] = "retribution", -- 惩戒
     -- 牧师
@@ -365,36 +365,35 @@ end
 
 --- 获取 SimC 文本
 local function GetSimCText()
-    local result
+    local textTable = {}
     local name = UnitName("player")
-    result = strlower(class) .. '="' .. name .. '"\n'
+    tinsert(textTable, strlower(class) .. '="' .. name .. '"')
 
     local level = UnitLevel("player")
-    result = result .. "level=" .. level .. "\n"
+    tinsert(textTable, "level=" .. level)
 
-    local _, race = UnitRace("player")
-    race = races[race] or race
-    result = result .. "race=" .. strlower(race) .. "\n"
+    local race = GetRace()
+    tinsert(textTable, "race=" .. race)
     if race == "zandalari_troll" then
         local zandalariLoa = GetZandalariLoa()
-        result = result .. "zandalari_loa=" .. zandalariLoa .. "\n"
+        tinsert(textTable, "zandalari_loa=" .. zandalariLoa)
     end
 
     local specIndex = GetSpecialization()
     local specID = GetSpecializationInfo(specIndex)
     local spec = specs[specID]
-    result = result .. "spec=" .. spec .. "\n"
+    tinsert(textTable, "spec=" .. spec)
 
     local talents = GetTalents()
-    result = result .. "talents=" .. talents .. "\n\n"
+    tinsert(textTable, "talents=" .. talents .. "\n")
 
     local equippedItems = GetEquippedItems()
-    result = result .. equippedItems .. "\n"
+    tinsert(textTable, equippedItems)
 
     local bagItems = GetBagItems()
-    result = result .. bagItems
+    tinsert(textTable, bagItems)
 
-    return result
+    return table.concat(textTable, "\n")
 end
 
 --- 显示 SimC 文本
