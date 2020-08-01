@@ -1313,7 +1313,7 @@ local inRangeSpells = {
         assist = {},
     },
     PALADIN = {
-        attack = { 62124, 62124, 62124, },
+        attack = { 20271, 20271, 20271, },
         assist = { 19750, 19750, 19750, },
     },
     HUNTER = {
@@ -1347,7 +1347,7 @@ local inRangeSpells = {
         assist = { 116670, 116670, 116670, },
     },
     DRUID = {
-        attack = { 8921, 8921, 8921, 8921, },
+        attack = { 190984, 8921, 8921, 8921, },
         assist = { 8936, 8936, 8936, 8936, },
     },
     DEMONHUNTER = {
