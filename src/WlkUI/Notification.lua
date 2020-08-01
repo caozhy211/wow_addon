@@ -865,11 +865,31 @@ local function SanitizeLink(link)
     return table.concat(linkTable, ":"), link, linkTable[1], tonumber(linkTable[2]), name
 end
 
+---@type GameTooltip
+local scanner = CreateFrame("GameTooltip", "WLK_NotificationItemScanner", UIParent, "GameTooltipTemplate")
+
 --- 获取物品等级
-local function GetItemLevel(itemLink)
-    local itemEquipLoc, _, _, itemClassID, itemSubClassID = select(9, GetItemInfo(itemLink))
+local function GetItemLevel(event, link)
+    local itemEquipLoc, _, _, itemClassID, itemSubClassID = select(9, GetItemInfo(link))
     if (itemClassID == LE_ITEM_CLASS_GEM and itemSubClassID == LE_ITEM_GEM_ARTIFACTRELIC) or _G[itemEquipLoc] then
-        return GetDetailedItemLevelInfo(itemLink) or 0
+        if event == "SHOW_LOOT_TOAST" then
+            scanner:SetOwner(UIParent, "ANCHOR_NONE")
+            scanner:SetHyperlink(link)
+            for i = 2, 5 do
+                ---@type FontString
+                local line = _G[scanner:GetName() .. "TextLeft" .. i]
+                local text = line:GetText()
+                if text then
+                    local level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)"))
+                            or strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+                    if level then
+                        return tonumber(level)
+                    end
+                end
+            end
+        else
+            return GetDetailedItemLevelInfo(link) or 0
+        end
     end
     return 0
 end
@@ -912,7 +932,7 @@ local function SetUpLootCommonNotice(event, link, quantity)
                 sound = SOUNDKIT.UI_LEGENDARY_LOOT_TOAST
             end
 
-            local iLevel = GetItemLevel(originalLink)
+            local iLevel = GetItemLevel(event, originalLink)
             if iLevel > 0 then
                 name = "[" .. color.hex .. iLevel .. "|r] " .. name
             end
@@ -1104,7 +1124,7 @@ local function SetUpLootSpecialNotice(event, link, quantity, lessAwesome, isUpgr
                     sound = SOUNDKIT.UI_CORRUPTED_ITEM_LOOT_TOAST
                 end
 
-                local iLevel = GetItemLevel(originalLink)
+                local iLevel = GetItemLevel(event, originalLink)
                 if iLevel > 0 then
                     name = "[" .. color.hex .. iLevel .. FONT_COLOR_CODE_CLOSE .. "]" .. name
                 end
