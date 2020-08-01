@@ -870,9 +870,9 @@ local scanner = CreateFrame("GameTooltip", "WLK_NotificationItemScanner", UIPare
 
 --- 获取物品等级
 local function GetItemLevel(event, link)
-    local itemEquipLoc, _, _, itemClassID, itemSubClassID = select(9, GetItemInfo(link))
+    local itemQuality, _, _, _, _, _, itemEquipLoc, _, _, itemClassID, itemSubClassID = select(3, GetItemInfo(link))
     if (itemClassID == LE_ITEM_CLASS_GEM and itemSubClassID == LE_ITEM_GEM_ARTIFACTRELIC) or _G[itemEquipLoc] then
-        if event == "SHOW_LOOT_TOAST" then
+        if event == "SHOW_LOOT_TOAST" or itemQuality == LE_ITEM_QUALITY_HEIRLOOM then
             scanner:SetOwner(UIParent, "ANCHOR_NONE")
             scanner:SetHyperlink(link)
             for i = 2, 5 do
@@ -921,7 +921,8 @@ local function SetUpLootCommonNotice(event, link, quantity)
             name, _, quality, _, _, _, _, _, _, icon, _, classID, subClassID, bindType = GetItemInfo(originalLink)
         end
 
-        if name and (quality and quality >= LE_ITEM_QUALITY_POOR and quality <= LE_ITEM_QUALITY_LEGENDARY) then
+        if name and (quality and quality >= LE_ITEM_QUALITY_POOR and quality <= LE_ITEM_QUALITY_LEGENDARY
+                or quality == LE_ITEM_QUALITY_HEIRLOOM) then
             local color = ITEM_QUALITY_COLORS[quality] or ITEM_QUALITY_COLORS[LE_ITEM_QUALITY_COMMON]
             notice:SetBackdropBorderColor(GetTableColor(color))
 
