@@ -82,7 +82,7 @@ eventListener:RegisterEvent("PLAYER_LOGIN")
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event)
     if GetCVar("alwaysShowActionBars") == "1" then
-        -- 显示主动作按钮格子
+        -- 显示主动作条按钮格子
         for i = 1, NUM_ACTIONBAR_BUTTONS do
             ---@type Button
             local button = _G["ActionButton" .. i]
@@ -99,6 +99,8 @@ eventListener:SetScript("OnEvent", function(self, event)
     playerPowerBarAlt:ClearAllPoints()
     -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
     playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
+    playerPowerBarAlt:SetMovable(false)
+
     self:UnregisterEvent(event)
 end)
 

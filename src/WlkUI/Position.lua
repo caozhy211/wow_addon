@@ -165,7 +165,9 @@ end
 
 ---@type Frame
 local objectiveTrackerFrame = ObjectiveTrackerFrame
+--- 使框体可以被移动
 objectiveTrackerFrame:SetMovable(true)
+--- 不使用 blz 的 UIParent.lua 动态调整位置
 objectiveTrackerFrame:SetUserPlaced(true)
 
 ---@type Frame
@@ -182,6 +184,8 @@ eventListener:SetScript("OnEvent", function(self, event)
         -- MicroButtonAndBagsBar 顶部相对屏幕底部偏移 88px
         objectiveTrackerFrame:SetPoint("TOPLEFT", GetScreenWidth() - 298 + 29, -330)
         objectiveTrackerFrame:SetPoint("BOTTOMRIGHT", -(2 + 32), 88 + 2)
+        -- 防止框体被移至默认位置
+        objectiveTrackerFrame:SetMovable(false)
     elseif event == "PLAYER_REGEN_ENABLED" then
         -- 位置更新后，清空 needUpdateFrames 并取消注册 PLAYER_REGEN_ENABLED 事件
         for i = 1, #needUpdateFrames do
