@@ -88,6 +88,9 @@ local hiddenCVars = {
     overrideArchive = 0,
     -- 世界地图不显示宠物对战
     showTamers = 0,
+    -- 关闭聊天气泡（未设置过时的值都是 1，使用默认设置时不会影响该值，所以不放在 interfaceCVars 中）
+    chatBubbles = 0,
+    chatBubblesParty = 0,
 }
 
 --- 声音设置的控制台变量
@@ -145,12 +148,8 @@ local function ApplyDefaultSettings()
 
     -- 重置聊天窗口
     FCF_ResetChatWindows()
-    ---@type Frame
-    local chatConfigFrame = ChatConfigFrame
     -- 聊天设置恢复为默认值
-    if chatConfigFrame:IsShown() then
-        ChatConfig_ResetChatSettings()
-    end
+    ChatConfig_ResetChatSettings()
 end
 
 --- 应用默认设置对话框
@@ -191,7 +190,6 @@ defaultButton:SetScript("OnClick", function()
         end
     end
 
-    WLK_Settings = false
     StaticPopup_Show("APPLY_DEFAULT_SETTINGS")
 end)
 
@@ -207,33 +205,34 @@ local wlkBagFilter = {
 local interfaceCVars = {
     -- 启用自动拾取
     autoLootDefault = 1,
-    -- 启用浮动战斗信息
+    -- 启用自己的浮动战斗信息
     enableFloatingCombatText = 1,
     -- 启用状态文字，并显示数值和百分比
     statusText = 1,
     statusTextDisplay = "BOTH",
-    -- 关闭聊天气泡
-    chatBubbles = 0,
     -- 关闭教学说明
     showTutorials = 0,
     -- 取消锁定动作条
     lockActionBars = 0,
     -- 总是显示动作条
     alwaysShowActionBars = 1,
-    -- NPC 名称显示为敌对、任务与可互动的 NPC
+    -- NPC 名称显示为敌对、任务与可互动的 NPC（与未设置时的值相同，使用默认设置后的值为 1、0、0、0、0）
     UnitNameFriendlySpecialNPCName = 1,
     UnitNameHostleNPC = 1,
     UnitNameInteractiveNPC = 1,
+    UnitNameNPC = 0,
+    ShowQuestUnitCircles = 1,
     -- 不显示玩家姓名板
     nameplateShowSelf = 0,
     -- 启用大型姓名板
     NamePlateHorizontalScale = 1.4,
     NamePlateVerticalScale = 2.7,
+    NamePlateClassificationScale = 1.25,
     -- 堆叠姓名板
     nameplateMotion = 1,
-    -- 永不调整镜头
-    cameraWaterCollision = 1,
     -- 启用水体碰撞
+    cameraWaterCollision = 1,
+    -- 永不调整镜头
     cameraSmoothStyle = 0,
     -- 显示动画字幕
     movieSubtitle = 1,
@@ -270,7 +269,8 @@ local function GetCompactUnitFrameProfilesSize()
 end
 
 --- 团队框架设置
-local function SetRaidOptions(profile)
+local function SetRaidOptions()
+    local profile = GetActiveRaidProfile()
     -- 保持小队连在一起
     SetRaidProfileOption(profile, "keepGroupsTogether", true)
     -- 显示职业颜色
@@ -290,7 +290,6 @@ local function SetWlkInterfaceOptions()
     SetCVars(interfaceCVars)
     -- 显示左下方动作条、右下方动作条和右方动作条
     SetActionBarToggles(true, true, true, false)
-    SetRaidOptions(CompactUnitFrameProfiles.selectedProfile)
     -- 自动拾取键设置为 “无”
     SetModifiedClick("AUTOLOOTTOGGLE", "NONE")
     -- 焦点施法键设置为 “Shift”
@@ -299,6 +298,10 @@ local function SetWlkInterfaceOptions()
     SetModifiedClick("SELFCAST", "NONE")
     -- 阻止公会邀请
     SetAutoDeclineGuildInvites(true)
+    -- 保存按键设置
+    SaveBindings(ACCOUNT_BINDINGS)
+    -- 设置团队档案
+    SetRaidOptions()
 end
 
 --- 需要解绑的按键
@@ -442,7 +445,6 @@ wlkButton:SetScript("OnClick", function()
         end
     end
 
-    WLK_Settings = true
     StaticPopup_Show("APPLY_WLK_SETTINGS")
 end)
 
@@ -453,35 +455,3 @@ if abs(GetScreenWidth() - 1920) > 0.01 then
     BlizzardOptionsPanel_SetCVarSafe("uiScale", scale)
     UIParent:SetScale(scale)
 end
-
-local addonName = ...
-
----@type Frame
-local eventListener = CreateFrame("Frame")
-
-eventListener:RegisterEvent("PLAYER_ENTERING_WORLD")
-eventListener:RegisterEvent("ADDON_LOADED")
-
----@param self Frame
-eventListener:SetScript("OnEvent", function(self, event, ...)
-    if event == "ADDON_LOADED" and addonName == ... then
-        if WLK_Settings == nil then
-            WLK_Settings = false
-        end
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        -- 使用了自定义设置
-        if WLK_Settings then
-            -- 恢复成了默认设置
-            local defaultSettings = GetCVar("statusText") == GetCVarDefault("statusText")
-            local bottomLeft, bottomRight, sideRight, sideRight2 = GetActionBarToggles()
-            -- 正确的动作条显示状态
-            local actionBarDisplay = bottomLeft and bottomRight and sideRight and not sideRight2
-            -- 界面设置有时候会恢复成默认设置，动作条有时候会显示不正确，需要重新应用自定义界面设置
-            if defaultSettings or not actionBarDisplay then
-                SetWlkInterfaceOptions()
-            end
-        end
-    end
-
-    self:UnregisterEvent(event)
-end)

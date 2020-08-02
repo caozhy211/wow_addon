@@ -5,7 +5,7 @@
 ## Version: 2.1.0
 ## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
 ## SavedVariables: WLK_UnitAuraFilter, WLK_AdFilter
-## SavedVariablesPerCharacter: WLK_DamageDB, WLK_Settings
+## SavedVariablesPerCharacter: WLK_DamageDB
 
 ActionBar.lua
 AdFilter.lua
