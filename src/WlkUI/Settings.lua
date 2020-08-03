@@ -110,11 +110,8 @@ local voiceCVars = {
 ---@param toDefault boolean 是否设置为默认值
 local function SetCVars(cvars, toDefault)
     for name, value in pairs(cvars) do
-        if name == "textLocale" or name == "audioLocale" then
-            SetCVar(name, toDefault and "zhCN" or name == "textLocale" and "zhTW" or "enUS")
-        else
-            SetCVar(name, toDefault and GetCVarDefault(name) or value)
-        end
+        local isLocale = name == "textLocale" or name == "audioLocale"
+        SetCVar(name, toDefault and (isLocale and GetAvailableLocales() or GetCVarDefault(name)) or value)
     end
 end
 
