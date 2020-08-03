@@ -1024,7 +1024,7 @@ local function CreateAuraButton(auraFrame)
         local index = self.index
         local slot = self.slot
 
-        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, 10)
         if index then
             tooltip:SetUnitAura(unit, index, filter)
         elseif slot then

@@ -14,7 +14,7 @@ local function SlotOnEnter(self)
     animOut:Stop()
     notice:SetAlpha(1)
     GameTooltip:Hide()
-    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+    GameTooltip_SetDefaultAnchor(GameTooltip, self)
 end
 
 ---@param notice Frame
@@ -85,7 +85,7 @@ local function NoticeOnEnter(self)
     local animOut = self.animOut
     animOut:Stop()
     GameTooltip:Hide()
-    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+    GameTooltip_SetDefaultAnchor(GameTooltip, self)
 end
 
 --- 回收通知框架

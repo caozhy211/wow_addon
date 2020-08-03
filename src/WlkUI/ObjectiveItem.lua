@@ -42,7 +42,7 @@ local function CreateItemButton(index)
 
     ---@param self Button
     itemButton:SetScript("OnEnter", function(self)
-        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, 10)
         local bagID = self:GetAttribute("bag")
         local slot = self:GetAttribute("slot")
         if bagID then
