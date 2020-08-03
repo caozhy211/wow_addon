@@ -228,6 +228,8 @@ local interfaceCVars = {
     NamePlateClassificationScale = 1.25,
     -- 堆叠姓名板
     nameplateMotion = 1,
+    -- 显示敌方仆从的姓名板
+    nameplateShowEnemyMinions = 1,
     -- 启用水体碰撞
     cameraWaterCollision = 1,
     -- 永不调整镜头
@@ -304,18 +306,21 @@ end
 
 --- 需要解绑的按键
 local unbindKeys = {
-    -- 移动按键
-    MOVEANDSTEER = 1, MOVEFORWARD = 2, MOVEBACKWARD = 2, TURNLEFT = 2, TURNRIGHT = 2, JUMP = 2, TOGGLEAUTORUN = 2,
-    -- 动作条
-    BONUSACTIONBUTTON2 = 1, BONUSACTIONBUTTON3 = 1, BONUSACTIONBUTTON4 = 1, BONUSACTIONBUTTON5 = 1,
-    BONUSACTIONBUTTON6 = 1, BONUSACTIONBUTTON7 = 1, BONUSACTIONBUTTON8 = 1, BONUSACTIONBUTTON9 = 1,
-    BONUSACTIONBUTTON10 = 1, ACTIONPAGE1 = 1, ACTIONPAGE2 = 1, ACTIONPAGE3 = 1, ACTIONPAGE4 = 1, ACTIONPAGE5 = 1,
-    ACTIONPAGE6 = 1, PREVIOUSACTIONPAGE = 1, NEXTACTIONPAGE = 1,
-    -- 选择目标
-    TARGETSELF = 1, TARGETPARTYMEMBER1 = 1, TARGETPARTYMEMBER2 = 1, TARGETPARTYMEMBER3 = 1, TARGETPARTYMEMBER4 = 1,
-    TARGETPET = 1, TARGETPARTYPET1 = 1, TARGETPARTYPET2 = 1, TARGETPARTYPET3 = 1, TARGETPARTYPET4 = 1,
-    -- 界面面板
-    TOGGLEBACKPACK = 2,
+    {
+        -- 移动按键
+        "MOVEANDSTEER",
+        -- 对话
+        "REPLY2",
+        -- 选择目标
+        "TARGETSELF", "TARGETPARTYMEMBER1", "TARGETPARTYMEMBER2", "TARGETPARTYMEMBER3", "TARGETPARTYMEMBER4",
+        "TARGETPET", "TARGETPARTYPET1", "TARGETPARTYPET2", "TARGETPARTYPET3", "TARGETPARTYPET4",
+    },
+    {
+        -- 移动按键
+        "MOVEFORWARD", "MOVEBACKWARD", "TURNLEFT", "TURNRIGHT", "JUMP", "TOGGLEAUTORUN",
+        -- 界面面板
+        "TOGGLEBACKPACK",
+    },
 }
 
 --- 要绑定的按键
@@ -326,7 +331,7 @@ local bindKeys = {
     -- 动作条
     ACTIONBUTTON1 = "1", ACTIONBUTTON2 = "2", ACTIONBUTTON3 = "3", ACTIONBUTTON4 = "4", ACTIONBUTTON5 = "Z",
     ACTIONBUTTON6 = "X", ACTIONBUTTON7 = "Q", ACTIONBUTTON8 = "W", ACTIONBUTTON9 = "R", ACTIONBUTTON10 = "T",
-    ACTIONBUTTON11 = "A", ACTIONBUTTON12 = "G", EXTRAACTIONBUTTON1 = "`", BONUSACTIONBUTTON1 = "CTRL-`",
+    ACTIONBUTTON11 = "A", ACTIONBUTTON12 = "G", EXTRAACTIONBUTTON1 = "`",
     -- 复合式动作条
     MULTIACTIONBAR1BUTTON1 = "CTRL-1", MULTIACTIONBAR1BUTTON2 = "CTRL-2", MULTIACTIONBAR1BUTTON3 = "CTRL-3",
     MULTIACTIONBAR1BUTTON4 = "CTRL-4", MULTIACTIONBAR1BUTTON5 = "CTRL-Z", MULTIACTIONBAR1BUTTON6 = "CTRL-X",
@@ -336,18 +341,21 @@ local bindKeys = {
     MULTIACTIONBAR2BUTTON4 = "CTRL-F", MULTIACTIONBAR2BUTTON5 = "SHIFT-E", MULTIACTIONBAR2BUTTON6 = "SHIFT-D",
     MULTIACTIONBAR2BUTTON7 = "SHIFT-S", MULTIACTIONBAR2BUTTON8 = "SHIFT-F", MULTIACTIONBAR2BUTTON9 = "ALT-E",
     MULTIACTIONBAR2BUTTON10 = "ALT-D", MULTIACTIONBAR2BUTTON11 = "ALT-S", MULTIACTIONBAR2BUTTON12 = "ALT-F",
+    -- 选择目标
+    PETATTACK = "CTRL-`"
 }
 
 --- 按键设置
 local function SetWlkBindings()
     -- 解绑键位设定
-    for action, keyButtonID in pairs(unbindKeys) do
-        local key1, key2 = GetBindingKey(action, KeyBindingFrame.mode)
-        if keyButtonID == 1 and key1 then
-            SetBinding(key1, nil, KeyBindingFrame.mode);
-        end
-        if keyButtonID == 2 and key2 then
-            SetBinding(key2, nil, KeyBindingFrame.mode);
+    for i = 1, #unbindKeys do
+        local actionKeys = unbindKeys[i]
+        for j = 1, #actionKeys do
+            local action = actionKeys[j]
+            local key = select(i, GetBindingKey(action, KeyBindingFrame.mode))
+            if key then
+                SetBinding(key, nil, KeyBindingFrame.mode)
+            end
         end
     end
     -- 解绑语音按键
