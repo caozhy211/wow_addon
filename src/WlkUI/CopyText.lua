@@ -38,16 +38,6 @@ local function ShowCopyFrame(contents)
     editBox:SetFocus()
 end
 
---- 使用快捷键显示 fstack 选中的对象名称
-tinsert(FrameStackTooltip.commandKeys, KeyCommand_Create(function()
-    ---@type UIObject
-    local object = FrameStackTooltip.highlightFrame
-    if object then
-        local name = object:GetDebugName()
-        ShowCopyFrame(name)
-    end
-end, KeyCommand.RUN_ON_DOWN, KeyCommand_CreateKey("F5")))
-
 local enumsText
 --- 显示枚举值和部分数字常量
 SlashCmdList["ENUMS"] = function()
