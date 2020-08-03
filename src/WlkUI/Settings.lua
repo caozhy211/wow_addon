@@ -154,14 +154,15 @@ end
 
 --- 应用默认设置对话框
 StaticPopupDialogs["APPLY_DEFAULT_SETTINGS"] = {
-    text = "你必須重新載入才能使默認設置生效（系統文字和語音設置以及反和谐需要重啟遊戲才能生效）",
+    text = "反和諧和系統文字語言設定需要重新啟動遊戲才能夠生效。",
+    subText = "其他設定需要重新載入遊戲才能夠生效。",
     button1 = RELOADUI,
+    button2 = "",
     OnAccept = ReloadUI,
-    OnCancel = ReloadUI,
+    showAlert = 1,
     timeout = 0,
-    exclusive = 1,
     whileDead = 1,
-    hideOnEscape = 1,
+    notClosableByLogout = 1,
 }
 
 defaultButton:SetScript("OnClick", function()
@@ -387,24 +388,22 @@ local function ApplyWlkSettings()
     ChatFrame_RemoveMessageGroup(ChatFrame1, "CHANNEL")
 end
 
---- 重新载入界面
-local function ReloadForSettings()
-    -- 设置总是显示姓名板。当有敌对姓名板显示时，调用 InterfaceOptionsFrame_SetAllToDefaults() 函数后设置 “nameplateShowAll”
-    -- 会有脚本错误，所以在此处进行设置
-    SetCVar("nameplateShowAll", 1)
-    ReloadUI()
-end
-
 --- 应用自定义设置对话框
 StaticPopupDialogs["APPLY_WLK_SETTINGS"] = {
-    text = "你必須重新載入才能使自定義設置生效（系統文字和語音設置以及反和谐需要重啟遊戲才能生效）",
+    text = "反和諧和系統文字語音設定需要重新啟動遊戲才能夠生效。",
+    subText = "其他設定需要重新載入遊戲才能夠生效。",
     button1 = RELOADUI,
-    OnAccept = ReloadForSettings,
-    OnCancel = ReloadForSettings,
+    button2 = "",
+    OnAccept = function()
+        -- 总是显示姓名板。当有敌对姓名板显示时，调用 InterfaceOptionsFrame_SetAllToDefaults() 函数后设置 “nameplateShowAll”
+        -- 会有脚本错误，所以在此处进行设置
+        SetCVar("nameplateShowAll", 1)
+        ReloadUI()
+    end,
+    showAlert = 1,
     timeout = 0,
-    exclusive = 1,
     whileDead = 1,
-    hideOnEscape = 1,
+    notClosableByLogout = 1,
 }
 
 wlkButton:SetScript("OnClick", function()
@@ -412,7 +411,7 @@ wlkButton:SetScript("OnClick", function()
         return
     end
     DisableButtons()
-    -- 应用自定义设置前先应用一次默认设置，因为自定义设置是基于默认设置修改的
+    -- 应用自定义设置前先应用一次默认设置，把自定义设置未修改的选项设置为默认值
     ApplyDefaultSettings()
     -- 当屏幕中有任务目标显示时，立即应用自定义设置会有脚本错误
     C_Timer.After(0.1, function()
@@ -446,6 +445,30 @@ wlkButton:SetScript("OnClick", function()
     end
 
     StaticPopup_Show("APPLY_WLK_SETTINGS")
+end)
+
+hooksecurefunc("StaticPopup_Show", function(key)
+    if key == "APPLY_DEFAULT_SETTINGS" or key == "APPLY_WLK_SETTINGS" then
+        for i = 1, STATICPOPUP_NUMDIALOGS do
+            ---@type Frame
+            local dialog = _G["StaticPopup" .. i]
+            if dialog:IsShown() and dialog.which == key then
+                -- 创建能够退出游戏的按钮覆盖弹出对话框的按钮 2
+                ---@type Button
+                local btn = CreateFrame("Button", nil, dialog, "StaticPopupButtonTemplate, SecureActionButtonTemplate")
+                btn:SetAllPoints(dialog.button2)
+                btn:SetFrameLevel(dialog.button2:GetFrameLevel() + 1)
+                btn:SetText(EXIT_GAME)
+                btn:SetAttribute("type1", "macro")
+                btn:SetAttribute("macrotext", "/quit")
+                if key == "APPLY_WLK_SETTINGS" then
+                    btn:HookScript("OnClick", function()
+                        SetCVar("nameplateShowAll", 1)
+                    end)
+                end
+            end
+        end
+    end
 end)
 
 --- 分辨率不是 1920X1080 时，缩放界面
