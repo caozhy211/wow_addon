@@ -38,36 +38,62 @@ local function ShowCopyFrame(contents)
     editBox:SetFocus()
 end
 
-local enumsText
---- 显示枚举值和部分数字常量
-SlashCmdList["ENUMS"] = function()
-    -- enumsText 是 nil 则需要遍历
-    if enumsText == nil then
-        local textTable = {}
-        local version, build = GetBuildInfo()
-        tinsert(textTable, "--- version: " .. version .. "." .. build .. "\n\nEnum = {\n")
+local apiText
+--- 显示系统 API
+SLASH_SYSAPI1 = "/sa"
+SlashCmdList["SYSAPI"] = function()
+    if apiText == nil then
+        local namespaceTable = {}
+        local eventTable = {}
+        local enumTable = {}
+        local numericConstantTable = {}
 
-        for name, value in pairs(Enum) do
-            tinsert(textTable, "    " .. name .. " = {\n")
-            for n, v in pairs(value) do
-                tinsert(textTable, "        " .. n .. " = " .. v .. ",\n")
+        for _, apiInfo in ipairs(APIDocumentation.systems) do
+            if apiInfo.Namespace then
+                tinsert(namespaceTable, apiInfo.Namespace .. " = {}")
             end
-            tinsert(textTable, "    },\n")
+
+            for _, eventInfo in ipairs(apiInfo.Events) do
+                tinsert(eventTable, "'\"" .. eventInfo.LiteralName .. "\"'")
+            end
+
+            for _, tableInfo in ipairs(apiInfo.Tables) do
+                if tableInfo.Type == "Enumeration" then
+                    tinsert(enumTable, "    " .. tableInfo.Name .. " = {")
+                    for _, FieldInfo in ipairs(tableInfo.Fields) do
+                        tinsert(enumTable, "        " .. FieldInfo.Name .. " = " .. FieldInfo.EnumValue .. ",")
+                    end
+                    tinsert(enumTable, "    },")
+                end
+            end
         end
-        tinsert(textTable, "}\n\n")
 
         for name, value in pairs(_G) do
-            if strfind(name, "^LE_") or strfind(name, ".+_LE_") then
-                tinsert(textTable, name .. " = " .. value .. "\n")
+            if (strfind(name, "^LE_") or strfind(name, ".+_LE_")) and not strfind(name, "GAME_ERR") then
+                tinsert(numericConstantTable, name .. " = " .. value)
             end
         end
 
-        enumsText = table.concat(textTable)
+        local namespaces = table.concat(namespaceTable, "\n") .. "\n\n"
+        local events = "---@alias EventType string | " .. table.concat(eventTable, " | ") .. "\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:RegisterEvent(event) end\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:RegisterUnitEvent(event, ...) end\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:UnregisterEvent(event) end\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:IsEventRegistered(event) end\n\n"
+        tinsert(enumTable, 1, "Enum = {")
+        tinsert(enumTable, "}")
+        local enums = table.concat(enumTable, "\n") .. "\n\n"
+        local numericConstants = table.concat(numericConstantTable, "\n")
+        local _, build = GetBuildInfo()
+        apiText = "--- version: " .. build .. "\n\n" .. namespaces .. events .. enums .. numericConstants
     end
 
-    ShowCopyFrame(enumsText)
+    ShowCopyFrame(apiText)
 end
-SLASH_ENUMS1 = "/enums"
 
 --- 获取玩家种族
 local function GetRace()
