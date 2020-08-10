@@ -1,9 +1,9 @@
 ## Interface: 80300
 ## Title: |cff8686ecWlkUI
-## Notes: |cff8686ec術士|r專用介面
+## Notes: 自定义界面插件
 ## Author: czy211
-## Version: 2.1.0
-## RequiredDeps: Blizzard_DebugTools, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
+## Version: 3.0.0
+## RequiredDeps: Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
 ## SavedVariables: WLK_UnitAuraFilter, WLK_AdFilter
 ## SavedVariablesPerCharacter: WLK_DamageDB
 
@@ -30,8 +30,8 @@ Notification.lua
 ObjectiveItem.lua
 Performance.lua
 Position.lua
+PowerResource.lua
 PVPTalent.lua
 Settings.lua
-SoulShards.lua
 Tooltip.lua
 UnitFrame.lua

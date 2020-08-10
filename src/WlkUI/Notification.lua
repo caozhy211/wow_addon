@@ -14,7 +14,7 @@ local function SlotOnEnter(self)
     animOut:Stop()
     notice:SetAlpha(1)
     GameTooltip:Hide()
-    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+    GameTooltip_SetDefaultAnchor(GameTooltip, self)
 end
 
 ---@param notice Frame
@@ -85,7 +85,7 @@ local function NoticeOnEnter(self)
     local animOut = self.animOut
     animOut:Stop()
     GameTooltip:Hide()
-    GameTooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+    GameTooltip_SetDefaultAnchor(GameTooltip, self)
 end
 
 --- 回收通知框架
@@ -865,11 +865,31 @@ local function SanitizeLink(link)
     return table.concat(linkTable, ":"), link, linkTable[1], tonumber(linkTable[2]), name
 end
 
+---@type GameTooltip
+local scanner = CreateFrame("GameTooltip", "WLK_NotificationItemScanner", UIParent, "GameTooltipTemplate")
+
 --- 获取物品等级
-local function GetItemLevel(itemLink)
-    local itemEquipLoc, _, _, itemClassID, itemSubClassID = select(9, GetItemInfo(itemLink))
+local function GetItemLevel(event, link)
+    local itemQuality, _, _, _, _, _, itemEquipLoc, _, _, itemClassID, itemSubClassID = select(3, GetItemInfo(link))
     if (itemClassID == LE_ITEM_CLASS_GEM and itemSubClassID == LE_ITEM_GEM_ARTIFACTRELIC) or _G[itemEquipLoc] then
-        return GetDetailedItemLevelInfo(itemLink) or 0
+        if event == "SHOW_LOOT_TOAST" or itemQuality == LE_ITEM_QUALITY_HEIRLOOM then
+            scanner:SetOwner(UIParent, "ANCHOR_NONE")
+            scanner:SetHyperlink(link)
+            for i = 2, 5 do
+                ---@type FontString
+                local line = _G[scanner:GetName() .. "TextLeft" .. i]
+                local text = line:GetText()
+                if text then
+                    local level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "%%d+%%((%%d+)%%)"))
+                            or strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
+                    if level then
+                        return tonumber(level)
+                    end
+                end
+            end
+        else
+            return GetDetailedItemLevelInfo(link) or 0
+        end
     end
     return 0
 end
@@ -901,7 +921,8 @@ local function SetUpLootCommonNotice(event, link, quantity)
             name, _, quality, _, _, _, _, _, _, icon, _, classID, subClassID, bindType = GetItemInfo(originalLink)
         end
 
-        if name and (quality and quality >= LE_ITEM_QUALITY_POOR and quality <= LE_ITEM_QUALITY_LEGENDARY) then
+        if name and (quality and quality >= LE_ITEM_QUALITY_POOR and quality <= LE_ITEM_QUALITY_LEGENDARY
+                or quality == LE_ITEM_QUALITY_HEIRLOOM) then
             local color = ITEM_QUALITY_COLORS[quality] or ITEM_QUALITY_COLORS[LE_ITEM_QUALITY_COMMON]
             notice:SetBackdropBorderColor(GetTableColor(color))
 
@@ -912,7 +933,7 @@ local function SetUpLootCommonNotice(event, link, quantity)
                 sound = SOUNDKIT.UI_LEGENDARY_LOOT_TOAST
             end
 
-            local iLevel = GetItemLevel(originalLink)
+            local iLevel = GetItemLevel(event, originalLink)
             if iLevel > 0 then
                 name = "[" .. color.hex .. iLevel .. "|r] " .. name
             end
@@ -1104,7 +1125,7 @@ local function SetUpLootSpecialNotice(event, link, quantity, lessAwesome, isUpgr
                     sound = SOUNDKIT.UI_CORRUPTED_ITEM_LOOT_TOAST
                 end
 
-                local iLevel = GetItemLevel(originalLink)
+                local iLevel = GetItemLevel(event, originalLink)
                 if iLevel > 0 then
                     name = "[" .. color.hex .. iLevel .. FONT_COLOR_CODE_CLOSE .. "]" .. name
                 end

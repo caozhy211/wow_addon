@@ -38,59 +38,75 @@ local function ShowCopyFrame(contents)
     editBox:SetFocus()
 end
 
---- 使用快捷键显示 fstack 选中的对象名称
-tinsert(FrameStackTooltip.commandKeys, KeyCommand_Create(function()
-    ---@type UIObject
-    local object = FrameStackTooltip.highlightFrame
-    if object then
-        local name = object:GetDebugName()
-        ShowCopyFrame(name)
-    end
-end, KeyCommand.RUN_ON_DOWN, KeyCommand_CreateKey("F5")))
+local apiText
+--- 显示系统 API
+SLASH_SYSAPI1 = "/sa"
+SlashCmdList["SYSAPI"] = function()
+    if apiText == nil then
+        local namespaceTable = {}
+        local eventTable = {}
+        local enumTable = {}
+        local numericConstantTable = {}
 
-local enumsText
---- 显示枚举值和部分数字常量
-SlashCmdList["ENUMS"] = function()
-    -- enumsText 是 nil 则需要遍历
-    if enumsText == nil then
-        local textTable = {}
-        local version, build = GetBuildInfo()
-        tinsert(textTable, "--- version: " .. version .. "." .. build .. "\n\nEnum = {\n")
-
-        for name, value in pairs(Enum) do
-            tinsert(textTable, "    " .. name .. " = {\n")
-            for n, v in pairs(value) do
-                tinsert(textTable, "        " .. n .. " = " .. v .. ",\n")
+        for _, apiInfo in ipairs(APIDocumentation.systems) do
+            if apiInfo.Namespace then
+                tinsert(namespaceTable, apiInfo.Namespace .. " = {}")
             end
-            tinsert(textTable, "    },\n")
+
+            for _, eventInfo in ipairs(apiInfo.Events) do
+                tinsert(eventTable, "'\"" .. eventInfo.LiteralName .. "\"'")
+            end
+
+            for _, tableInfo in ipairs(apiInfo.Tables) do
+                if tableInfo.Type == "Enumeration" then
+                    tinsert(enumTable, "    " .. tableInfo.Name .. " = {")
+                    for _, FieldInfo in ipairs(tableInfo.Fields) do
+                        tinsert(enumTable, "        " .. FieldInfo.Name .. " = " .. FieldInfo.EnumValue .. ",")
+                    end
+                    tinsert(enumTable, "    },")
+                end
+            end
         end
-        tinsert(textTable, "}\n\n")
 
         for name, value in pairs(_G) do
-            if strfind(name, "^LE_") or strfind(name, ".+_LE_") then
-                tinsert(textTable, name .. " = " .. value .. "\n")
+            if (strfind(name, "^LE_") or strfind(name, ".+_LE_")) and not strfind(name, "GAME_ERR") then
+                tinsert(numericConstantTable, name .. " = " .. value)
             end
         end
 
-        enumsText = table.concat(textTable)
+        local namespaces = table.concat(namespaceTable, "\n") .. "\n\n"
+        local events = "---@alias EventType string | " .. table.concat(eventTable, " | ") .. "\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:RegisterEvent(event) end\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:RegisterUnitEvent(event, ...) end\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:UnregisterEvent(event) end\n\n"
+                .. "---@param event EventType\n"
+                .. "function Frame:IsEventRegistered(event) end\n\n"
+        tinsert(enumTable, 1, "Enum = {")
+        tinsert(enumTable, "}")
+        local enums = table.concat(enumTable, "\n") .. "\n\n"
+        local numericConstants = table.concat(numericConstantTable, "\n")
+        local _, build = GetBuildInfo()
+        apiText = "--- version: " .. build .. "\n\n" .. namespaces .. events .. enums .. numericConstants
     end
 
-    ShowCopyFrame(enumsText)
+    ShowCopyFrame(apiText)
 end
-SLASH_ENUMS1 = "/enums"
 
---- SimC 种族名
-local races = {
-    ["NightElf"] = "night_elf",
-    ["Scourge"] = "undead",
-    ["BloodElf"] = "blood_elf",
-    ["VoidElf"] = "void_elf",
-    ["LightforgedDraenei"] = "lightforged_draenei",
-    ["DarkIronDwarf"] = "dark_iron_dwarf",
-    ["HighmountainTauren"] = "highmountain_tauren",
-    ["MagharOrc"] = "maghar_orc",
-    ["ZandalariTroll"] = "zandalari_troll",
-}
+--- 获取玩家种族
+local function GetRace()
+    local _, race = UnitRace("player")
+    if race == "Scourge" then
+        return "undead"
+    end
+    local matches = {}
+    for s in gmatch(race, "%u%l*") do
+        tinsert(matches, s)
+    end
+    return strlower(table.concat(matches, "_"))
+end
 
 --- 赞达拉洛阿增益
 local zandalariLoaBuffs = {
@@ -106,12 +122,12 @@ local zandalariLoaBuffs = {
 local function GetZandalariLoa()
     local zandalariLoa
     for index = 1, BUFF_MAX_DISPLAY do
-        local _, _, _, _, _, _, _, _, _, spellId = UnitBuff("player", index)
-        if spellId == nil then
+        local _, _, _, _, _, _, _, _, _, spellID = UnitBuff("player", index)
+        if spellID == nil then
             break
         end
-        if zandalariLoaBuffs[spellId] then
-            zandalariLoa = zandalariLoaBuffs[spellId]
+        if zandalariLoaBuffs[spellID] then
+            zandalariLoa = zandalariLoaBuffs[spellID]
             break
         end
     end
@@ -133,7 +149,7 @@ local specs = {
     [104] = "guardian", -- 守护
     [105] = "restoration", -- 恢复
     -- 猎人
-    [253] = "beast mastery", -- 野兽控制
+    [253] = "beast_mastery", -- 野兽控制
     [254] = "marksmanship", -- 射击
     [255] = "survival", -- 生存
     -- 法师
@@ -145,7 +161,7 @@ local specs = {
     [269] = "windwalker", -- 织雾
     [270] = "mistweaver", -- 踏风
     -- 圣骑士
-    [65] = "joly", -- 神圣
+    [65] = "holy", -- 神圣
     [66] = "protection", -- 防护
     [70] = "retribution", -- 惩戒
     -- 牧师
@@ -365,36 +381,35 @@ end
 
 --- 获取 SimC 文本
 local function GetSimCText()
-    local result
+    local textTable = {}
     local name = UnitName("player")
-    result = strlower(class) .. '="' .. name .. '"\n'
+    tinsert(textTable, strlower(class) .. '="' .. name .. '"')
 
     local level = UnitLevel("player")
-    result = result .. "level=" .. level .. "\n"
+    tinsert(textTable, "level=" .. level)
 
-    local _, race = UnitRace("player")
-    race = races[race] or race
-    result = result .. "race=" .. strlower(race) .. "\n"
+    local race = GetRace()
+    tinsert(textTable, "race=" .. race)
     if race == "zandalari_troll" then
         local zandalariLoa = GetZandalariLoa()
-        result = result .. "zandalari_loa=" .. zandalariLoa .. "\n"
+        tinsert(textTable, "zandalari_loa=" .. zandalariLoa)
     end
 
     local specIndex = GetSpecialization()
     local specID = GetSpecializationInfo(specIndex)
     local spec = specs[specID]
-    result = result .. "spec=" .. spec .. "\n"
+    tinsert(textTable, "spec=" .. spec)
 
     local talents = GetTalents()
-    result = result .. "talents=" .. talents .. "\n\n"
+    tinsert(textTable, "talents=" .. talents .. "\n")
 
     local equippedItems = GetEquippedItems()
-    result = result .. equippedItems .. "\n"
+    tinsert(textTable, equippedItems)
 
     local bagItems = GetBagItems()
-    result = result .. bagItems
+    tinsert(textTable, bagItems)
 
-    return result
+    return table.concat(textTable, "\n")
 end
 
 --- 显示 SimC 文本
@@ -402,3 +417,35 @@ SlashCmdList["SCT"] = function()
     ShowCopyFrame(GetSimCText())
 end
 SLASH_SCT1 = "/sct"
+
+--- 获取聊天框内容
+local function GetChatFrameText(...)
+    -- 获取鼠标所在行内容
+    for i = 1, select("#", ...) do
+        ---@type FontString
+        local line = select(i, ...)
+        local text = line:GetText()
+        if text and MouseIsOver(line) then
+            return text
+        end
+    end
+
+    -- 鼠标位置没内容时，返回聊天框所有内容
+    local content = {}
+    for i = 1, SELECTED_CHAT_FRAME:GetNumMessages() do
+        local message = SELECTED_CHAT_FRAME:GetMessageInfo(i)
+        tinsert(content, message)
+    end
+    return table.concat(content, "\n")
+end
+
+SLASH_COPY1 = "/cp"
+--- 显示聊天框内容
+SlashCmdList["COPY"] = function()
+    ---@type ScrollingMessageFrame
+    local container = SELECTED_CHAT_FRAME.FontStringContainer
+    local text = GetChatFrameText(container:GetRegions())
+    if text then
+        ShowCopyFrame(text)
+    end
+end

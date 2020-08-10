@@ -105,10 +105,12 @@ local subtypes = {
     },
 }
 
+local _, class = UnitClass("player")
+
 --- 获取 16 进制的颜色字符串
 local function GetColorStr(equipLoc, r, g, b)
-    -- 双手武器显示为白色
-    if equipLoc == "INVTYPE_2HWEAPON" then
+    -- 玩家职业是术士时，双手武器显示为白色
+    if equipLoc == "INVTYPE_2HWEAPON" and class == "WARLOCK" then
         return "ffffffff"
     end
     return format("ff%.2x%.2x%.2x", r * 255, g * 255, b * 255)
@@ -144,7 +146,7 @@ local function GetItemInformation(link, levelOnly, arg, slot)
         -- 其他物品
         scanner:SetHyperlink(link)
     end
-    for i = 2, min(7, scanner:NumLines()) do
+    for i = 2, min(9, scanner:NumLines()) do
         while true do
             ---@type FontString
             local textLeftLabel = _G[scanner:GetName() .. "TextLeft" .. i]
@@ -351,6 +353,12 @@ local function ShowQuestRewardItemInfo(mapView)
     for i = 1, numRewards do
         local index = rewardsCount + i;
         local button = QuestInfo_GetRewardButton(rewardsFrame, index)
+        -- 隐藏最高售价标记
+        ---@type Texture
+        local icon = button.highestValueIcon
+        if icon then
+            icon:Hide()
+        end
         if button.objectType == "item" then
             link = mapView and GetQuestLogItemLink("reward", i) or GetQuestItemLink("reward", i)
             -- 首次登录时会获取不到 link

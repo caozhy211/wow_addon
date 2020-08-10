@@ -46,7 +46,7 @@ local function CreatePVPTalentButton(index)
 
     button:SetScript("OnEnter", function(self)
         local spellID = self.spellID
-        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, 10)
         tooltip:SetSpellByID(spellID)
         self.ticker = C_Timer.NewTicker(TOOLTIP_UPDATE_TIME, function()
             tooltip:SetSpellByID(spellID)

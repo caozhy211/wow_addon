@@ -81,7 +81,7 @@ end
 
 ---@type Texture
 local playerPvPIcon = playerPortrait:CreateTexture(nil, "OVERLAY")
-playerPvPIcon:SetPoint("BOTTOMRIGHT", 10, -7)
+playerPvPIcon:SetPoint("BOTTOMRIGHT", 7, -7)
 playerFrame.pvpIcon = playerPvPIcon
 
 --- 更新 PVP 图标
@@ -612,7 +612,19 @@ local function UpdateMaxPower(unitFrame)
     ---@type StatusBar
     local powerBar = unitFrame.powerBar
 
-    powerBar:SetMinMaxValues(0, UnitPowerMax(unit))
+    local maxPower = UnitPowerMax(unit, powerBar.powerType)
+    if unit == "target" then
+        ---@type StatusBar
+        local healthBar = unitFrame.healthBar
+        if maxPower > 0 then
+            powerBar:Show()
+            healthBar:SetHeight(height * 2 / 3)
+        else
+            powerBar:Hide()
+            healthBar:SetHeight(height)
+        end
+    end
+    powerBar:SetMinMaxValues(0, maxPower)
 end
 
 --- 更新能量值
@@ -621,7 +633,7 @@ local function UpdatePower(unitFrame)
     ---@type StatusBar
     local powerBar = unitFrame.powerBar
 
-    powerBar:SetValue(UnitPower(unit))
+    powerBar:SetValue(UnitPower(unit, powerBar.powerType))
 end
 
 --- 更新能量条颜色
@@ -633,15 +645,19 @@ local function UpdatePowerBarColor(unitFrame)
     if not UnitIsConnected(unit) then
         powerBar:SetStatusBarColor(GetTableColor(DISABLED_FONT_COLOR))
     else
-        local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
-        local info = PowerBarColor[powerToken]
-        if info then
-            powerBar:SetStatusBarColor(GetTableColor(info))
-        elseif not altR then
-            info = PowerBarColor[powerType] or PowerBarColor["MANA"]
-            powerBar:SetStatusBarColor(GetTableColor(info))
+        if powerBar.powerType then
+            powerBar:SetStatusBarColor(GetTableColor(PowerBarColor[powerBar.powerType]))
         else
-            powerBar:SetStatusBarColor(altR, altG, altB)
+            local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
+            local info = PowerBarColor[powerToken]
+            if info then
+                powerBar:SetStatusBarColor(GetTableColor(info))
+            elseif not altR then
+                info = PowerBarColor[powerType] or PowerBarColor["MANA"]
+                powerBar:SetStatusBarColor(GetTableColor(info))
+            else
+                powerBar:SetStatusBarColor(altR, altG, altB)
+            end
         end
     end
 end
@@ -657,8 +673,8 @@ local function UpdatePercentPowerLabel(unitFrame)
     ---@type FontString
     local percentPowerLabel = unitFrame.percentPowerLabel
 
-    local power = UnitPower(unit)
-    local maxPower = UnitPowerMax(unit)
+    local power = UnitPower(unit, unitFrame.powerBar.powerType)
+    local maxPower = UnitPowerMax(unit, unitFrame.powerBar.powerType)
     if maxPower > 0 then
         percentPowerLabel:SetFormattedText("%d%%", power / maxPower * 100)
     else
@@ -677,8 +693,8 @@ local function UpdatePowerLabel(unitFrame)
     ---@type FontString
     local powerLabel = unitFrame.powerLabel
 
-    local power = UnitPower(unit)
-    local maxPower = UnitPowerMax(unit)
+    local power = UnitPower(unit, unitFrame.powerBar.powerType)
+    local maxPower = UnitPowerMax(unit, unitFrame.powerBar.powerType)
     if maxPower > 0 then
         powerLabel:SetText(FormatNumber(power) .. "/" .. FormatNumber(maxPower))
     else
@@ -686,72 +702,169 @@ local function UpdatePowerLabel(unitFrame)
     end
 end
 
----@type Frame
-local playerComboPoints = CreateFrame("Frame", nil, playerFrame)
-playerComboPoints:SetSize(playerFrame:GetWidth() - height, 9)
-playerComboPoints:SetPoint("BOTTOMRIGHT")
+---@type StatusBar
+local staggerBar
+local _, playerClass = UnitClass("player")
 
----@param self Frame
-playerComboPoints:SetScript("OnShow", function(self)
-    playerPowerBar:SetHeight((height - self:GetHeight()) / 3)
-    playerHealthBar:SetHeight(height - playerPowerBar:GetHeight() - self:GetHeight())
-end)
+--- 检查玩家是否有额外的能量条
+local function PlayerHasAlternatePower()
+    local spec = GetSpecialization()
 
-playerComboPoints:SetScript("OnHide", function()
-    playerPowerBar:SetHeight(height / 3)
-    playerHealthBar:SetHeight(height * 2 / 3)
-end)
+    local powerType = UnitPowerType("player")
+    if powerType == Enum.PowerType.LunarPower or powerType == Enum.PowerType.Insanity
+            or powerType == Enum.PowerType.Maelstrom then
+        -- 玩家的主要能量是星能、狂乱值或漩涡值时，设置玩家能量条的能量类型为法力
+        playerPowerBar.powerType = Enum.PowerType.Mana
+        playerPowerBar:Show()
+        playerHealthBar:SetHeight(height * 2 / 3)
+        if staggerBar then
+            staggerBar:Hide()
+        end
 
-playerFrame.comboPoints = {}
---- 连击点之间的水平间距
-local spacing = 5
-
---- 更新 ComboPoints
-local function UpdateComboPoints(unitFrame)
-    local unit = unitFrame.unit
-
-    local show
-    if UnitIsUnit(unit, "vehicle") then
-        show = PlayerVehicleHasComboPoints()
+        -- 立即更新一次
+        UpdateMaxPower(playerFrame)
+        UpdatePower(playerFrame)
+        UpdatePowerBarColor(playerFrame)
+        UpdatePowerLabel(playerFrame)
+        UpdatePercentPowerLabel(playerFrame)
+    elseif playerClass == "MONK" and spec == SPEC_MONK_BREWMASTER then
+        -- 玩家专精是酒仙时，隐藏能量条，显示醉仙缓劲条
+        staggerBar:Show()
+        playerPowerBar:Hide()
+        playerHealthBar:SetHeight(height * 2 / 3)
     else
-        local _, class = UnitClass(unit)
-        show = class == "ROGUE" or class == "DRUID"
-    end
-    if show then
-        local maxPoints = UnitPowerMax(unit, Enum.PowerType.ComboPoints)
-        if #(playerFrame.comboPoints) ~= maxPoints then
-            -- 创建 ComboPoints 纹理
-            for i = 1, maxPoints do
-                ---@type Texture
-                local point = playerComboPoints:CreateTexture()
-                point:SetSize((playerComboPoints:GetWidth() - spacing * (maxPoints - 1)) / maxPoints,
-                        playerComboPoints:GetHeight())
-                point:SetPoint("LEFT", (point:GetWidth() + spacing) * (i - 1), 0)
-                point:SetColorTexture(GetTableColor(PowerBarColor["COMBO_POINTS"]))
-                playerFrame.comboPoints[i] = point
-            end
+        -- 没有额外能量条则隐藏
+        playerPowerBar:Hide()
+        playerHealthBar:SetHeight(height)
+        if staggerBar then
+            staggerBar:Hide()
         end
-
-        -- 获取当前 ComboPoints
-        local points
-        if UnitExists("target") then
-            points = GetComboPoints(unit)
-        else
-            points = UnitPower(unit, Enum.PowerType.ComboPoints)
-        end
-
-        -- 显示当前 ComboPoints
-        for i = 1, #(playerFrame.comboPoints) do
-            ---@type Texture
-            local point = playerFrame.comboPoints[i]
-            point:SetAlpha(i > points and 0.15 or 1)
-        end
-        playerComboPoints:Show()
-    else
-        playerComboPoints:Hide()
-        wipe(playerFrame.comboPoints)
     end
 end
+
+local function UpdateBarVisibility(isInitialLogin)
+    ---@type Frame
+    local frame = WLK_ClassResourceFrame
+    if frame:GetAlpha() == 1 then
+        -- 职业资源框架显示时，显示玩家能量条
+        playerPowerBar.powerType = nil
+        playerPowerBar:Show()
+        playerHealthBar:SetHeight(height * 2 / 3)
+        if staggerBar then
+            staggerBar:Hide()
+        end
+    elseif WLK_ClassPowerBar.unit == "player" then
+        -- 初始化登录调用 UnitPowerType 函数返回的是 0，延迟调用获取正确的 powerType。非初始化登录如果延迟调用，德鲁伊变形时返回
+        -- WLK_ClassResourceFrame 的显示状态不一样会导致之前的结果覆盖后面的结果
+        if isInitialLogin then
+            C_Timer.After(0.1, function()
+                PlayerHasAlternatePower()
+            end)
+        else
+            PlayerHasAlternatePower()
+        end
+    else
+        -- 职业能量条当前的单位不是 “player” 则隐藏
+        playerPowerBar:Hide()
+        playerHealthBar:SetHeight(height)
+        if staggerBar then
+            staggerBar:Hide()
+        end
+    end
+end
+
+if playerClass == "MONK" then
+    -- 职业是武僧，则创建醉仙缓劲条
+    staggerBar = CreateFrame("StatusBar", nil, playerFrame)
+    staggerBar:SetSize(playerFrame:GetWidth() - height, height / 3)
+    staggerBar:SetPoint("TOPRIGHT", playerHealthBar, "BOTTOMRIGHT")
+    staggerBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
+    staggerBar.background = staggerBar:CreateTexture(nil, "BACKGROUND")
+    staggerBar.background:SetAllPoints()
+    staggerBar.background:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+    ---@type FontString
+    staggerBar.leftLabel = staggerBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    staggerBar.leftLabel:SetPoint("LEFT")
+    ---@type FontString
+    staggerBar.rightLabel = staggerBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
+    staggerBar.rightLabel:SetPoint("RIGHT")
+
+    local function UpdateMaxStagger()
+        local maxHealth = UnitHealthMax("player")
+        staggerBar:SetMinMaxValues(0, maxHealth)
+        local stagger = UnitStagger("player")
+        staggerBar.leftLabel:SetText(FormatNumber(stagger) .. "/" .. FormatNumber(maxHealth))
+        staggerBar.rightLabel:SetFormattedText("%d%%", stagger / maxHealth * 100)
+    end
+
+    local function UpdateStagger()
+        local stagger = UnitStagger("player")
+        if not stagger then
+            return
+        end
+        staggerBar:SetValue(stagger)
+        UpdateMaxStagger()
+
+        local _, maxStagger = staggerBar:GetMinMaxValues()
+        local percent = stagger / maxStagger
+        local info = PowerBarColor[BREWMASTER_POWER_BAR_NAME]
+        if percent >= STAGGER_RED_TRANSITION then
+            info = info[STAGGER_RED_INDEX]
+        elseif percent >= STAGGER_YELLOW_TRANSITION then
+            info = info[STAGGER_YELLOW_INDEX]
+        else
+            info = info[STAGGER_GREEN_INDEX]
+        end
+        staggerBar:SetStatusBarColor(GetTableColor(info))
+    end
+
+    staggerBar:SetScript("OnUpdate", function(self, elapsed)
+        self.elapsed = (self.elapsed or 0) + elapsed
+        if self.elapsed < 0.01 then
+            return
+        end
+        self.elapsed = 0
+
+        UpdateStagger()
+    end)
+
+    staggerBar:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+    staggerBar:SetScript("OnEvent", function()
+        UpdateBarVisibility()
+    end)
+end
+
+playerPowerBar:RegisterEvent("PLAYER_ENTERING_WORLD")
+if playerClass == "SHAMAN" or playerClass == "PRIEST" then
+    -- 有额外法力条的职业需要注册 PLAYER_SPECIALIZATION_CHANGED 事件，玩家更改专精时，更新能量条显示
+    playerPowerBar:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+elseif playerClass == "DRUID" then
+    playerPowerBar:RegisterUnitEvent("PLAYER_SPECIALIZATION_CHANGED", "player")
+    -- 德鲁伊需要注册 UPDATE_SHAPESHIFT_FORM 事件，更改形态时，更新能量条显示
+    playerPowerBar:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
+end
+
+playerPowerBar:SetScript("OnEvent", function(_, event, ...)
+    local isInitialLogin
+    if event == "PLAYER_ENTERING_WORLD" then
+        isInitialLogin = ...
+    end
+    -- 更新能量条显示
+    UpdateBarVisibility(isInitialLogin)
+end)
+
+hooksecurefunc(WLK_ClassResourceFrame, "SetAlpha", function()
+    -- 资源框架更新显示时，更新能量条显示
+    UpdateBarVisibility()
+end)
+
+hooksecurefunc(WLK_ClassPowerBar, "Show", function()
+    UpdateBarVisibility()
+end)
+
+hooksecurefunc(WLK_ClassPowerBar, "Hide", function()
+    UpdateBarVisibility()
+end)
 
 --- 更新光环按钮
 local function UpdateAuraButton(auraFrame, index, name, icon, count, duration, expirationTime, source, spellID)
@@ -911,7 +1024,7 @@ local function CreateAuraButton(auraFrame)
         local index = self.index
         local slot = self.slot
 
-        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, -30)
+        tooltip:SetOwner(self, "ANCHOR_CURSOR_RIGHT", 30, 10)
         if index then
             tooltip:SetUnitAura(unit, index, filter)
         elseif slot then
@@ -965,7 +1078,7 @@ end
 local maxNum = 8
 local numPerLine = 8
 local rows = ceil(maxNum / numPerLine)
-spacing = 4
+local spacing = 4
 
 ---@type Frame
 local playerDebuffFrame = CreateFrame("Frame", nil, playerFrame)
@@ -1043,7 +1156,7 @@ local playerFrameUnitEvents = {
     "UNIT_AURA",
 }
 
-playerFrame:RegisterEvent("PLAYER_LOGIN")
+playerFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 
@@ -1092,15 +1205,13 @@ local function UpdatePlayerFrame()
     UpdatePowerBarColor(playerFrame)
     UpdatePercentPowerLabel(playerFrame)
     UpdatePowerLabel(playerFrame)
-    UpdateComboPoints(playerFrame)
     UpdateAuras(playerFrame)
 end
 
 ---@param self Button
 playerFrame:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_LOGIN" then
+    if event == "PLAYER_ENTERING_WORLD" then
         UpdatePlayerFrame()
-        self:UnregisterEvent(event)
     elseif event == "UNIT_ENTERED_VEHICLE" and UnitHasVehicleUI("player") and UnitHasVehiclePlayerFrameUI("player") then
         -- 进入载具且有载具界面时，更新 playerFrame.unit 为 "vehicle"
         self.unit = "vehicle"
@@ -1154,7 +1265,6 @@ playerFrame:SetScript("OnEvent", function(self, event)
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
         UpdatePowerLabel(self)
-        UpdateComboPoints(self)
     elseif event == "UNIT_POWER_UPDATE" then
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
@@ -1197,6 +1307,59 @@ petFrame:SetScript("OnLeave", function(self)
     UnitFrame_OnLeave(self)
 end)
 
+local inRangeSpells = {
+    WARRIOR = {
+        attack = { 355, 355, 355, },
+        assist = {},
+    },
+    PALADIN = {
+        attack = { 20271, 20271, 20271, },
+        assist = { 19750, 19750, 19750, },
+    },
+    HUNTER = {
+        attack = { 193455, 185358, 259491, },
+        assist = {},
+        pet = 136,
+    },
+    ROGUE = {
+        attack = { 185565, 185763, 114014, },
+        assist = {},
+    },
+    PRIEST = {
+        attack = { 585, 585, 589, },
+        assist = { 17, 2061, 17, },
+    },
+    SHAMAN = {
+        attack = { 187837, 187837, 187837, },
+        assist = { 188070, 188070, 188070, },
+    },
+    MAGE = {
+        attack = { 44425, 133, 116, },
+        assist = { 130, 130, 130, },
+    },
+    WARLOCK = {
+        attack = { 232670, 232670, 232670, },
+        assist = { 20707, 20707, 20707, },
+        pet = 755,
+    },
+    MONK = {
+        attack = { 115546, 115546, 115546, },
+        assist = { 116670, 116670, 116670, },
+    },
+    DRUID = {
+        attack = { 190984, 8921, 8921, 8921, },
+        assist = { 8936, 8936, 8936, 8936, },
+    },
+    DEMONHUNTER = {
+        attack = { 185123, 185123, },
+        assist = {},
+    },
+    DEATHKNIGHT = {
+        attack = { 49576, 49576, 49576, },
+        assist = { 61999, 61999, 61999, },
+    },
+}
+
 ---@param self Button
 petFrame:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
@@ -1205,12 +1368,12 @@ petFrame:SetScript("OnUpdate", function(self, elapsed)
     end
     self.elapsed = 0
 
-    local spell = GetSpellInfo(755)
-    if spell and IsUsableSpell(spell) then
-        -- 755：生命通道，45 码
-        self:SetAlpha(IsSpellInRange(GetSpellInfo(755), self.unit) == 1 and 1 or 0.55)
+    local spellID = inRangeSpells[playerClass].pet
+    local spellName = spellID and GetSpellInfo(spellID)
+
+    if spellName and IsUsableSpell(spellName) then
+        self:SetAlpha(IsSpellInRange(spellName, self.unit) == 1 and 1 or 0.55)
     else
-        -- 根据是否在跟随范围内判断，28 码
         self:SetAlpha(CheckInteractDistance(self.unit, 4) and 1 or 0.55)
     end
 end)
@@ -1288,6 +1451,7 @@ local petFrameUnitEvents = {
     "UNIT_MAXPOWER",
 
     "UNIT_POWER_UPDATE",
+    "UNIT_POWER_FREQUENT",
 
     "UNIT_DISPLAYPOWER",
     "UNIT_POWER_BAR_SHOW",
@@ -1355,7 +1519,7 @@ petFrame:SetScript("OnEvent", function(self, event)
         UpdateMaxPower(self)
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
-    elseif event == "UNIT_POWER_UPDATE" then
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
@@ -1398,17 +1562,13 @@ local function UpdateInRange(unitFrame, elapsed)
 
     local unit = unitFrame.unit
 
-    local spell
-    if UnitCanAssist("player", unit) then
-        -- 20707：灵魂石，40 码
-        spell = GetSpellInfo(20707)
-    elseif UnitCanAttack("player", unit) then
-        -- 232670：所有专精术士的暗影箭，40 码
-        spell = GetSpellInfo(232670)
-    end
+    local spec = GetSpecialization()
+    local spellID = UnitCanAssist("player", unit) and inRangeSpells[playerClass].assist[spec]
+            or UnitCanAttack("player", unit) and inRangeSpells[playerClass].attack[spec]
+    local spellName = spellID and GetSpellInfo(spellID)
 
-    if spell and IsUsableSpell(spell) then
-        unitFrame:SetAlpha(IsSpellInRange(spell, unit) == 1 and 1 or 0.55)
+    if spellName and IsUsableSpell(spellName) then
+        unitFrame:SetAlpha(IsSpellInRange(spellName, unit) == 1 and 1 or 0.55)
     else
         -- 不可施放法术的单位，根据是否在跟随范围内判断，28 码
         unitFrame:SetAlpha(CheckInteractDistance(unit, 4) and 1 or 0.55)
@@ -1432,7 +1592,7 @@ targetFrame.raidTargetIcon = targetRaidTargetIcon
 
 ---@type Texture
 local targetPvPIcon = targetPortrait:CreateTexture(nil, "OVERLAY")
-targetPvPIcon:SetPoint("BOTTOMLEFT", -7, -7)
+targetPvPIcon:SetPoint("BOTTOMLEFT", -4, -7)
 targetFrame.pvpIcon = targetPvPIcon
 
 ---@type Texture
@@ -1627,7 +1787,7 @@ for i = 1, maxNum do
     tinsert(targetBuffFrame.buttons, button)
 end
 
-targetFrame:RegisterEvent("PLAYER_LOGIN")
+targetFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "target")
 
@@ -1664,6 +1824,7 @@ targetFrame:RegisterUnitEvent("UNIT_LEVEL", "target")
 targetFrame:RegisterUnitEvent("UNIT_MAXPOWER", "target")
 
 targetFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "target")
+targetFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "target")
 
 targetFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "target")
 targetFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "target")
@@ -1701,10 +1862,8 @@ end
 
 ---@param self Button
 targetFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" then
-        UpdateTargetFrame()
-        self:UnregisterEvent(event)
-    elseif event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
+    if event == event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED"
+            or event == "UNIT_TARGETABLE_CHANGED" then
         UpdateTargetFrame()
     elseif event == "UNIT_PORTRAIT_UPDATE" or event == "UNIT_MODEL_CHANGED" or event == "PORTRAITS_UPDATED" then
         UpdatePortrait(self)
@@ -1760,7 +1919,7 @@ targetFrame:SetScript("OnEvent", function(self, event, ...)
             UpdatePercentPowerLabel(self)
             UpdatePowerLabel(self)
         end
-    elseif event == "UNIT_POWER_UPDATE" then
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
             UpdateAltPowerBar(self)
@@ -1874,7 +2033,7 @@ local targetTargetNameLabel = targetTargetPowerBar:CreateFontString(nil, "ARTWOR
 targetTargetNameLabel:SetPoint("RIGHT")
 targetTargetFrame.nameLabel = targetTargetNameLabel
 
-targetTargetFrame:RegisterEvent("PLAYER_LOGIN")
+targetTargetFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 targetTargetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetTargetFrame:RegisterUnitEvent("UNIT_TARGET", "target")
 
@@ -1897,6 +2056,7 @@ targetTargetFrame:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "targetTa
 targetTargetFrame:RegisterUnitEvent("UNIT_MAXPOWER", "targetTarget")
 
 targetTargetFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "targetTarget")
+targetTargetFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "targetTarget")
 
 targetTargetFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "targetTarget")
 targetTargetFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "targetTarget")
@@ -1921,10 +2081,7 @@ end
 
 ---@param self Button
 targetTargetFrame:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_LOGIN" then
-        UpdateTargetTargetFrame()
-        self:UnregisterEvent(event)
-    elseif event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGET" then
+    if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGET" then
         UpdateTargetTargetFrame()
     elseif event == "RAID_TARGET_UPDATE" then
         UpdateRaidTargetIcon(self)
@@ -1956,7 +2113,7 @@ targetTargetFrame:SetScript("OnEvent", function(self, event)
         UpdateMaxPower(self)
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
-    elseif event == "UNIT_POWER_UPDATE" then
+    elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
         UpdatePower(self)
         UpdatePercentPowerLabel(self)
     elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
@@ -2172,7 +2329,7 @@ for i = 1, maxNum do
     tinsert(focusBuffFrame.buttons, button)
 end
 
-focusFrame:RegisterEvent("PLAYER_LOGIN")
+focusFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "focus")
 
@@ -2197,6 +2354,7 @@ focusFrame:RegisterUnitEvent("UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "focus")
 focusFrame:RegisterUnitEvent("UNIT_MAXPOWER", "focus")
 
 focusFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "focus")
+focusFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "focus")
 
 focusFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "focus")
 focusFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "focus")
@@ -2226,10 +2384,7 @@ end
 
 ---@param self Button
 focusFrame:SetScript("OnEvent", function(self, event, ...)
-    if event == "PLAYER_LOGIN" then
-        UpdateFocusFrame()
-        self:UnregisterEvent(event)
-    elseif event == "PLAYER_FOCUS_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
+    if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_FOCUS_CHANGED" or event == "UNIT_TARGETABLE_CHANGED" then
         UpdateFocusFrame()
     elseif event == "PLAYER_TARGET_CHANGED" then
         UpdateHighlight(self)
@@ -2259,7 +2414,7 @@ focusFrame:SetScript("OnEvent", function(self, event, ...)
     elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
         UpdateHealPrediction(self)
         UpdateAbsorbLabel(self)
-    elseif event == "UNIT_MAXPOWER" then
+    elseif event == "UNIT_MAXPOWER" or event == "UNIT_POWER_FREQUENT" then
         local _, powerType = ...
         if powerType == "ALTERNATE" then
             UpdateAltPowerBar(self)
@@ -2446,7 +2601,7 @@ local function CreateBossFrame(i)
         tinsert(bossDebuffFrame.buttons, button)
     end
 
-    bossFrame:RegisterEvent("PLAYER_LOGIN")
+    bossFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     bossFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "boss" .. i)
 
@@ -2471,6 +2626,7 @@ local function CreateBossFrame(i)
     bossFrame:RegisterUnitEvent("UNIT_MAXPOWER", "boss" .. i)
 
     bossFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "boss" .. i)
+    bossFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "boss" .. i)
 
     bossFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "boss" .. i)
     bossFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "boss" .. i)
@@ -2480,10 +2636,8 @@ local function CreateBossFrame(i)
 
     ---@param self Button
     bossFrame:SetScript("OnEvent", function(self, event, ...)
-        if event == "PLAYER_LOGIN" then
-            UpdateBossFrame(self)
-            self:UnregisterEvent(event)
-        elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" or event == "UNIT_TARGETABLE_CHANGED" then
+        if event == "PLAYER_ENTERING_WORLD" or event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT"
+                or event == "UNIT_TARGETABLE_CHANGED" then
             UpdateBossFrame(self)
         elseif event == "PLAYER_TARGET_CHANGED" then
             UpdateHighlight(self)
@@ -2513,7 +2667,7 @@ local function CreateBossFrame(i)
         elseif event == "UNIT_ABSORB_AMOUNT_CHANGED" then
             UpdateHealPrediction(self)
             UpdateAbsorbLabel(self)
-        elseif event == "UNIT_MAXPOWER" then
+        elseif event == "UNIT_MAXPOWER" or event == "UNIT_POWER_FREQUENT" then
             local _, powerType = ...
             if powerType == "ALTERNATE" then
                 UpdateAltPowerBar(self)
@@ -2765,7 +2919,7 @@ local function CreateArenaFrame(i)
     arenaFrame.CC.cooldown = arenaCCCooldown
     ResetCrowdControl(arenaFrame)
 
-    arenaFrame:RegisterEvent("PLAYER_LOGIN")
+    arenaFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     arenaFrame:RegisterEvent("ARENA_OPPONENT_UPDATE")
     arenaFrame:RegisterUnitEvent("UNIT_NAME_UPDATE", "arena" .. i)
 
@@ -2788,6 +2942,7 @@ local function CreateArenaFrame(i)
     arenaFrame:RegisterUnitEvent("UNIT_MAXPOWER", "arena" .. i)
 
     arenaFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", "arena" .. i)
+    arenaFrame:RegisterUnitEvent("UNIT_POWER_FREQUENT", "arena" .. i)
 
     arenaFrame:RegisterUnitEvent("UNIT_DISPLAYPOWER", "arena" .. i)
     arenaFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW", "arena" .. i)
@@ -2800,10 +2955,9 @@ local function CreateArenaFrame(i)
 
     ---@param self Button
     arenaFrame:SetScript("OnEvent", function(self, event, ...)
-        if event == "PLAYER_LOGIN" then
+        if event == "PLAYER_ENTERING_WORLD" then
             UpdateArenaFrame(self)
             ResetCrowdControl(self)
-            self:UnregisterEvent(event)
         elseif event == "ARENA_OPPONENT_UPDATE" or event == "UNIT_NAME_UPDATE" then
             UpdateArenaFrame(self)
         elseif event == "PLAYER_TARGET_CHANGED" then
@@ -2835,7 +2989,7 @@ local function CreateArenaFrame(i)
             UpdateMaxPower(self)
             UpdatePower(self)
             UpdatePercentPowerLabel(self)
-        elseif event == "UNIT_POWER_UPDATE" then
+        elseif event == "UNIT_POWER_UPDATE" or event == "UNIT_POWER_FREQUENT" then
             UpdatePower(self)
             UpdatePercentPowerLabel(self)
         elseif event == "UNIT_DISPLAYPOWER" then

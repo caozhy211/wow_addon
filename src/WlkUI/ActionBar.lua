@@ -78,32 +78,30 @@ playerPowerBarAlt:SetUserPlaced(true)
 local eventListener = CreateFrame("Frame")
 
 eventListener:RegisterEvent("PLAYER_LOGIN")
-eventListener:RegisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
 
 ---@param self Frame
 eventListener:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_LOGIN" then
-        local alwaysShowActionBars = GetCVar("alwaysShowActionBars")
-        if alwaysShowActionBars == "1" then
-            -- 显示主动作按钮
-            for i = 1, NUM_ACTIONBAR_BUTTONS do
-                ---@type Button
-                local button = _G["ActionButton" .. i]
-                button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-                ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-            end
-            -- 显示右下方动作条前 6 个按钮
-            for i = 1, 6 do
-                _G["MultiBarBottomRightButton" .. i].noGrid = nil
-            end
+    if GetCVar("alwaysShowActionBars") == "1" then
+        -- 显示主动作条按钮格子
+        for i = 1, NUM_ACTIONBAR_BUTTONS do
+            ---@type Button
+            local button = _G["ActionButton" .. i]
+            button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+            ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
         end
-
-        -- 设置 PlayerPowerBarAlt 位置
-        playerPowerBarAlt:ClearAllPoints()
-        -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
-        playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
-        self:UnregisterEvent(event)
+        -- 显示右下方动作条前 6 个按钮格子
+        for i = 1, 6 do
+            _G["MultiBarBottomRightButton" .. i].noGrid = nil
+        end
     end
+
+    -- 设置 PlayerPowerBarAlt 位置
+    playerPowerBarAlt:ClearAllPoints()
+    -- 左边界相对屏幕左边偏移 1080px，右边界相对屏幕左边偏移 1350px，下边界相对屏幕底部偏移 314 + 1 = 315px
+    playerPowerBarAlt:SetPoint("BOTTOM", 1080 - GetScreenWidth() / 2 + (1350 - 1080) / 2, 315)
+    playerPowerBarAlt:SetMovable(false)
+
+    self:UnregisterEvent(event)
 end)
 
 --- CollectionsJournal 右边相对屏幕左边偏移 719px，右边界相对屏幕左边偏移 1080px，ExtraActionBarFrame（包括纹理）的宽度是 256px
