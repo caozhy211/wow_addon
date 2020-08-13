@@ -2,36 +2,4 @@
 ## Title: |cff8686ecWlkUI
 ## Notes: 自定义界面插件
 ## Author: czy211
-## Version: 3.0.0
-## RequiredDeps: Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
-## SavedVariables: WLK_UnitAuraFilter, WLK_AdFilter
-## SavedVariablesPerCharacter: WLK_DamageDB
-
-ActionBar.lua
-AdFilter.lua
-CastingBar.lua
-CharacterStats.lua
-ChatCommands.lua
-ChatFrame.lua
-Cooldown.lua
-Coordinate.lua
-CopyText.lua
-DamageMeter.lua
-FastFocus.lua
-Grid.lua
-Hidden.lua
-ItemInfo.lua
-Marker.lua
-Merchant.lua
-Minimap.lua
-MirrorTimer.lua
-NamePlates.lua
-Notification.lua
-ObjectiveItem.lua
-Performance.lua
-Position.lua
-PowerResource.lua
-PVPTalent.lua
-Settings.lua
-Tooltip.lua
-UnitFrame.lua
+## Version: 4.0.0
