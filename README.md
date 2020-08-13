@@ -18,6 +18,8 @@
   ![](https://github.com/czy211/picture-library/blob/master/resources/wlk-ui/efn.jpg)
   - 使用命令 “/esa” 导出系统 API。
   ![](https://github.com/czy211/picture-library/blob/master/resources/wlk-ui/esa.jpg)
+  - 使用命令 “/ec” 导出鼠标指针所在位置的聊天框内容或聊天框全部内容。
+  ![](https://github.com/czy211/picture-library/blob/master/resources/wlk-ui/ec.jpg)
 
 ## 其它说明
 插件基于个人兴趣和使用制作，所以界面布局和部分功能并不适用于所有人。
