@@ -59,3 +59,57 @@ SlashCmdList["EXPORT_FRAME_NAME"] = function()
         ShowExportFrame(object:GetDebugName())
     end
 end
+
+SLASH_EXPORT_SYSTEM_API1 = "/esa"
+
+local apiText
+local namespaces = {}
+local events = {}
+local EVENT_FUNCTION_FORMAT = strconcat("---@alias EventType string %s\n\n",
+        "---@param event EventType\nfunction Frame:RegisterEvent(event) end\n\n",
+        "---@param event EventType\nfunction Frame:RegisterUnitEvent(event, ...) end\n\n",
+        "---@param event EventType\nfunction Frame:UnregisterEvent(event) end\n\n",
+        "---@param event EventType\nfunction Frame:IsEventRegistered(event) end")
+local enums = {}
+local numericConstants = {}
+local _, build = GetBuildInfo()
+
+SlashCmdList["EXPORT_SYSTEM_API"] = function()
+    APIDocumentation_LoadUI()
+    if apiText == nil then
+        for _, apiInfo in ipairs(APIDocumentation.systems) do
+            if apiInfo.Namespace then
+                tinsert(namespaces, format("%s = {}", apiInfo.Namespace))
+            end
+
+            for _, eventInfo in ipairs(apiInfo.Events) do
+                tinsert(events, format("'\"%s\"'", eventInfo.LiteralName))
+            end
+
+            for _, tableInfo in ipairs(apiInfo.Tables) do
+                if tableInfo.Type == "Enumeration" then
+                    tinsert(enums, format("    %s = {}", tableInfo.Name))
+                    for _, fieldInfo in ipairs(tableInfo.Fields) do
+                        tinsert(enums, format("        %s = %s,", fieldInfo.Name, fieldInfo.EnumValue))
+                    end
+                    tinsert(enums, "    },")
+                end
+            end
+        end
+
+        tinsert(enums, 1, "Enum = {")
+        tinsert(enums, "}")
+
+        for name, value in pairs(_G) do
+            if (strmatch(name, "^LE_") or strmatch(name, "_LE_")) and not strmatch(name, "GAME_ERR") then
+                tinsert(numericConstants, format("%s = %s", name, value))
+            end
+        end
+
+        apiText = format("---version %s\n\n%s\n\n%s\n\n%s\n\n%s", build, table.concat(namespaces, "\n"),
+                format(EVENT_FUNCTION_FORMAT, table.concat(events, "|")), table.concat(enums, "\n"),
+                table.concat(numericConstants, "\n"))
+    end
+    ShowExportFrame(apiText)
+end
+
