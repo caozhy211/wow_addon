@@ -49,12 +49,10 @@ end
 
 SLASH_EXPORT_FRAME_NAME1 = "/efn"
 
----@type UIObject
-local object
-
 SlashCmdList["EXPORT_FRAME_NAME"] = function()
     UIParentLoadAddOn("Blizzard_DebugTools")
-    object = FrameStackTooltip.highlightFrame
+    ---@type UIObject
+    local object = FrameStackTooltip.highlightFrame
     if object then
         ShowExportFrame(object:GetDebugName())
     end
@@ -115,17 +113,15 @@ end
 
 SLASH_EXPORT_CHAT1 = "/ec"
 
----@type ScrollingMessageFrame|ScrollingMessageFrameMixin
-local chatFrame
-local message
 local allMessages = {}
 
 SlashCmdList["EXPORT_CHAT"] = function()
-    chatFrame = SELECTED_CHAT_FRAME
+    ---@type ScrollingMessageFrame|ScrollingMessageFrameMixin
+    local chatFrame = SELECTED_CHAT_FRAME
 
     ---@param line FontString
     for _, line in ipairs({ chatFrame.FontStringContainer:GetRegions() }) do
-        message = line:GetText()
+        local message = line:GetText()
         if message and MouseIsOver(line) and line:IsVisible() then
             return ShowExportFrame(message)
         end

@@ -8,7 +8,6 @@ local HEIGHT = GetScreenHeight()
 
 local thickness = 2
 local alpha = 0.6
-local numHorizSegment, numVertSegment, width, height, line
 ---@type Texture[]
 local horizLines = {}
 ---@type Texture[]
@@ -20,14 +19,14 @@ SlashCmdList["TOGGLE_GRID"] = function(arg)
     if gridFrame:IsShown() then
         gridFrame:Hide()
     else
-        numHorizSegment, numVertSegment = strsplit(" ", arg)
+        local numHorizSegment, numVertSegment = strsplit(" ", arg)
         numHorizSegment = tonumber(numHorizSegment) or 64
         numVertSegment = tonumber(numVertSegment) or 36
-        width = WIDTH / numHorizSegment
-        height = HEIGHT / numVertSegment
+        local width = WIDTH / numHorizSegment
+        local height = HEIGHT / numVertSegment
 
         for i = 1, numVertSegment + 1 do
-            line = horizLines[i]
+            local line = horizLines[i]
             if line then
                 line:Show()
             else
@@ -44,7 +43,7 @@ SlashCmdList["TOGGLE_GRID"] = function(arg)
         end
 
         for i = 1, numHorizSegment + 1 do
-            line = vertLines[i]
+            local line = vertLines[i]
             if line then
                 line:Show()
             else
