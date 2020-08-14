@@ -4,4 +4,6 @@
 ## Author: czy211
 ## Version: 4.0.0
 
+ChatFrame.lua
 ExportFrame.lua
+GridFrame.lua
