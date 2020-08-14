@@ -65,7 +65,7 @@ SLASH_EXPORT_SYSTEM_API1 = "/esa"
 local apiText
 local namespaces = {}
 local events = {}
-local EVENT_FUNCTION_FORMAT = strconcat("---@alias EventType string %s\n\n",
+local EVENT_FUNCTION_FORMAT = strconcat("---@alias EventType string |%s\n\n",
         "---@param event EventType\nfunction Frame:RegisterEvent(event) end\n\n",
         "---@param event EventType\nfunction Frame:RegisterUnitEvent(event, ...) end\n\n",
         "---@param event EventType\nfunction Frame:UnregisterEvent(event) end\n\n",
@@ -88,7 +88,7 @@ SlashCmdList["EXPORT_SYSTEM_API"] = function()
 
             for _, tableInfo in ipairs(apiInfo.Tables) do
                 if tableInfo.Type == "Enumeration" then
-                    tinsert(enums, format("    %s = {}", tableInfo.Name))
+                    tinsert(enums, format("    %s = {", tableInfo.Name))
                     for _, fieldInfo in ipairs(tableInfo.Fields) do
                         tinsert(enums, format("        %s = %s,", fieldInfo.Name, fieldInfo.EnumValue))
                     end
@@ -106,7 +106,7 @@ SlashCmdList["EXPORT_SYSTEM_API"] = function()
             end
         end
 
-        apiText = format("---version %s\n\n%s\n\n%s\n\n%s\n\n%s", build, table.concat(namespaces, "\n"),
+        apiText = format("--- version: %s\n\n%s\n\n%s\n\n%s\n\n%s", build, table.concat(namespaces, "\n"),
                 format(EVENT_FUNCTION_FORMAT, table.concat(events, "|")), table.concat(enums, "\n"),
                 table.concat(numericConstants, "\n"))
     end
