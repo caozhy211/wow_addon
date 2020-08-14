@@ -83,3 +83,38 @@ for channelName, channelAbbreviation in pairs(CHANNEL_ABBREVIATIONS) do
         end
     end
 end
+
+---@param editBox EditBox
+hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
+    local type = editBox:GetAttribute("chatType")
+    if not type then
+        return
+    end
+    ---@type FontString
+    local header = _G[editBox:GetName() .. "Header"]
+    ---@type FontString
+    local headerSuffix = _G[editBox:GetName() .. "HeaderSuffix"]
+    if not header then
+        return
+    end
+    if type == "CHANNEL" then
+        local channelName = header:GetText()
+        for name, abbreviation in pairs(CHANNEL_ABBREVIATIONS) do
+            if strmatch(channelName, name) then
+                header:SetFormattedText(CHAT_CHANNEL_SEND, GetChannelName(ChatEdit_GetChannelTarget(editBox)),
+                        abbreviation)
+                local headerWidth = (header:GetRight() or 0) - (header:GetLeft() or 0)
+                local editBoxWidth = (editBox:GetRight() or 0) - (editBox:GetLeft() or 0)
+                if headerWidth > editBoxWidth / 2 then
+                    header:SetWidth(editBoxWidth / 2)
+                    headerSuffix:Show()
+                else
+                    headerSuffix:Hide()
+                end
+                editBox:SetTextInsets(15 + header:GetWidth() + (headerSuffix:IsShown() and headerSuffix:GetWidth()
+                        or 0), 13, 0, 0)
+                break
+            end
+        end
+    end
+end)
