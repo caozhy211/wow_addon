@@ -118,3 +118,35 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
         end
     end
 end)
+
+--- ChatFrame1ButtonFrameBackground 和 ChatFrame1 的水平间距
+local SPACING2 = 3
+--- ChatFrame1ButtonFrameBackground 的宽度
+local WIDTH1 = 33
+--- QuickJoinToastButton 和 ChatFrame1 的垂直间距
+local SPACING3 = 27
+--- QuickJoinToastButton 的高度
+local HEIGHT1 = 32
+--- CompactRaidFrameManagerContainerResizeFrame 和 UIParent 的底部边距
+local PADDING2 = 330
+--- ChatFrame1 和 ChatFrame1Background 的底部差距
+local MARGIN1 = 6
+--- ChatFrame1 和 ChatFrame1Background 的右边差距
+local MARGIN2 = 24
+
+--- ChatFrame1Background 右下角的横坐标
+local x = 540
+--- ChatFrame1Background 右下角的纵坐标
+local y = 116
+
+---@type Frame
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:SetScript("OnEvent", function()
+    ChatFrame1:ClearAllPoints()
+    ChatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", SPACING2 + WIDTH1, PADDING2 - HEIGHT1 - SPACING3)
+    ChatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", x - MARGIN2, y + MARGIN1)
+    ChatFrame1.SetPoint = nop
+    FCF_SetLocked(ChatFrame1, true)
+end)
+
