@@ -20,7 +20,7 @@
   ![](https://github.com/czy211/picture-library/blob/master/resources/wlk-ui/ExportFrame.jpg)
 - GridFrame.lua
   - 使用命令 “/tg” 显示或隐藏界面网格。参数可设置水平方向和垂直方向的网格个数，使用一个空格隔开（例如：/tg 80 40），默认值是 64 和 36。
-  ![](https://github.com/czy211/picture-library/blob/master/resources/wlk-ui/GridFrame.jpg)
+  ![](https://github.com/czy211/picture-library/blob/master/resources/wlk-ui/ExportFrame.jpg)
 - ChatFrame.lua
   - 调整聊天输入框外观和位置，移动光标不需要按住 “Alt” 键。
   - 简写聊天框和输入框的频道名称。
