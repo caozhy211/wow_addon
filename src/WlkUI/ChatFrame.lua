@@ -144,7 +144,5 @@ eventFrame:SetScript("OnEvent", function()
     ChatFrame1:ClearAllPoints()
     ChatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", SPACING2 + WIDTH1, PADDING2 - HEIGHT1 - SPACING3)
     ChatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", x - MARGIN2, y + MARGIN1)
-    ChatFrame1.SetPoint = nop
     FCF_SetLocked(ChatFrame1, true)
 end)
-
