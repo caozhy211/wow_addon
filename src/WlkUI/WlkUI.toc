@@ -3,7 +3,9 @@
 ## Notes: 自定义界面插件
 ## Author: czy211
 ## Version: 4.0.0
+## SavedVariables: WlkChatFilter
 
+ChatFilter.lua
 ChatFrame.lua
 ChatMenuFrame.lua
 ExportFrame.lua
