@@ -47,10 +47,9 @@ SlashCmdList["CHAT_FILTER"] = function(arg)
     local info = ChatTypeInfo["SYSTEM"]
     if option == "list" then
         ChatFrame1:AddMessage(KEYWORD_LIST, info.r, info.g, info.b, info.id)
-        info = ChatTypeInfo["SAY"]
         for i, keyword in ipairs(filter) do
             local text = format("%d: %s", i, keyword)
-            ChatFrame1:AddMessage(text, info.r, info.g, info.b, info.id)
+            ChatFrame1:AddMessage(text)
         end
     elseif option == "delete" then
         local index = tonumber(value)
