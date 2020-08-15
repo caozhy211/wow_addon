@@ -21,31 +21,31 @@ local function UpdateChatFrameEditBoxOptions(editBox)
     editBox:SetAltArrowKeyMode(false)
 end
 
----@param addChatFrame ScrollingMessageFrame
-local function UpdateChatFrameEditBox(initialUpdate, addChatFrame)
+---@param chatFrame ScrollingMessageFrame
+local function UpdateChatFrameEditBox(initialUpdate, chatFrame)
     for i = 1, NUM_CHAT_WINDOWS do
         ---@type ScrollingMessageFrame
-        local chatFrame = _G["ChatFrame" .. i]
+        local chatWindow = _G["ChatFrame" .. i]
 
         local rightmostTab = _G[dockedChatFrames[#dockedChatFrames]:GetName() .. "Tab"]
-        chatFrame.editBox:ClearAllPoints()
-        chatFrame.editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y)
-        chatFrame.editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y - SPACING1)
+        chatWindow.editBox:ClearAllPoints()
+        chatWindow.editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y)
+        chatWindow.editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y - SPACING1)
 
         if initialUpdate then
-            UpdateChatFrameEditBoxOptions(chatFrame.editBox)
+            UpdateChatFrameEditBoxOptions(chatWindow.editBox)
         end
     end
 
-    if addChatFrame then
-        UpdateChatFrameEditBoxOptions(addChatFrame.editBox)
+    if chatFrame then
+        UpdateChatFrameEditBoxOptions(chatFrame.editBox)
     end
 end
 
 UpdateChatFrameEditBox(true)
 
-hooksecurefunc("FCFDock_AddChatFrame", function(_, addChatFrame)
-    UpdateChatFrameEditBox(false, addChatFrame)
+hooksecurefunc("FCFDock_AddChatFrame", function(_, chatFrame)
+    UpdateChatFrameEditBox(false, chatFrame)
 end)
 
 hooksecurefunc("FCFDock_RemoveChatFrame", function()
@@ -84,16 +84,14 @@ for channelName, channelAbbreviation in pairs(CHANNEL_ABBREVIATIONS) do
     end
 end
 
----@param editBox EditBox
+---@param editBox EditBox|ChatFrameEditBoxTemplate
 hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     local type = editBox:GetAttribute("chatType")
     if not type then
         return
     end
-    ---@type FontString
-    local header = _G[editBox:GetName() .. "Header"]
-    ---@type FontString
-    local headerSuffix = _G[editBox:GetName() .. "HeaderSuffix"]
+    local header = editBox.header
+    local headerSuffix = editBox.headerSuffix
     if not header then
         return
     end

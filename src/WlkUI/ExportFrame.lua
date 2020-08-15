@@ -116,20 +116,18 @@ SLASH_EXPORT_CHAT1 = "/ec"
 local allMessages = {}
 
 SlashCmdList["EXPORT_CHAT"] = function()
-    ---@type ScrollingMessageFrame|ScrollingMessageFrameMixin
-    local chatFrame = SELECTED_CHAT_FRAME
-
+    local message
     ---@param line FontString
-    for _, line in ipairs({ chatFrame.FontStringContainer:GetRegions() }) do
-        local message = line:GetText()
+    for _, line in ipairs({ SELECTED_CHAT_FRAME.FontStringContainer:GetRegions() }) do
+        message = line:GetText()
         if message and MouseIsOver(line) and line:IsVisible() then
             return ShowExportFrame(message)
         end
     end
 
     wipe(allMessages)
-    for i = 1, chatFrame:GetNumMessages() do
-        message = chatFrame:GetMessageInfo(i)
+    for i = 1, SELECTED_CHAT_FRAME:GetNumMessages() do
+        message = SELECTED_CHAT_FRAME:GetMessageInfo(i)
         tinsert(allMessages, message)
     end
     ShowExportFrame(table.concat(allMessages, "\n"))
