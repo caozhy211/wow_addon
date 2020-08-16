@@ -507,3 +507,21 @@ else
         SetCVar("uiScale", defaultUiScale)
     end
 end
+
+hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_ITEM"], "OnShow", function(self)
+    ---@type EditBox
+    local editBox = self.editBox
+    editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
+end)
+
+hooksecurefunc(StaticPopupDialogs["DELETE_GOOD_QUEST_ITEM"], "OnShow", function(self)
+    ---@type EditBox
+    local editBox = self.editBox
+    editBox:SetText(DELETE_ITEM_CONFIRM_STRING)
+end)
+
+hooksecurefunc(StaticPopupDialogs["CONFIRM_DESTROY_COMMUNITY"], "OnShow", function(self)
+    ---@type EditBox
+    local editBox = self.editBox
+    editBox:SetText(COMMUNITIES_DELETE_CONFIRM_STRING)
+end)
