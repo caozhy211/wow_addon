@@ -137,12 +137,17 @@ local x = 540
 --- ChatFrame1Background 右下角的纵坐标
 local y = 116
 
----@type Frame
-local eventFrame = CreateFrame("Frame")
-eventFrame:RegisterEvent("PLAYER_LOGIN")
-eventFrame:SetScript("OnEvent", function()
-    ChatFrame1:ClearAllPoints()
-    ChatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", SPACING2 + WIDTH1, PADDING2 - HEIGHT1 - SPACING3)
-    ChatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", x - MARGIN2, y + MARGIN1)
-    FCF_SetLocked(ChatFrame1, true)
+ChatFrame1:ClearAllPoints()
+ChatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", SPACING2 + WIDTH1, PADDING2 - HEIGHT1 - SPACING3)
+ChatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", x - MARGIN2, y + MARGIN1)
+local rawSetPoint = ChatFrame1.SetPoint
+--- 使 ChatFrame1 不被 UIParent 调整位置
+ChatFrame1.SetPoint = nop
+FCF_SetLocked(ChatFrame1, true)
+
+hooksecurefunc("FCF_SetLocked", function(chatFrame, isLocked)
+    if chatFrame == ChatFrame1 and not isLocked then
+        -- 解锁 ChatFrame1 时，恢复它的 SetPoint 函数
+        ChatFrame1.SetPoint = rawSetPoint
+    end
 end)
