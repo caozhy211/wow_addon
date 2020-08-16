@@ -24,16 +24,16 @@ end
 ---@param chatFrame ScrollingMessageFrame
 local function UpdateChatFrameEditBox(initialUpdate, chatFrame)
     for i = 1, NUM_CHAT_WINDOWS do
-        ---@type ScrollingMessageFrame
-        local chatWindow = _G["ChatFrame" .. i]
+        ---@type EditBox
+        local editBox = _G["ChatFrame" .. i .. "EditBox"]
 
         local rightmostTab = _G[dockedChatFrames[#dockedChatFrames]:GetName() .. "Tab"]
-        chatWindow.editBox:ClearAllPoints()
-        chatWindow.editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y)
-        chatWindow.editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y - SPACING1)
+        editBox:ClearAllPoints()
+        editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y)
+        editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y - SPACING1)
 
         if initialUpdate then
-            UpdateChatFrameEditBoxOptions(chatWindow.editBox)
+            UpdateChatFrameEditBoxOptions(editBox)
         end
     end
 
@@ -64,7 +64,7 @@ local WORLD = { zhTW = "大腳世界頻道", zhCN = "大脚世界频道", }
 
 local locale = GetLocale()
 
-local CHANNEL_ABBREVIATIONS = {
+local CHANNEL_SHORTNAMES = {
     [GENERAL] = "綜合",
     [TRADE] = "交易",
     [DEFENSE[locale]] = "防務",
@@ -72,14 +72,15 @@ local CHANNEL_ABBREVIATIONS = {
     [WORLD[locale]] = "世界",
 }
 
-for channelName, channelAbbreviation in pairs(CHANNEL_ABBREVIATIONS) do
+for name, shortname in pairs(CHANNEL_SHORTNAMES) do
     for i = 1, NUM_CHAT_WINDOWS do
+        ---@type ScrollingMessageFrameMixin
         local chatFrame = _G["ChatFrame" .. i]
-        local originAddMessage = chatFrame.AddMessage
-        function chatFrame.AddMessage(self, message, ...)
-            local abbreviation = gsub(message, strconcat("|h%[(%d+)%. ", channelName, ".-%]|h"), strconcat("|h%[%1%. ",
-                    channelAbbreviation, "%]|h"))
-            return originAddMessage(self, abbreviation, ...)
+        local rawAddMessage = chatFrame.AddMessage
+        chatFrame.AddMessage = function(self, message, ...)
+            local text = gsub(message, strconcat("|h%[(%d+)%. ", name, ".-%]|h"),
+                    strconcat("|h%[%1%. ", shortname, "%]|h"))
+            return rawAddMessage(self, text, ...)
         end
     end
 end
@@ -97,7 +98,7 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     end
     if type == "CHANNEL" then
         local channelName = header:GetText()
-        for name, abbreviation in pairs(CHANNEL_ABBREVIATIONS) do
+        for name, abbreviation in pairs(CHANNEL_SHORTNAMES) do
             if strmatch(channelName, name) then
                 header:SetFormattedText(CHAT_CHANNEL_SEND, GetChannelName(ChatEdit_GetChannelTarget(editBox)),
                         abbreviation)
