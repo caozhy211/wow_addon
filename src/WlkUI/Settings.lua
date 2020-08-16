@@ -490,3 +490,20 @@ StaticPopupDialogs["APPLY_SETTINGS"] = {
         button:SetAttribute("macrotext", "/quit")
     end
 }
+
+local scaleX = GetScreenWidth() / 1920
+local scaleY = GetScreenHeight() / 1080
+if abs(scaleX - 1) > 0.001 or abs(scaleY - 1) > 0.001 then
+    local scale = min(scaleX, scaleY)
+    SetCVar("useUiScale", 1)
+    SetCVar("uiScale", scale * UIParent:GetEffectiveScale())
+else
+    local defaultUseUiScale = GetCVarDefault("useUiScale")
+    if GetCVar("useUiScale") ~= defaultUseUiScale then
+        SetCVar("useUiScale", defaultUseUiScale)
+    end
+    local defaultUiScale = GetCVarDefault("uiScale")
+    if GetCVar("uiScale") ~= defaultUiScale then
+        SetCVar("uiScale", defaultUiScale)
+    end
+end
