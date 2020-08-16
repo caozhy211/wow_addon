@@ -10,3 +10,4 @@ ChatFrame.lua
 ChatMenuFrame.lua
 ExportFrame.lua
 GridFrame.lua
+Settings.lua
