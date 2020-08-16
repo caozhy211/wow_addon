@@ -4,6 +4,7 @@
 ## Author: czy211
 ## Version: 4.0.0
 ## SavedVariables: WlkChatFilter
+## OptionalDeps: Blizzard_DebugTools, Blizzard_APIDocumentation, Blizzard_BindingUI
 
 ChatFilter.lua
 ChatFrame.lua

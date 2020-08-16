@@ -262,7 +262,6 @@ defaultButton:SetScript("OnClick", function()
 
     -- 按键设定恢复预设值
     C_VoiceChat.SetPushToTalkBinding({ "`", })
-    KeyBindingFrame_LoadUI()
     KeyBindingFrame_ResetBindingsToDefault()
     SaveBindings(ACCOUNT_BINDINGS)
 
@@ -406,7 +405,6 @@ customButton:SetScript("OnClick", function()
 
     -- 按键设定
     C_VoiceChat.SetPushToTalkBinding({ "", })
-    KeyBindingFrame_LoadUI()
     -- 恢复预设值
     KeyBindingFrame_ResetBindingsToDefault()
     -- 界面设置的按键设定

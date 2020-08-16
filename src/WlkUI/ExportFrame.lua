@@ -50,7 +50,6 @@ end
 SLASH_EXPORT_FRAME_NAME1 = "/efn"
 
 SlashCmdList["EXPORT_FRAME_NAME"] = function()
-    UIParentLoadAddOn("Blizzard_DebugTools")
     ---@type UIObject
     local object = FrameStackTooltip.highlightFrame
     if object then
@@ -73,7 +72,6 @@ local numericConstants = {}
 local _, build = GetBuildInfo()
 
 SlashCmdList["EXPORT_SYSTEM_API"] = function()
-    APIDocumentation_LoadUI()
     if apiText == nil then
         for _, apiInfo in ipairs(APIDocumentation.systems) do
             if apiInfo.Namespace then
