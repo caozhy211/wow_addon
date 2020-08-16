@@ -8,6 +8,7 @@ local width = height
 
 ---@type Frame
 local chatMenuFrame = CreateFrame("Frame", "WlkChatMenuFrame", UIParent)
+chatMenuFrame:SetFrameStrata("HIGH")
 chatMenuFrame:SetSize(width * numCols, height * numRows)
 chatMenuFrame:SetPoint("TOPRIGHT", ChatFrame1Background, "BOTTOMRIGHT")
 chatMenuFrame:SetBackdrop({ bgFile = "Interface/ChatFrame/CHATFRAMEBACKGROUND", })
