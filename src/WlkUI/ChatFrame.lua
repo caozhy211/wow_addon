@@ -2,8 +2,8 @@
 local PADDING1 = 8
 --- ChatFrame1Tab 和 ChatFrame1Background 的垂直间距
 local SPACING1 = 3
---- ChatFrame1TabText 相对 ChatFrame1Tab 垂直偏移
-local OFFSET_Y = -5
+--- ChatFrame1TabText 中心相对 ChatFrame1Tab 中心的垂直偏移值
+local OFFSET_Y1 = -5
 
 ---@type ScrollingMessageFrame[]
 local dockedChatFrames = GeneralDockManager.DOCKED_CHAT_FRAMES
@@ -29,8 +29,8 @@ local function UpdateChatFrameEditBox(initialUpdate, chatFrame)
 
         local rightmostTab = _G[dockedChatFrames[#dockedChatFrames]:GetName() .. "Tab"]
         editBox:ClearAllPoints()
-        editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y)
-        editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y - SPACING1)
+        editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y1)
+        editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y1 - SPACING1)
 
         if initialUpdate then
             UpdateChatFrameEditBoxOptions(editBox)

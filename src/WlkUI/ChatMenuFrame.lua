@@ -93,7 +93,8 @@ for i = 1, numRows do
         local label = button:CreateFontString(button:GetName() .. "Label", "ARTWORK", "GameFontHighlight")
         label:SetPoint("CENTER")
         label:SetText(menuButtons[id].text)
-        label:SetTextColor(GetClassColor(menuButtons[id].color))
+        r, g, b = GetClassColor(menuButtons[id].color)
+        label:SetTextColor(r, g, b)
 
         button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         button:SetScript("OnClick", ChatMenuButtonOnClick)
