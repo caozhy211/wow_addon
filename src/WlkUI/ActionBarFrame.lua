@@ -69,8 +69,6 @@ MultiBarRightButton1:ClearAllPoints()
 MultiBarRightButton1:SetPoint("TOPRIGHT", 0, OFFSET_Y1)
 MultiBarRightButton1.SetPoint = nop
 
---- QuestPOIButtonNormalTexture 和 ObjectiveTrackerFrame 的水平间距 
-local SPACING1 = 1
 --- ObjectiveTrackerFrame 的宽度
 local WIDTH1 = 235
 --- QuestPOIButtonNormalTexture 的宽度
@@ -82,7 +80,7 @@ local MARGIN2 = 12
 
 --- QuestPOIButtonNormalTexture 左边相对 UIParent 右边的偏移值
 local offsetX = -298
-local width = -offsetX - SPACING1 - WIDTH1 - WIDTH2
+local width = -offsetX - WIDTH1 - WIDTH2
 
 for i = 1, NUM_ACTIONBAR_BUTTONS do
     ---@type Button|ActionButtonTemplate
@@ -185,43 +183,43 @@ local WIDTH3 = 30
 --- PetActionButton 的高度
 local HEIGHT1 = 30
 --- PetActionButton 的水平间距
-local SPACING2 = 8
+local SPACING1 = 8
 
 ---@type Frame
 local petActionBarFrame = CreateFrame("Frame", "WlkPetActionBarFrame", UIParent)
-petActionBarFrame:SetSize(WIDTH3 * NUM_PET_ACTION_SLOTS + SPACING2 * (NUM_PET_ACTION_SLOTS - 1), HEIGHT1)
+petActionBarFrame:SetSize(WIDTH3 * NUM_PET_ACTION_SLOTS + SPACING1 * (NUM_PET_ACTION_SLOTS - 1), HEIGHT1)
 petActionBarFrame:SetPoint("BOTTOM", 0, PADDING1)
 
 for i = 1, NUM_PET_ACTION_SLOTS do
     ---@type Button
     local button = _G["PetActionButton" .. i]
     button:ClearAllPoints()
-    button:SetPoint("LEFT", petActionBarFrame, (i - 1) * (WIDTH3 + SPACING2), 0)
+    button:SetPoint("LEFT", petActionBarFrame, (i - 1) * (WIDTH3 + SPACING1), 0)
     button.SetPoint = nop
 end
 
 --- PossessButton 的水平间距
-local SPACING3 = 8
+local SPACING2 = 8
 --- PossessButton 的宽度
 local WIDTH4 = 30
 
 PossessButton1:ClearAllPoints()
-PossessButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_POSSESS_SLOTS - 1) * (WIDTH4 + SPACING3)) / 2, 0)
+PossessButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_POSSESS_SLOTS - 1) * (WIDTH4 + SPACING2)) / 2, 0)
 PossessButton1.SetPoint = nop
 
 --- StanceButton 的水平间距
-local SPACING4 = 7
+local SPACING3 = 7
 --- StanceButton 的宽度
 local WIDTH5 = 30
 
 StanceButton1:ClearAllPoints()
-StanceButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_STANCE_SLOTS - 1) * (WIDTH5 + SPACING4)) / 2, 0)
+StanceButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_STANCE_SLOTS - 1) * (WIDTH5 + SPACING3)) / 2, 0)
 StanceButton1.SetPoint = nop
 
 --- MultiBarBottomLeftButton12 和 MultiBarBottomRightButton7 的水平间距
-local SPACING5 = 45
+local SPACING4 = 45
 
 hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     MainMenuBarVehicleLeaveButton:ClearAllPoints()
-    MainMenuBarVehicleLeaveButton:SetPoint("CENTER", MultiBarBottomLeftButton12, "RIGHT", SPACING5 / 2, 0)
+    MainMenuBarVehicleLeaveButton:SetPoint("CENTER", MultiBarBottomLeftButton12, "RIGHT", SPACING4 / 2, 0)
 end)
