@@ -63,10 +63,23 @@ eventFrame:SetScript("OnEvent", function(_, event)
     end
 end)
 
------ MultiBarRightButton1 顶部相对 MultiBarRight 顶部的偏移值
-local OFFSET_Y1 = -3
+--- MultiBarBottomLeftButton 顶部相对 OverrideActionBar 顶部的偏移值
+local OFFSET_Y3 = 8
+--- MultiBarBottomLeftButton 和 ActionButton 的垂直间距
+local SPACING5 = 13
+
+MultiBarBottomLeftButton1:ClearAllPoints()
+MultiBarBottomLeftButton1:SetPoint("BOTTOMLEFT", ActionButton1, "TOPLEFT", 0, SPACING5 - OFFSET_Y3)
+MultiBarBottomLeftButton1.SetPoint = nop
+
+MultiBarBottomRightButton7:ClearAllPoints()
+MultiBarBottomRightButton7:SetPoint("BOTTOMLEFT", MultiBarBottomRightButton1, "TOPLEFT", 0, SPACING5 - OFFSET_Y3)
+MultiBarBottomRightButton7.SetPoint = nop
+
+--- VehicleSeatIndicator 底部相对 UIParent 顶部的偏移值
+local OFFSET_Y1 = -320
 MultiBarRightButton1:ClearAllPoints()
-MultiBarRightButton1:SetPoint("TOPRIGHT", 0, OFFSET_Y1)
+MultiBarRightButton1:SetPoint("TOPRIGHT", UIParent, 0, OFFSET_Y1)
 MultiBarRightButton1.SetPoint = nop
 
 --- ObjectiveTrackerFrame 的宽度
@@ -176,8 +189,6 @@ hooksecurefunc("SetTextStatusBarTextPrefix", function(manaBar, text)
     end
 end)
 
---- PetActionButton 和 UIParent 的底部边距
-local PADDING1 = 115
 --- PetActionButton 的宽度
 local WIDTH3 = 30
 --- PetActionButton 的高度
@@ -185,10 +196,13 @@ local HEIGHT1 = 30
 --- PetActionButton 的水平间距
 local SPACING1 = 8
 
+local spacing = 5
+
 ---@type Frame
 local petActionBarFrame = CreateFrame("Frame", "WlkPetActionBarFrame", UIParent)
 petActionBarFrame:SetSize(WIDTH3 * NUM_PET_ACTION_SLOTS + SPACING1 * (NUM_PET_ACTION_SLOTS - 1), HEIGHT1)
-petActionBarFrame:SetPoint("BOTTOM", 0, PADDING1)
+petActionBarFrame:SetPoint("LEFT", UIParent, "CENTER", -petActionBarFrame:GetWidth() / 2, 0)
+petActionBarFrame:SetPoint("BOTTOM", MultiBarBottomLeftButton1, "TOP", 0, spacing)
 
 for i = 1, NUM_PET_ACTION_SLOTS do
     ---@type Button
