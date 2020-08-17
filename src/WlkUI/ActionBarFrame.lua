@@ -217,3 +217,11 @@ local WIDTH5 = 30
 StanceButton1:ClearAllPoints()
 StanceButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_STANCE_SLOTS - 1) * (WIDTH5 + SPACING4)) / 2, 0)
 StanceButton1.SetPoint = nop
+
+--- MultiBarBottomLeftButton12 和 MultiBarBottomRightButton7 的水平间距
+local SPACING5 = 45
+
+hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
+    MainMenuBarVehicleLeaveButton:ClearAllPoints()
+    MainMenuBarVehicleLeaveButton:SetPoint("CENTER", MultiBarBottomLeftButton12, "RIGHT", SPACING5 / 2, 0)
+end)
