@@ -3,6 +3,7 @@ MainMenuBarArtFrameBackground:Hide()
 ---@type Texture[]
 local textures = {
     MainMenuBarArtFrame.LeftEndCap, MainMenuBarArtFrame.RightEndCap, OverrideActionBarEndCapL, OverrideActionBarEndCapR,
+    SlidingActionBarTexture0, SlidingActionBarTexture1,
 }
 
 for _, texture in ipairs(textures) do
@@ -175,3 +176,25 @@ hooksecurefunc("SetTextStatusBarTextPrefix", function(manaBar, text)
         manaBar.prefix = text
     end
 end)
+
+--- PetActionButton 和 UIParent 的底部边距
+local PADDING1 = 115
+--- PetActionButton 的宽度
+local WIDTH3 = 30
+--- PetActionButton 的高度
+local HEIGHT1 = 30
+--- PetActionButton 的水平间距
+local SPACING2 = 8
+
+---@type Frame
+local petActionBarFrame = CreateFrame("Frame", "WlkPetActionBarFrame", UIParent)
+petActionBarFrame:SetSize(WIDTH3 * NUM_PET_ACTION_SLOTS + SPACING2 * (NUM_PET_ACTION_SLOTS - 1), HEIGHT1)
+petActionBarFrame:SetPoint("BOTTOM", 0, PADDING1)
+
+for i = 1, NUM_PET_ACTION_SLOTS do
+    ---@type Button
+    local button = _G["PetActionButton" .. i]
+    button:ClearAllPoints()
+    button:SetPoint("LEFT", petActionBarFrame, (i - 1) * (WIDTH3 + SPACING2), 0)
+    button.SetPoint = nop
+end
