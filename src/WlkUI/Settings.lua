@@ -1,14 +1,24 @@
+--- VehicleSeatIndicator 和 UIParent 的右边边距
+local PADDING1 = 62
+--- DurabilityFrame 底部相对 UIParent 顶部的偏移值
+local OFFSET_Y1 = -267
+--- VehicleSeatIndicator 底部相对 UIParent 顶部的偏移值
+local OFFSET_Y2 = -320
+
+local buttonHeight = 22
+local spacing = (OFFSET_Y1 - OFFSET_Y2 - buttonHeight * 2) / 3
+
 ---@type Button
 local defaultButton = CreateFrame("Button", "WlkDefaultSettingsButton", UIParent, "UIPanelButtonTemplate")
-defaultButton:SetSize(60, 22)
-defaultButton:SetPoint("RIGHT", 0, 255)
+defaultButton:SetSize(PADDING1, buttonHeight)
+defaultButton:SetPoint("TOPRIGHT", 0, OFFSET_Y1 - spacing)
 defaultButton:SetText("BLZ")
 defaultButton:SetAlpha(0)
 
 ---@type Button
 local customButton = CreateFrame("Button", "WlkCustomSettingsButton", UIParent, "UIPanelButtonTemplate")
-customButton:SetSize(60, 22)
-customButton:SetPoint("RIGHT", 0, 225)
+customButton:SetSize(PADDING1, buttonHeight)
+customButton:SetPoint("TOP", defaultButton, "BOTTOM", 0, -spacing)
 customButton:SetText("WLK")
 customButton:SetAlpha(0)
 
@@ -295,23 +305,23 @@ local CLIENT_RESTART_ALERT = "反和諧和系統文字語言設定需要重新�
 local CLIENT_RELOAD_ALERT = "其他設定需要重新載入遊戲才能夠生效。"
 
 --- CompactRaidFrameContainer 和 UIParent 的左边边距
-local PADDING1 = 22
+local PADDING2 = 22
 --- CompactRaidFrameContainer 和 UIParent 的顶部边距
-local PADDING2 = 142
+local PADDING3 = 142
 --- CompactRaidFrameContainer 和 UIParent 的底部边距
-local PADDING3 = 337
+local PADDING4 = 337
 --- CompactUnitFrameTitle 的高度
 local HEIGHT1 = 14
 
 --- CompactUnitFrame 的间距
-local spacing = 2
+local compactUnitFrameSpacing = 2
 local rows = 4
 local columns = ceil(MAX_RAID_GROUPS / rows)
-local right = 298
+local maxRight = 298
 
-local width = floor((right - PADDING1 - spacing * columns) / columns)
-local maxHeight = GetScreenHeight() - PADDING2 - PADDING3
-local height = ceil((maxHeight - HEIGHT1 * rows - spacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1))
+local width = floor((maxRight - PADDING2 - compactUnitFrameSpacing * columns) / columns)
+local maxHeight = GetScreenHeight() - PADDING3 - PADDING4
+local height = ceil((maxHeight - HEIGHT1 * rows - compactUnitFrameSpacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1))
         / (MEMBERS_PER_RAID_GROUP * rows)) - 1
 
 local unbindKeys = {
