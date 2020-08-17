@@ -3,7 +3,8 @@ MainMenuBarArtFrameBackground:Hide()
 ---@type Texture[]
 local textures = {
     MainMenuBarArtFrame.LeftEndCap, MainMenuBarArtFrame.RightEndCap, OverrideActionBarEndCapL, OverrideActionBarEndCapR,
-    SlidingActionBarTexture0, SlidingActionBarTexture1,
+    SlidingActionBarTexture0, SlidingActionBarTexture1, PossessButton1NormalTexture, PossessButton2NormalTexture,
+    PossessBackground1, PossessBackground2,
 }
 
 for _, texture in ipairs(textures) do
@@ -198,3 +199,21 @@ for i = 1, NUM_PET_ACTION_SLOTS do
     button:SetPoint("LEFT", petActionBarFrame, (i - 1) * (WIDTH3 + SPACING2), 0)
     button.SetPoint = nop
 end
+
+--- PossessButton 的水平间距
+local SPACING3 = 8
+--- PossessButton 的宽度
+local WIDTH4 = 30
+
+PossessButton1:ClearAllPoints()
+PossessButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_POSSESS_SLOTS - 1) * (WIDTH4 + SPACING3)) / 2, 0)
+PossessButton1.SetPoint = nop
+
+--- StanceButton 的水平间距
+local SPACING4 = 7
+--- StanceButton 的宽度
+local WIDTH5 = 30
+
+StanceButton1:ClearAllPoints()
+StanceButton1:SetPoint("BOTTOM", petActionBarFrame, -((NUM_STANCE_SLOTS - 1) * (WIDTH5 + SPACING4)) / 2, 0)
+StanceButton1.SetPoint = nop
