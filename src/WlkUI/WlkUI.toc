@@ -6,6 +6,7 @@
 ## SavedVariables: WlkChatFilter
 ## OptionalDeps: Blizzard_DebugTools, Blizzard_APIDocumentation, Blizzard_BindingUI
 
+ActionBarFrame.lua
 ChatFilter.lua
 ChatFrame.lua
 ChatMenuFrame.lua
