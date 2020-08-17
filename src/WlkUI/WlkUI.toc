@@ -12,6 +12,7 @@ ChatFrame.lua
 ChatMenuFrame.lua
 ExportFrame.lua
 GridFrame.lua
+Minimap.lua
 MirrorTimer.lua
 Layout.lua
 Settings.lua
