@@ -10,7 +10,8 @@ ActionBarFrame.lua
 ChatFilter.lua
 ChatFrame.lua
 ChatMenuFrame.lua
-Layout.lua
 ExportFrame.lua
 GridFrame.lua
+MirrorTimer.lua
+Layout.lua
 Settings.lua
