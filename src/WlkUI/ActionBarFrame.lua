@@ -114,8 +114,8 @@ end
 hooksecurefunc("ActionButton_UpdateRangeIndicator", function(self, checksRange, inRange)
     if checksRange and not inRange then
         self.icon:SetVertexColor(GetTableColor(RED_FONT_COLOR))
-    else
-        self.icon:SetVertexColor(GetTableColor(WHITE_FONT_COLOR))
+    elseif self.action then
+        ActionButton_UpdateUsable(self)
     end
 end)
 
