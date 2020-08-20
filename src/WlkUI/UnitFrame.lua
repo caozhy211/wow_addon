@@ -299,6 +299,30 @@ local function UpdateUnitFramePortrait(unitFrame)
     end
 end
 
+local function UpdateUnitFrameSelectionHighlight(unitFrame)
+    ---@type Texture
+    local top = unitFrame.borderTop
+    ---@type Texture
+    local bottom = unitFrame.borderBottom
+    ---@type Texture
+    local left = unitFrame.borderLeft
+    ---@type Texture
+    local right = unitFrame.borderRight
+    if unitFrame.showSelectionHighlight then
+        if UnitIsUnit(unitFrame.unit, "target") then
+            top:Show()
+            bottom:Show()
+            left:Show()
+            right:Show()
+        else
+            top:Hide()
+            bottom:Hide()
+            left:Hide()
+            right:Hide()
+        end
+    end
+end
+
 local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameUnitName(unitFrame)
     UpdateUnitFrameUnitLevel(unitFrame)
@@ -313,6 +337,7 @@ local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameManaBarColor(unitFrame)
     UpdateUnitFramePortrait(unitFrame)
     TargetFrame_UpdateRaidTargetIcon(unitFrame)
+    UpdateUnitFrameSelectionHighlight(unitFrame)
     if unitFrame.totFrame then
         UpdateUnitFrame(unitFrame.totFrame)
     end
@@ -495,6 +520,10 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
     elseif event == "RAID_TARGET_UPDATE" then
         TargetFrame_UpdateRaidTargetIcon(unitFrame)
     end
+
+    if event == "PLAYER_TARGET_CHANGED" then
+        UpdateUnitFrameSelectionHighlight(unitFrame)
+    end
 end
 
 local font = "ChatFontSmall"
@@ -658,10 +687,6 @@ local function InitializeUnitFrame(unitFrame)
     manaBar:RegisterUnitEvent("UNIT_MAXPOWER", unit)
     manaBar:SetScript("OnEvent", UnitFrameManaBarOnEvent)
 
-    if unit ~= "player" then
-        unitFrame:SetScript("OnUpdate", UnitFrameOnUpdate)
-    end
-
     unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     unitFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
     unitFrame:RegisterEvent("RAID_TARGET_UPDATE")
@@ -672,6 +697,37 @@ local function InitializeUnitFrame(unitFrame)
     end
 
     unitFrame:SetScript("OnEvent", UnitFrameOnEvent)
+
+    if unit ~= "player" then
+        unitFrame:SetScript("OnUpdate", UnitFrameOnUpdate)
+    end
+    if unitFrame.showSelectionHighlight then
+        ---@type Texture
+        local borderTop = unitFrame:CreateTexture()
+        unitFrame.borderTop = borderTop
+        borderTop:SetSize(unitFrame:GetWidth(), 2)
+        borderTop:SetPoint("BOTTOM", unitFrame, "TOP")
+        borderTop:SetColorTexture(1, 1, 0)
+        ---@type Texture
+        local borderBottom = unitFrame:CreateTexture()
+        unitFrame.borderBottom = borderBottom
+        borderBottom:SetSize(unitFrame:GetWidth(), 2)
+        borderBottom:SetPoint("TOP", unitFrame, "BOTTOM")
+        borderBottom:SetColorTexture(1, 1, 0)
+        ---@type Texture
+        local borderLeft = unitFrame:CreateTexture()
+        unitFrame.borderLeft = borderLeft
+        borderLeft:SetSize(2, unitFrame:GetHeight() + 2 * 2)
+        borderLeft:SetPoint("RIGHT", unitFrame, "LEFT")
+        borderLeft:SetColorTexture(1, 1, 0)
+        ---@type Texture
+        local borderRight = unitFrame:CreateTexture()
+        unitFrame.borderRight = borderRight
+        borderRight:SetSize(2, unitFrame:GetHeight() + 2 * 2)
+        borderRight:SetPoint("LEFT", unitFrame, "RIGHT")
+        borderRight:SetColorTexture(1, 1, 0)
+        unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
+    end
 end
 
 ---@type Button
@@ -731,6 +787,7 @@ local focusFrame = CreateFrame("Button", "WlkFocusFrame", UIParent, "SecureUnitB
 focusFrame:SetSize(210, 48)
 focusFrame:SetPoint("BOTTOMLEFT", 1380, 185)
 focusFrame.unit = "focus"
+focusFrame.showSelectionHighlight = true
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(focusFrame)
@@ -741,6 +798,7 @@ for i = 1, MAX_BOSS_FRAMES do
     bossFrame:SetSize(240, 48)
     bossFrame:SetPoint("BOTTOMRIGHT", -330, 311 + 100 * (i - 1))
     bossFrame.unit = "boss" .. i
+    bossFrame.showSelectionHighlight = true
     if i == 1 then
         bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     end
