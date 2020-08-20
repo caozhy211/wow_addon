@@ -585,9 +585,6 @@ local function UnitFrameOnUpdate(self, elapsed)
     if totFrame and totFrame:IsShown() ~= UnitExists(totFrame.unit) then
         UpdateUnitFrame(totFrame)
     end
-    if self.isTotFrame then
-        UpdateUnitFrame(self)
-    end
 
     local unit = self.unit
     local spellName, spellId
@@ -634,7 +631,7 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
 
     local arg1 = ...
     if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED"
-            or event == "UNIT_PET" then
+            or event == "UNIT_PET" or event == "UNIT_TARGET" then
         UpdateUnitFrame(unitFrame)
     elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player") then
         UnitFrameSwitchUnit(unitFrame)
@@ -1026,6 +1023,7 @@ totFrame:SetSize(200, 42)
 totFrame:SetPoint("BOTTOMRIGHT", -566, 100)
 totFrame.unit = "targetTarget"
 totFrame.isTotFrame = true
+totFrame:RegisterUnitEvent("UNIT_TARGET", "target")
 totFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(totFrame)
 
