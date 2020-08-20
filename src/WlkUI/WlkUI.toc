@@ -16,3 +16,4 @@ Minimap.lua
 MirrorTimer.lua
 Layout.lua
 Settings.lua
+UnitFrame.lua
