@@ -512,7 +512,7 @@ local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameStatusIcon(unitFrame)
     UpdateUnitFrameQuestIcon(unitFrame)
     UpdateUnitFramePetBattleIcon(unitFrame)
-    if unitFrame.totFrame then
+    if unitFrame.totFrame and UnitExists(unitFrame.totFrame.unit) then
         UpdateUnitFrame(unitFrame.totFrame)
     end
 end
@@ -580,12 +580,6 @@ local function UnitFrameOnUpdate(self, elapsed)
     end
     self.elapsed = 0
 
-    ---@type Button
-    local totFrame = self.totFrame
-    if totFrame and totFrame:IsShown() ~= UnitExists(totFrame.unit) then
-        UpdateUnitFrame(totFrame)
-    end
-
     local unit = self.unit
     local spellName, spellId
     if unit == "pet" then
@@ -628,10 +622,13 @@ local unitEvents = {
 }
 
 local function UnitFrameOnEvent(unitFrame, event, ...)
-
+    local unit = unitFrame.unit
+    if not UnitExists(unit) and (event ~= "UNIT_EXITING_VEHICLE" or unit ~= "vehicle") then
+        return
+    end
     local arg1 = ...
     if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED"
-            or event == "UNIT_PET" or event == "UNIT_TARGET" then
+            or event == "UNIT_PET" or event == "UNIT_TARGET" or event == "PLAYER_FOCUS_CHANGED" then
         UpdateUnitFrame(unitFrame)
     elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player") then
         UnitFrameSwitchUnit(unitFrame)
@@ -642,21 +639,20 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
             UnitFrameSwitchUnit(unitFrame)
             unitFrame.switched = false
         end
-        if UnitExists(unitFrame.unit) then
-            UpdateUnitFrame(unitFrame)
-        end
+        UpdateUnitFrame(unitFrame)
     elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
         for i = 1, MAX_BOSS_FRAMES do
-            UpdateUnitFrame(_G[strconcat("WlkBoss", i, "Frame")])
+            local frame = _G[strconcat("WlkBoss", i, "Frame")]
+            if UnitExists(frame.unit) then
+                UpdateUnitFrame(frame)
+            end
         end
     elseif event == "GROUP_ROSTER_UPDATE" then
-        if unitFrame.unit == "focus" then
+        if unit == "focus" then
             UpdateUnitFrame(unitFrame)
-        elseif unitFrame.totFrame then
+        elseif unitFrame.totFrame and UnitExists(unitFrame.totFrame.unit) then
             UpdateUnitFrame(unitFrame.totFrame)
         end
-    elseif event == "PLAYER_FOCUS_CHANGED" and UnitExists(unitFrame.unit) then
-        UpdateUnitFrame(unitFrame)
     elseif event == "UNIT_NAME_UPDATE" then
         UpdateUnitFrameUnitName(unitFrame)
         UpdateUnitFrameHealthBarColor(unitFrame)
@@ -666,7 +662,7 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
         UpdateUnitFrameUnitClassification(unitFrame)
         UpdateUnitFrameUnitRace(unitFrame)
     elseif event == "UNIT_FACTION" then
-        if arg1 == unitFrame.unit then
+        if arg1 == unit then
             UpdateUnitFrameUnitLevel(unitFrame)
             UpdateUnitFrameHealthBarColor(unitFrame)
         elseif arg1 == "player" then
@@ -702,10 +698,10 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
     elseif event == "GROUP_ROSTER_UPDATE" then
         UpdateUnitFrameLeaderIcon(unitFrame)
         UpdateUnitFrameRaidRoster(unitFrame)
-        if unitFrame.unit ~= "focus" then
+        if unit ~= "focus" then
             UpdateUnitFrameUnitFaction(unitFrame)
         end
-    elseif event == "UNIT_FACTION" and (arg1 == unitFrame.unit or arg1 == "player") then
+    elseif event == "UNIT_FACTION" and (arg1 == unit or arg1 == "player") then
         UpdateUnitFrameUnitFaction(unitFrame)
     elseif event == "PLAYER_ENTER_COMBAT" or event == "PLAYER_LEAVE_COMBAT" or event == "PLAYER_REGEN_DISABLED" or
             event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_UPDATE_RESTING" then
