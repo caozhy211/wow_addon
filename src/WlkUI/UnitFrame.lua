@@ -323,6 +323,169 @@ local function UpdateUnitFrameSelectionHighlight(unitFrame)
     end
 end
 
+local function UpdateUnitFrameLeaderIcon(unitFrame)
+    if unitFrame.showIndicators then
+        ---@type Texture
+        local icon = unitFrame.leaderIcon
+        local unit = unitFrame.unit
+        if UnitIsGroupLeader(unit) then
+            if HasLFGRestrictions() then
+                icon:SetTexture("Interface/LFGFrame/UI-LFG-ICON-PORTRAITROLES")
+                icon:SetTexCoord(0, 0.296875, 0.015625, 0.3125)
+            else
+                icon:SetTexture("Interface/GroupFrame/UI-Group-LeaderIcon")
+                icon:SetTexCoord(0, 1, 0, 1)
+            end
+            icon:Show()
+        elseif UnitIsGroupAssistant(unit) then
+            icon:SetTexture("Interface/GroupFrame/UI-Group-AssistantIcon")
+            icon:SetTexCoord(0, 1, 0, 1)
+            icon:Show()
+        else
+            icon:Hide()
+        end
+    end
+end
+
+local function UpdateUnitFrameCombatRoleIcon(unitFrame)
+    if unitFrame.showIndicators then
+        ---@type Texture
+        local icon = unitFrame.combatRoleIcon
+        local role = UnitGroupRolesAssigned(unitFrame.unit)
+        if role == "NONE" then
+            icon:Hide()
+        else
+            icon:SetTexCoord(GetTexCoordsForRoleSmallCircle(role))
+            icon:Show()
+        end
+    end
+end
+
+local function UpdateUnitFrameRaidRoster(unitFrame)
+    if unitFrame.showIndicators then
+        ---@type Texture
+        local roleIcon = unitFrame.roleIcon
+        ---@type Texture
+        local masterLooterIcon = unitFrame.masterLooterIcon
+        ---@type FontString
+        local groupLabel = unitFrame.groupLabel
+        local unit = unitFrame.unit
+        local raidId = UnitInRaid(unit)
+        if raidId then
+            local _, _, subgroup, _, _, _, _, _, _, role, isMasterLooter = GetRaidRosterInfo(raidId)
+            groupLabel:SetFormattedText("(%s)", subgroup)
+            groupLabel:Show()
+            if role then
+                roleIcon:SetTexture(strconcat("Interface/GroupFrame/UI-Group-", role, "Icon"))
+                roleIcon:Show()
+            else
+                roleIcon:Hide()
+            end
+            if isMasterLooter then
+                masterLooterIcon:Show()
+            else
+                masterLooterIcon:Hide()
+            end
+        else
+            groupLabel:Hide()
+            roleIcon:Hide()
+            masterLooterIcon:Hide()
+        end
+    end
+end
+
+local function UpdateUnitFrameUnitFaction(unitFrame)
+    if unitFrame.showIndicators then
+        ---@type Texture
+        local prestigePortrait = unitFrame.prestigePortrait
+        ---@type Texture
+        local prestigeBadge = unitFrame.prestigeBadge
+        ---@type Texture
+        local pvpIcon = unitFrame.pvpIcon
+        local unit = unitFrame.unit
+        local factionGroup = UnitFactionGroup(unit)
+        if UnitIsPVPFreeForAll(unit) then
+            local honorLevel = UnitHonorLevel(unit)
+            local honorRewardInfo = C_PvP.GetHonorRewardInfo(honorLevel)
+            if honorRewardInfo then
+                prestigePortrait:SetAtlas("honorsystem-portrait-neutral", false)
+                prestigeBadge:SetTexture(honorRewardInfo.badgeFileDataID)
+                prestigePortrait:Show()
+                prestigeBadge:Show()
+                pvpIcon:Hide()
+            else
+                prestigePortrait:Hide()
+                prestigeBadge:Hide()
+                pvpIcon:SetTexture("Interface/TargetingFrame/UI-PVP-FFA")
+            end
+        elseif factionGroup and factionGroup ~= "Neutral" and UnitIsPVP(unit) then
+            local honorLevel = UnitHonorLevel(unit)
+            local honorRewardInfo = C_PvP.GetHonorRewardInfo(honorLevel)
+            if honorRewardInfo then
+                prestigePortrait:SetAtlas("honorsystem-portrait-" .. factionGroup, false)
+                prestigeBadge:SetTexture(honorRewardInfo.badgeFileDataID)
+                prestigePortrait:Show()
+                prestigeBadge:Show()
+                pvpIcon:Hide()
+            else
+                prestigePortrait:Hide()
+                prestigeBadge:Hide()
+                pvpIcon:SetTexture("Interface/TargetingFrame/UI-PVP-" .. factionGroup)
+                pvpIcon:Show()
+            end
+        else
+            prestigePortrait:Hide()
+            prestigeBadge:Hide()
+            pvpIcon:Hide()
+        end
+    end
+end
+
+local function UpdateUnitFrameStatusIcon(unitFrame)
+    if unitFrame.showStatusIcon then
+        ---@type Texture
+        local icon = unitFrame.statusIcon
+        if UnitHasVehiclePlayerFrameUI("player") then
+            icon:Hide()
+        elseif IsResting() then
+            icon:SetTexCoord(0, 0.5, 0, 0.421875)
+            icon:Show()
+        elseif UnitAffectingCombat("player") then
+            icon:SetTexCoord(0.5, 1, 0, 0.484375)
+            icon:Show()
+        else
+            icon:Hide()
+        end
+    end
+end
+
+local function UpdateUnitFrameQuestIcon(unitFrame)
+    if unitFrame.showQuestIcon then
+        ---@type Texture
+        local icon = unitFrame.questIcon
+        if UnitIsQuestBoss(unitFrame.unit) then
+            icon:Show()
+        else
+            icon:Hide()
+        end
+    end
+end
+
+local function UpdateUnitFramePetBattleIcon(unitFrame)
+    if unitFrame.showPetBattleIcon then
+        ---@type Texture
+        local icon = unitFrame.petBattleIcon
+        local unit = unitFrame.unit
+        if UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit) then
+            local petType = UnitBattlePetType(unit)
+            icon:SetTexture("Interface/TargetingFrame/PetBadge-" .. PET_TYPE_SUFFIX[petType])
+            icon:Show()
+        else
+            icon:Hide()
+        end
+    end
+end
+
 local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameUnitName(unitFrame)
     UpdateUnitFrameUnitLevel(unitFrame)
@@ -338,6 +501,13 @@ local function UpdateUnitFrame(unitFrame)
     UpdateUnitFramePortrait(unitFrame)
     TargetFrame_UpdateRaidTargetIcon(unitFrame)
     UpdateUnitFrameSelectionHighlight(unitFrame)
+    UpdateUnitFrameLeaderIcon(unitFrame)
+    UpdateUnitFrameCombatRoleIcon(unitFrame)
+    UpdateUnitFrameRaidRoster(unitFrame)
+    UpdateUnitFrameUnitFaction(unitFrame)
+    UpdateUnitFrameStatusIcon(unitFrame)
+    UpdateUnitFrameQuestIcon(unitFrame)
+    UpdateUnitFramePetBattleIcon(unitFrame)
     if unitFrame.totFrame then
         UpdateUnitFrame(unitFrame.totFrame)
     end
@@ -457,6 +627,7 @@ local unitEvents = {
 }
 
 local function UnitFrameOnEvent(unitFrame, event, ...)
+
     local arg1 = ...
     if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED"
             or event == "UNIT_PET" then
@@ -523,6 +694,23 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
 
     if event == "PLAYER_TARGET_CHANGED" then
         UpdateUnitFrameSelectionHighlight(unitFrame)
+    end
+
+    if event == "PLAYER_ROLES_ASSIGNED" then
+        UpdateUnitFrameCombatRoleIcon(unitFrame)
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        UpdateUnitFrameLeaderIcon(unitFrame)
+        UpdateUnitFrameRaidRoster(unitFrame)
+        if unitFrame.unit ~= "focus" then
+            UpdateUnitFrameUnitFaction(unitFrame)
+        end
+    elseif event == "UNIT_FACTION" and (arg1 == unitFrame.unit or arg1 == "player") then
+        UpdateUnitFrameUnitFaction(unitFrame)
+    elseif event == "PLAYER_ENTER_COMBAT" or event == "PLAYER_LEAVE_COMBAT" or event == "PLAYER_REGEN_DISABLED" or
+            event == "PLAYER_REGEN_ENABLED" or event == "PLAYER_UPDATE_RESTING" then
+        UpdateUnitFrameStatusIcon(unitFrame)
+    elseif event == "UNIT_CLASSIFICATION_CHANGED" then
+        UpdateUnitFrameQuestIcon(unitFrame)
     end
 end
 
@@ -728,6 +916,86 @@ local function InitializeUnitFrame(unitFrame)
         borderRight:SetColorTexture(1, 1, 0)
         unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     end
+    if unitFrame.showIndicators then
+        ---@type Texture
+        local leaderIcon = unitFrame:CreateTexture(name .. "LeaderIcon")
+        unitFrame.leaderIcon = leaderIcon
+        leaderIcon:SetSize(21, 21)
+        leaderIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 2, 0)
+
+        ---@type Texture
+        local combatRoleIcon = unitFrame:CreateTexture(name .. "CombatRoleIcon")
+        unitFrame.combatRoleIcon = combatRoleIcon
+        combatRoleIcon:SetSize(21, 21)
+        combatRoleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 3, 0)
+        combatRoleIcon:SetTexture("Interface/LFGFrame/UI-LFG-ICON-PORTRAITROLES")
+
+        ---@type Texture
+        local roleIcon = unitFrame:CreateTexture(name .. "RoleIcon")
+        unitFrame.roleIcon = roleIcon
+        roleIcon:SetSize(21, 21)
+        roleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 4, 0)
+
+        ---@type Texture
+        local masterLooterIcon = unitFrame:CreateTexture(name .. "MasterLooterIcon")
+        unitFrame.masterLooterIcon = masterLooterIcon
+        masterLooterIcon:SetSize(21, 21)
+        masterLooterIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 5, 0)
+        masterLooterIcon:SetTexture("Interface/GroupFrame/UI-Group-MasterLooter")
+
+        ---@type FontString
+        local groupLabel = unitFrame:CreateFontString(name .. "GroupLabel", "ARTWORK", font)
+        unitFrame.groupLabel = groupLabel
+        groupLabel:SetPoint("TOPLEFT", nameLabel, "BOTTOMLEFT", 1, 0)
+
+        ---@type Texture
+        local prestigePortrait = unitFrame:CreateTexture(name .. "PrestigePortrait", "BORDER")
+        unitFrame.prestigePortrait = prestigePortrait
+        prestigePortrait:SetSize(21, 21)
+        prestigePortrait:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21, 0)
+        prestigePortrait:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        ---@type Texture
+        local prestigeBadge = unitFrame:CreateTexture(name .. "PrestigeBadge")
+        unitFrame.prestigeBadge = prestigeBadge
+        prestigeBadge:SetSize(16, 16)
+        prestigeBadge:SetPoint("CENTER", prestigePortrait)
+        ---@type Texture
+        local pvpIcon = unitFrame:CreateTexture(name .. "PvpIcon")
+        unitFrame.pvpIcon = pvpIcon
+        pvpIcon:SetSize(21, 21)
+        pvpIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21, 0)
+        pvpIcon:SetTexCoord(0.08, 0.59, 0, 0.56)
+
+        unitFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+    end
+    if unitFrame.showStatusIcon then
+        ---@type Texture
+        local statusIcon = unitFrame:CreateTexture(name .. "StatusIcon")
+        unitFrame.statusIcon = statusIcon
+        statusIcon:SetSize(21, 21)
+        statusIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
+        statusIcon:SetTexture("Interface/CharacterFrame/UI-StateIcon")
+        unitFrame:RegisterEvent("PLAYER_ENTER_COMBAT")
+        unitFrame:RegisterEvent("PLAYER_LEAVE_COMBAT")
+        unitFrame:RegisterEvent("PLAYER_REGEN_DISABLED")
+        unitFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
+        unitFrame:RegisterEvent("PLAYER_UPDATE_RESTING")
+    end
+    if unitFrame.showQuestIcon then
+        ---@type Texture
+        local questIcon = unitFrame:CreateTexture(name .. "QuestIcon")
+        unitFrame.questIcon = questIcon
+        questIcon:SetSize(21, 21)
+        questIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
+        questIcon:SetTexture("Interface/TargetingFrame/PortraitQuestBadge")
+    end
+    if unitFrame.showPetBattleIcon then
+        ---@type Texture
+        local petBattleIcon = unitFrame:CreateTexture(name .. "PetBattleIcon")
+        unitFrame.petBattleIcon = petBattleIcon
+        petBattleIcon:SetSize(21, 21)
+        petBattleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
+    end
 end
 
 ---@type Button
@@ -764,6 +1032,8 @@ playerFrame:SetPoint("BOTTOMLEFT", 566, 185)
 playerFrame.unit = "player"
 playerFrame.unit2 = "vehicle"
 playerFrame.unitEvents = CopyTable(unitEvents)
+playerFrame.showIndicators = 1
+playerFrame.showStatusIcon = 1
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
@@ -778,6 +1048,9 @@ targetFrame:SetSize(300, 56)
 targetFrame:SetPoint("BOTTOMRIGHT", -566, 185)
 targetFrame.unit = "target"
 targetFrame.totFrame = totFrame
+targetFrame.showIndicators = 1
+targetFrame.showQuestIcon = 1
+targetFrame.showPetBattleIcon = 1
 targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(targetFrame)
@@ -787,7 +1060,10 @@ local focusFrame = CreateFrame("Button", "WlkFocusFrame", UIParent, "SecureUnitB
 focusFrame:SetSize(210, 48)
 focusFrame:SetPoint("BOTTOMLEFT", 1380, 185)
 focusFrame.unit = "focus"
-focusFrame.showSelectionHighlight = true
+focusFrame.showSelectionHighlight = 1
+focusFrame.showIndicators = 1
+focusFrame.showQuestIcon = 1
+focusFrame.showPetBattleIcon = 1
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(focusFrame)
@@ -798,7 +1074,7 @@ for i = 1, MAX_BOSS_FRAMES do
     bossFrame:SetSize(240, 48)
     bossFrame:SetPoint("BOTTOMRIGHT", -330, 311 + 100 * (i - 1))
     bossFrame.unit = "boss" .. i
-    bossFrame.showSelectionHighlight = true
+    bossFrame.showSelectionHighlight = 1
     if i == 1 then
         bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     end
