@@ -20,7 +20,11 @@ local function UpdateUnitFrameUnitRace(unitFrame)
     ---@type FontString
     local label = unitFrame.raceLabel
     local unit = unitFrame.unit
-    label:SetText(UnitIsPlayer(unit) and UnitRace(unit) or UnitCreatureFamily(unit) or UnitCreatureType(unit))
+    if UnitIsWildBattlePet(unit) or UnitIsBattlePetCompanion(unit) then
+        label:SetText(_G["BATTLE_PET_NAME_" .. UnitBattlePetType(unit)] .. PET)
+    else
+        label:SetText(UnitIsPlayer(unit) and UnitRace(unit) or UnitCreatureFamily(unit) or UnitCreatureType(unit))
+    end
 end
 
 local function UpdateUnitFrameUnitClassification(unitFrame)
