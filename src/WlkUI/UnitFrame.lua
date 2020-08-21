@@ -490,6 +490,72 @@ local function UpdateUnitFramePetBattleIcon(unitFrame)
     end
 end
 
+---@param bar StatusBar
+local function UpdateUnitFrameUnitPowerBarAltValue(bar, unit)
+    if bar then
+        ---@type FontString
+        local valueLabel = bar.valueLabel
+        ---@type FontString
+        local valuePercentLabel = bar.valuePercentLabel
+        local currentPower = UnitPower(unit, ALTERNATE_POWER_INDEX)
+        bar:SetValue(currentPower)
+        local minValue, maxValue = bar:GetMinMaxValues()
+        valueLabel:SetFormattedText("%s/%s", AbbreviateNumber(currentPower), AbbreviateNumber(maxValue))
+        valuePercentLabel:SetText(FormatPercentage(PercentageBetween(currentPower, minValue, maxValue)))
+    end
+end
+
+---@param bar StatusBar
+local function UpdateUnitFrameUnitPowerBarAltMax(bar, unit)
+    if bar then
+        local barInfo = GetUnitPowerBarInfo(unit)
+        local minPower = barInfo and barInfo.minPower or 0
+        local maxPower = UnitPowerMax(unit, ALTERNATE_POWER_INDEX)
+        bar:SetMinMaxValues(minPower, maxPower)
+        UpdateUnitFrameUnitPowerBarAltValue(bar, unit)
+    end
+end
+
+local TEXTURE_FILL_INDEX = 3
+local TEXTURE_NUMBERS_INDEX = 6
+
+---@param unitFrame Button
+local function UpdateUnitFrameUnitPowerBarAlt(unitFrame)
+    if unitFrame.showPowerBarAlt then
+        ---@type StatusBar
+        local bar = unitFrame.powerBarAlt
+        local unit = unitFrame.unit
+        local barInfo = GetUnitPowerBarInfo(unit)
+        if barInfo then
+            unitFrame:RegisterUnitEvent("UNIT_POWER_UPDATE", unit)
+            unitFrame:RegisterUnitEvent("UNIT_MAXPOWER", unit)
+            local _, r, g, b = GetUnitPowerBarTextureInfo(unit, barInfo.barType == ALT_POWER_TYPE_COUNTER
+                    and TEXTURE_NUMBERS_INDEX or TEXTURE_FILL_INDEX)
+            bar:SetStatusBarColor(r, g, b)
+            UpdateUnitFrameUnitPowerBarAltMax(bar, unit)
+            bar:Show()
+        else
+            bar:Hide()
+            unitFrame:UnregisterEvent("UNIT_POWER_UPDATE")
+            unitFrame:UnregisterEvent("UNIT_MAXPOWER")
+        end
+    end
+end
+
+---@param self StatusBar
+local function UnitFrameUnitPowerBarAltOnEnter(self)
+    local unit = self:GetParent().unit
+    GameTooltip_SetDefaultAnchor(GameTooltip, self)
+    local name, tooltip = GetUnitPowerBarStrings(unit)
+    GameTooltip_SetTitle(GameTooltip, name)
+    GameTooltip_AddNormalLine(GameTooltip, tooltip)
+    GameTooltip:Show()
+end
+
+local function UnitFrameUnitPowerBarAltOnLeave()
+    GameTooltip:Hide()
+end
+
 local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameUnitName(unitFrame)
     UpdateUnitFrameUnitLevel(unitFrame)
@@ -512,6 +578,7 @@ local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameStatusIcon(unitFrame)
     UpdateUnitFrameQuestIcon(unitFrame)
     UpdateUnitFramePetBattleIcon(unitFrame)
+    UpdateUnitFrameUnitPowerBarAlt(unitFrame)
     if unitFrame.totFrame and UnitExists(unitFrame.totFrame.unit) then
         UpdateUnitFrame(unitFrame.totFrame)
     end
@@ -626,7 +693,7 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
     if not UnitExists(unit) and (event ~= "UNIT_EXITING_VEHICLE" or unit ~= "vehicle") then
         return
     end
-    local arg1 = ...
+    local arg1, arg2 = ...
     if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED"
             or event == "UNIT_PET" or event == "UNIT_TARGET" or event == "PLAYER_FOCUS_CHANGED" then
         UpdateUnitFrame(unitFrame)
@@ -708,6 +775,14 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
         UpdateUnitFrameStatusIcon(unitFrame)
     elseif event == "UNIT_CLASSIFICATION_CHANGED" then
         UpdateUnitFrameQuestIcon(unitFrame)
+    end
+
+    if event == "UNIT_POWER_BAR_SHOW" or event == "UNIT_POWER_BAR_HIDE" then
+        UpdateUnitFrameUnitPowerBarAlt(unitFrame)
+    elseif event == "UNIT_MAXPOWER" and arg2 == "ALTERNATE" then
+        UpdateUnitFrameUnitPowerBarAltMax(unitFrame.powerBarAlt, unit)
+    elseif event == "UNIT_POWER_UPDATE" and arg2 == "ALTERNATE" then
+        UpdateUnitFrameUnitPowerBarAltValue(unitFrame.powerBarAlt, unit)
     end
 end
 
@@ -993,6 +1068,32 @@ local function InitializeUnitFrame(unitFrame)
         petBattleIcon:SetSize(21, 21)
         petBattleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
     end
+    if unitFrame.showPowerBarAlt then
+        ---@type StatusBar
+        local powerBarAlt = CreateFrame("StatusBar", name .. "UnitPowerBarAlt", unitFrame)
+        unitFrame.powerBarAlt = powerBarAlt
+        powerBarAlt:SetSize(100, 17)
+        powerBarAlt:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill")
+        ---@type Texture
+        local powerBarAltBackground = powerBarAlt:CreateTexture(name .. "UnitPowerBarAltBackground", "BACKGROUND")
+        powerBarAltBackground:SetAllPoints()
+        powerBarAltBackground:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+        ---@type FontString
+        local valueLabel = powerBarAlt:CreateFontString(name .. "UnitPowerBarAltValueLabel", "ARTWORK", font)
+        powerBarAlt.valueLabel = valueLabel
+        valueLabel:SetPoint("LEFT", 1, 0)
+        ---@type FontString
+        local valuePercentLabel = powerBarAlt:CreateFontString(name .. "UnitPowerBarAltValuePercentLabel", "ARTWORK",
+                font)
+        powerBarAlt.valuePercentLabel = valuePercentLabel
+        valuePercentLabel:SetPoint("RIGHT", -1, 0)
+
+        powerBarAlt:SetScript("OnEnter", UnitFrameUnitPowerBarAltOnEnter)
+        powerBarAlt:SetScript("OnLeave", UnitFrameUnitPowerBarAltOnLeave)
+
+        unitFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW")
+        unitFrame:RegisterUnitEvent("UNIT_POWER_BAR_HIDE")
+    end
 end
 
 ---@type Button
@@ -1049,9 +1150,12 @@ targetFrame.totFrame = totFrame
 targetFrame.showIndicators = 1
 targetFrame.showQuestIcon = 1
 targetFrame.showPetBattleIcon = 1
+targetFrame.showPowerBarAlt = 1
 targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(targetFrame)
+targetFrame.powerBarAlt:SetWidth(targetFrame:GetWidth() - 21 * 5)
+targetFrame.powerBarAlt:SetPoint("TOPRIGHT", targetFrame, "BOTTOMRIGHT", 21, -2)
 
 ---@type Button
 local focusFrame = CreateFrame("Button", "WlkFocusFrame", UIParent, "SecureUnitButtonTemplate")
@@ -1062,9 +1166,12 @@ focusFrame.showSelectionHighlight = 1
 focusFrame.showIndicators = 1
 focusFrame.showQuestIcon = 1
 focusFrame.showPetBattleIcon = 1
+focusFrame.showPowerBarAlt = 1
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(focusFrame)
+focusFrame.powerBarAlt:SetWidth(focusFrame:GetWidth() - 21 * 5)
+focusFrame.powerBarAlt:SetPoint("TOPRIGHT", focusFrame, "BOTTOMRIGHT", 21, -2)
 
 for i = 1, MAX_BOSS_FRAMES do
     ---@type Button
@@ -1073,11 +1180,14 @@ for i = 1, MAX_BOSS_FRAMES do
     bossFrame:SetPoint("BOTTOMRIGHT", -330, 311 + 100 * (i - 1))
     bossFrame.unit = "boss" .. i
     bossFrame.showSelectionHighlight = 1
+    bossFrame.showPowerBarAlt = 1
     if i == 1 then
         bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     end
     bossFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "boss" .. i)
     bossFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
     InitializeUnitFrame(bossFrame)
+    bossFrame.powerBarAlt:SetWidth(180)
+    bossFrame.powerBarAlt:SetPoint("BOTTOMRIGHT", bossFrame, "BOTTOMLEFT", -2, 0)
 end
 
