@@ -1191,3 +1191,19 @@ for i = 1, MAX_BOSS_FRAMES do
     bossFrame.powerBarAlt:SetPoint("BOTTOMRIGHT", bossFrame, "BOTTOMLEFT", -2, 0)
 end
 
+---@param self StatusBar
+hooksecurefunc("UnitPowerBarAltStatus_ToggleFrame", function(self)
+    if self.enabled and GetCVar("statusText") == "1" then
+        self:Show()
+        UnitPowerBarAltStatus_UpdateText(self)
+    else
+        self:Hide()
+    end
+end)
+
+PlayerPowerBarAltStatusFrame:HookScript("OnEvent", function(self, _, ...)
+    local cvar = ...
+    if cvar == "STATUS_TEXT_DISPLAY" then
+        UnitPowerBarAltStatus_ToggleFrame(self)
+    end
+end)
