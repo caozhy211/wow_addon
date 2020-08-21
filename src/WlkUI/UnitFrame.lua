@@ -556,6 +556,162 @@ local function UnitFrameUnitPowerBarAltOnLeave()
     GameTooltip:Hide()
 end
 
+local auraButtonSize = 17
+
+---@param auraFrame Frame
+local function CreateUnitFrameUnitAuraButton(auraFrame, num)
+    local template = auraFrame.type == "Buff" and "TargetBuffFrameTemplate" or "TargetDebuffFrameTemplate"
+    ---@type Button
+    local button = CreateFrame("Button", strconcat(auraFrame:GetName(), auraFrame.type, num), auraFrame, template)
+    button:SetSize(auraButtonSize, auraButtonSize)
+    return button
+end
+
+local function UpdateUnitFrameUnitAuraButtonAnchor(auraFrame)
+    ---@type Button[]
+    local buttons = auraFrame.buffs or auraFrame.debuffs
+    local orientation = auraFrame.orientation
+    local point, signX, signY
+    if orientation == "toLeftTop" then
+        point = "BOTTOMRIGHT"
+        signX = -1
+        signY = 1
+    elseif orientation == "toRightTop" then
+        point = "BOTTOMLEFT"
+        signX = 1
+        signY = 1
+    elseif orientation == "toBottomLeft" then
+        point = "TOPRIGHT"
+        signX = -1
+        signY = -1
+    elseif orientation == "toBottomRight" then
+        point = "TOPLEFT"
+        signX = 1
+        signY = -1
+    end
+    local countPerLine = auraFrame.countPerLine
+    for i, auraButton in ipairs(buttons) do
+        if not auraButton:IsShown() then
+            break
+        end
+        auraButton:SetPoint(point, auraFrame, (auraButtonSize + 1) * (i - 1) * signX, (auraButtonSize + 1)
+                * floor(i / countPerLine) * signY)
+    end
+end
+
+local function UpdateUnitFrameUnitAuras(unitFrame)
+    local unit = unitFrame.unit
+
+    if unitFrame.buffFrame then
+        ---@type Frame
+        local buffFrame = unitFrame.buffFrame
+        local maxBuffs = buffFrame.maxCount
+        local unitIsPlayer = UnitIsUnit(unit, UnitInVehicle("player") and UnitHasVehicleUI("player")
+                and "vehicle" or "player")
+        local index = 1
+        local numBuffs = 0
+        AuraUtil.ForEachAura(unit, "HELPFUL", maxBuffs, function(...)
+            local _, icon, count, _, duration, expirationTime, _, canStealOrPurge = ...
+            if icon then
+                numBuffs = numBuffs + 1
+                ---@type Button|TargetBuffFrameTemplate
+                local buffButton = buffFrame.buffs and buffFrame.buffs[numBuffs]
+                if not buffButton then
+                    buffButton = CreateUnitFrameUnitAuraButton(buffFrame, numBuffs)
+                    tinsert(buffFrame.buffs, buffButton)
+                    buffButton.unit = unit
+                end
+                buffButton:SetID(index)
+                buffButton.Icon:SetTexture(icon)
+                if count > 1 then
+                    buffButton.Count:SetText(count)
+                    buffButton.Count:Show()
+                else
+                    buffButton.Count:Hide()
+                end
+                CooldownFrame_Set(buffButton.Cooldown, expirationTime - duration, duration, duration > 0, true)
+                buffButton.Stealable:SetShown(not unitIsPlayer and canStealOrPurge)
+                buffButton:ClearAllPoints()
+                buffButton:Show()
+            end
+            index = index + 1
+            return numBuffs >= maxBuffs
+        end)
+
+        if buffFrame.buffs then
+            for i = numBuffs + 1, maxBuffs do
+                ---@type Button
+                local buffButton = buffFrame.buffs[i]
+                if buffButton then
+                    buffButton:Hide()
+                else
+                    break
+                end
+            end
+        end
+
+        UpdateUnitFrameUnitAuraButtonAnchor(unitFrame.buffFrame)
+    end
+
+    if unitFrame.debuffFrame then
+        ---@type Frame
+        local debuffFrame = unitFrame.debuffFrame
+        local maxDebuffs = debuffFrame.maxCount
+        local index = 1
+        local numDebuffs = 0
+        AuraUtil.ForEachAura(unit, "HARMFUL|INCLUDE_NAME_PLATE_ONLY", maxDebuffs, function(...)
+            local _, icon, count, debuffType, duration, expirationTime, caster, _, _, _, _, _, casterIsPlayer,
+            nameplateShowAll = ...
+            if TargetFrame_ShouldShowDebuffs(unit, caster, nameplateShowAll, casterIsPlayer) then
+                if icon then
+                    numDebuffs = numDebuffs + 1
+                    ---@type Button|TargetDebuffFrameTemplate
+                    local debuffButton = debuffFrame.debuffs and debuffFrame.debuffs[numDebuffs]
+                    if not debuffButton then
+                        debuffButton = CreateUnitFrameUnitAuraButton(debuffFrame, numDebuffs)
+                        tinsert(debuffFrame.debuffs, debuffButton)
+                        debuffButton.unit = unit
+                    end
+                    debuffButton:SetID(index)
+                    debuffButton.Icon:SetTexture(icon)
+                    if count > 1 then
+                        debuffButton.Count:SetText(count)
+                        debuffButton.Count:Show()
+                    else
+                        debuffButton.Count:Hide()
+                    end
+                    CooldownFrame_Set(debuffButton.Cooldown, expirationTime - duration, duration, duration > 0, true)
+                    local color
+                    if debuffType then
+                        color = DebuffTypeColor[debuffType]
+                    else
+                        color = DebuffTypeColor["none"]
+                    end
+                    debuffButton.Border:SetVertexColor(GetTableColor(color))
+                    debuffButton:ClearAllPoints()
+                    debuffButton:Show()
+                end
+            end
+            index = index + 1
+            return numDebuffs >= maxDebuffs
+        end)
+
+        if debuffFrame.debuffs then
+            for i = numDebuffs + 1, maxDebuffs do
+                ---@type Button
+                local debuffButton = debuffFrame.debuffs[i]
+                if debuffButton then
+                    debuffButton:Hide()
+                else
+                    break
+                end
+            end
+        end
+
+        UpdateUnitFrameUnitAuraButtonAnchor(unitFrame.debuffFrame)
+    end
+end
+
 local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameUnitName(unitFrame)
     UpdateUnitFrameUnitLevel(unitFrame)
@@ -579,6 +735,7 @@ local function UpdateUnitFrame(unitFrame)
     UpdateUnitFrameQuestIcon(unitFrame)
     UpdateUnitFramePetBattleIcon(unitFrame)
     UpdateUnitFrameUnitPowerBarAlt(unitFrame)
+    UpdateUnitFrameUnitAuras(unitFrame)
     if unitFrame.totFrame and UnitExists(unitFrame.totFrame.unit) then
         UpdateUnitFrame(unitFrame.totFrame)
     end
@@ -783,6 +940,10 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
         UpdateUnitFrameUnitPowerBarAltMax(unitFrame.powerBarAlt, unit)
     elseif event == "UNIT_POWER_UPDATE" and arg2 == "ALTERNATE" then
         UpdateUnitFrameUnitPowerBarAltValue(unitFrame.powerBarAlt, unit)
+    end
+
+    if event == "UNIT_AURA" then
+        UpdateUnitFrameUnitAuras(unitFrame)
     end
 end
 
@@ -1094,6 +1255,31 @@ local function InitializeUnitFrame(unitFrame)
         unitFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW")
         unitFrame:RegisterUnitEvent("UNIT_POWER_BAR_HIDE")
     end
+    if unitFrame.buffFrame or unitFrame.debuffFrame then
+        unitFrame:RegisterUnitEvent("UNIT_AURA", unit)
+        if unitFrame.unitEvents then
+            tinsert(unitFrame.unitEvents, "UNIT_AURA")
+        end
+    end
+end
+
+---@param unitFrame Button
+---@return Frame
+local function CreateUnitFrameAuraFrame(unitFrame, auraType, orientation, maxCount, countPerLine)
+    ---@type Frame
+    local frame = CreateFrame("Frame", strconcat(unitFrame:GetName(), auraType, "Frame"), unitFrame)
+    frame.type = auraType
+    frame.maxCount = maxCount
+    frame.orientation = orientation
+    frame.countPerLine = countPerLine
+    if auraType == "Buff" then
+        frame.buffs = {}
+    else
+        frame.debuffs = {}
+    end
+    local rows = ceil(maxCount / countPerLine)
+    frame:SetSize(countPerLine * (auraButtonSize + 1) - 1, rows * (auraButtonSize + 1) - 1)
+    return frame
 end
 
 ---@type Button
@@ -1133,6 +1319,10 @@ playerFrame.unit2 = "vehicle"
 playerFrame.unitEvents = CopyTable(unitEvents)
 playerFrame.showIndicators = 1
 playerFrame.showStatusIcon = 1
+playerFrame.buffFrame = CreateUnitFrameAuraFrame(playerFrame, "Buff", "toLeftTop", 32, 16)
+playerFrame.buffFrame:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT")
+playerFrame.debuffFrame = CreateUnitFrameAuraFrame(playerFrame, "Debuff", "toLeftTop", 16, 16)
+playerFrame.debuffFrame:SetPoint("BOTTOMRIGHT", playerFrame.buffFrame, "TOPRIGHT", 0, 5)
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
@@ -1151,6 +1341,10 @@ targetFrame.showIndicators = 1
 targetFrame.showQuestIcon = 1
 targetFrame.showPetBattleIcon = 1
 targetFrame.showPowerBarAlt = 1
+targetFrame.debuffFrame = CreateUnitFrameAuraFrame(targetFrame, "Debuff", "toRightTop", 16, 16)
+targetFrame.debuffFrame:SetPoint("BOTTOMLEFT", targetFrame, "TOPLEFT")
+targetFrame.buffFrame = CreateUnitFrameAuraFrame(targetFrame, "Buff", "toRightTop", 32, 16)
+targetFrame.buffFrame:SetPoint("BOTTOMLEFT", targetFrame.debuffFrame, "TOPLEFT", 0, 19)
 targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(targetFrame)
@@ -1167,6 +1361,10 @@ focusFrame.showIndicators = 1
 focusFrame.showQuestIcon = 1
 focusFrame.showPetBattleIcon = 1
 focusFrame.showPowerBarAlt = 1
+focusFrame.debuffFrame = CreateUnitFrameAuraFrame(focusFrame, "Debuff", "toRightTop", 16, 16)
+focusFrame.debuffFrame:SetPoint("BOTTOMLEFT", focusFrame, "TOPLEFT", -2, 2)
+focusFrame.buffFrame = CreateUnitFrameAuraFrame(focusFrame, "Buff", "toRightTop", 32, 16)
+focusFrame.buffFrame:SetPoint("BOTTOMLEFT", focusFrame.debuffFrame, "TOPLEFT", 0, 19)
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(focusFrame)
@@ -1181,6 +1379,10 @@ for i = 1, MAX_BOSS_FRAMES do
     bossFrame.unit = "boss" .. i
     bossFrame.showSelectionHighlight = 1
     bossFrame.showPowerBarAlt = 1
+    bossFrame.debuffFrame = CreateUnitFrameAuraFrame(bossFrame, "Debuff", "toRightTop", 16, 16)
+    bossFrame.debuffFrame:SetPoint("BOTTOMLEFT", bossFrame, "TOPLEFT", -2, 2)
+    bossFrame.buffFrame = CreateUnitFrameAuraFrame(bossFrame, "Buff", "toRightTop", 16, 16)
+    bossFrame.buffFrame:SetPoint("BOTTOMLEFT", bossFrame.debuffFrame, "TOPLEFT", 0, 1)
     if i == 1 then
         bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     end
