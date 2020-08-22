@@ -10,6 +10,7 @@ ActionBarFrame.lua
 ChatFilter.lua
 ChatFrame.lua
 ChatMenuFrame.lua
+Cooldown.lua
 ExportFrame.lua
 GridFrame.lua
 Minimap.lua
