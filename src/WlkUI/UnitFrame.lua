@@ -855,8 +855,10 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
         if unitFrame.switched then
             UnitFrameSwitchUnit(unitFrame)
             unitFrame.switched = false
+            UpdateUnitFrame(unitFrame)
+        else
+            UpdateUnitFrameHealthBarColor(unitFrame)
         end
-        UpdateUnitFrame(unitFrame)
     elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
         for i = 1, MAX_BOSS_FRAMES do
             local frame = _G[strconcat("WlkBoss", i, "Frame")]
