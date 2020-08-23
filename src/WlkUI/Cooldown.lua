@@ -56,10 +56,20 @@ end
 
 local NAMEPLATE_BUFF_HEIGHT = 14
 
+---@param frame Frame
+local function GetTimerParentHeight(frame)
+    local height = frame:GetHeight()
+    while height <= 0 do
+        frame = frame:GetParent()
+        height = frame:GetHeight()
+    end
+    return height
+end
+
 local mt = getmetatable(CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")).__index
 ---@param self Cooldown
 hooksecurefunc(mt, "SetCooldown", function(self, start, duration)
-    local height = self:GetHeight()
+    local height = GetTimerParentHeight(self)
     if duration > 1.5 and height > NAMEPLATE_BUFF_HEIGHT or abs(height - NAMEPLATE_BUFF_HEIGHT) < 0.001 then
         ---@type FontString
         local timer = self.cdTimer
