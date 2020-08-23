@@ -24,3 +24,11 @@ eventFrame:SetScript("OnEvent", function(_, event)
     ObjectiveTrackerFrame:SetPoint("BOTTOMRIGHT", OFFSET_X1 + WIDTH1 + WIDTH2, OFFSET_Y2)
     ObjectiveTrackerFrame:SetMovable(false)
 end)
+
+--- LossOfControlFrame.RedLineBottom 的高度
+local HEIGHT1 = 27
+local scale = 0.75
+LossOfControlFrame:SetScale(scale)
+LossOfControlFrame:ClearAllPoints()
+LossOfControlFrame:SetPoint("BOTTOM", 0, (142 + HEIGHT1 * scale) / scale)
+LossOfControlFrame.SetPoint = nop
