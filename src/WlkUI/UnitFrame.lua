@@ -303,27 +303,63 @@ local function UpdateUnitFramePortrait(unitFrame)
     end
 end
 
+local function SetFrameBorderShown(frame, show)
+    ---@type Texture
+    local top = frame.borderTop
+    ---@type Texture
+    local bottom = frame.borderBottom
+    ---@type Texture
+    local left = frame.borderLeft
+    ---@type Texture
+    local right = frame.borderRight
+    if show then
+        top:Show()
+        bottom:Show()
+        left:Show()
+        right:Show()
+    else
+        top:Hide()
+        bottom:Hide()
+        left:Hide()
+        right:Hide()
+    end
+end
+
+---@param frame Frame
+---@param color ColorMixin
+local function CreateFrameBorder(frame, color, size)
+    local r, g, b = color:GetRGB()
+    local width = frame:GetWidth()
+    local height = frame:GetHeight()
+    ---@type Texture
+    local borderTop = frame:CreateTexture()
+    frame.borderTop = borderTop
+    borderTop:SetSize(width, size)
+    borderTop:SetPoint("BOTTOM", frame, "TOP")
+    borderTop:SetColorTexture(r, g, b)
+    ---@type Texture
+    local borderBottom = frame:CreateTexture()
+    frame.borderBottom = borderBottom
+    borderBottom:SetSize(width, size)
+    borderBottom:SetPoint("TOP", frame, "BOTTOM")
+    borderBottom:SetColorTexture(r, g, b)
+    ---@type Texture
+    local borderLeft = frame:CreateTexture()
+    frame.borderLeft = borderLeft
+    borderLeft:SetSize(size, height + size * 2)
+    borderLeft:SetPoint("RIGHT", frame, "LEFT")
+    borderLeft:SetColorTexture(r, g, b)
+    ---@type Texture
+    local borderRight = frame:CreateTexture()
+    frame.borderRight = borderRight
+    borderRight:SetSize(size, height + size * 2)
+    borderRight:SetPoint("LEFT", frame, "RIGHT")
+    borderRight:SetColorTexture(r, g, b)
+end
+
 local function UpdateUnitFrameSelectionHighlight(unitFrame)
-    ---@type Texture
-    local top = unitFrame.borderTop
-    ---@type Texture
-    local bottom = unitFrame.borderBottom
-    ---@type Texture
-    local left = unitFrame.borderLeft
-    ---@type Texture
-    local right = unitFrame.borderRight
     if unitFrame.showSelectionHighlight then
-        if UnitIsUnit(unitFrame.unit, "target") then
-            top:Show()
-            bottom:Show()
-            left:Show()
-            right:Show()
-        else
-            top:Hide()
-            bottom:Hide()
-            left:Hide()
-            right:Hide()
-        end
+        SetFrameBorderShown(unitFrame, UnitIsUnit(unitFrame.unit, "target"))
     end
 end
 
@@ -1125,30 +1161,7 @@ local function InitializeUnitFrame(unitFrame)
         unitFrame:SetScript("OnUpdate", UnitFrameOnUpdate)
     end
     if unitFrame.showSelectionHighlight then
-        ---@type Texture
-        local borderTop = unitFrame:CreateTexture()
-        unitFrame.borderTop = borderTop
-        borderTop:SetSize(unitFrame:GetWidth(), 2)
-        borderTop:SetPoint("BOTTOM", unitFrame, "TOP")
-        borderTop:SetColorTexture(1, 1, 0)
-        ---@type Texture
-        local borderBottom = unitFrame:CreateTexture()
-        unitFrame.borderBottom = borderBottom
-        borderBottom:SetSize(unitFrame:GetWidth(), 2)
-        borderBottom:SetPoint("TOP", unitFrame, "BOTTOM")
-        borderBottom:SetColorTexture(1, 1, 0)
-        ---@type Texture
-        local borderLeft = unitFrame:CreateTexture()
-        unitFrame.borderLeft = borderLeft
-        borderLeft:SetSize(2, unitFrame:GetHeight() + 2 * 2)
-        borderLeft:SetPoint("RIGHT", unitFrame, "LEFT")
-        borderLeft:SetColorTexture(1, 1, 0)
-        ---@type Texture
-        local borderRight = unitFrame:CreateTexture()
-        unitFrame.borderRight = borderRight
-        borderRight:SetSize(2, unitFrame:GetHeight() + 2 * 2)
-        borderRight:SetPoint("LEFT", unitFrame, "RIGHT")
-        borderRight:SetColorTexture(1, 1, 0)
+        CreateFrameBorder(unitFrame, YELLOW_FONT_COLOR, 2)
         unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     end
     if unitFrame.showIndicators then
@@ -1283,6 +1296,166 @@ local function CreateUnitFrameAuraFrame(unitFrame, auraType, orientation, maxCou
     return frame
 end
 
+local function UnitFrameSpellBarOnEvent(self, event, ...)
+    local arg1 = ...
+    if event == self.updateEvent then
+        local nameChannel = UnitChannelInfo(self.unit)
+        local nameSpell = UnitCastingInfo(self.unit)
+        if nameChannel then
+            event = "UNIT_SPELLCAST_CHANNEL_START"
+            arg1 = self.unit
+        elseif nameSpell then
+            event = "UNIT_SPELLCAST_START"
+            arg1 = self.unit
+        else
+            self.casting = nil
+            self.channeling = nil
+            self:SetMinMaxValues(0, 0)
+            self:SetValue(0)
+            self:Hide()
+            return
+        end
+    end
+    CastingBarFrame_OnEvent(self, event, arg1, select(2, ...))
+end
+
+local function GetUnitCastingInfo(bar)
+    local unit = bar.unit
+    local startTime, endTime, isTradeSkill, castId, _
+    if bar.channeling then
+        _, _, _, startTime, endTime, isTradeSkill, _, castId = UnitChannelInfo(unit)
+    elseif bar.casting then
+        _, _, _, startTime, endTime, isTradeSkill, _, _, castId = UnitCastingInfo(unit)
+    end
+    if startTime and endTime then
+        return startTime / 1000, endTime / 1000, isTradeSkill, castId
+    end
+end
+
+local function HookUnitFrameSpellBarOnEvent(self, event, ...)
+    local unit = ...
+    if unit ~= self.unit then
+        return
+    end
+    local startTime, endTime, delayTime
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
+        startTime, endTime = GetUnitCastingInfo(self)
+        delayTime = 0
+    elseif event == "UNIT_SPELLCAST_DELAYED" then
+        local oldStartTime = startTime
+        startTime, endTime = GetUnitCastingInfo(self)
+        if startTime and endTime then
+            if self.casting then
+                delayTime = (delayTime or 0) + (startTime - (oldStartTime or startTime))
+            elseif self.channeling then
+                delayTime = (delayTime or 0) + ((oldStartTime or startTime) - startTime)
+            end
+        end
+    end
+    self.delayTime = delayTime
+end
+
+local function FormatTime(seconds)
+    if seconds < 10 then
+        return format("%.1f", seconds)
+    elseif seconds < SECONDS_PER_MIN then
+        return format("%d", seconds)
+    end
+    return SecondsToClock(seconds)
+end
+
+local function HookUnitFrameSpellBarOnUpdate(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 0.01 then
+        return
+    end
+    self.elapsed = 0
+
+    ---@type FontString
+    local timeLabel = self.timeLabel
+    ---@type FontString
+    local delayTimeLabel = self.delayTimeLabel
+    if self.casting then
+        timeLabel:SetFormattedText("%s/%s", FormatTime(self.maxValue - self.value), FormatTime(self.maxValue))
+    elseif self.channeling then
+        timeLabel:SetFormattedText("%s/%s", FormatTime(self.value), FormatTime(self.maxValue))
+    end
+    if self.delayTime and self.delayTime >= 0.1 and (self.casting or self.channeling) then
+        delayTimeLabel:SetFormattedText("+%.1f", self.delayTime)
+    else
+        delayTimeLabel:SetText("")
+    end
+end
+
+---@param self Texture
+local function HookSpellBarBorderShieldShow(self)
+    SetFrameBorderShown(self:GetParent(), true)
+end
+
+---@param self Texture
+local function HookSpellBarBorderShieldHide(self)
+    SetFrameBorderShown(self:GetParent())
+end
+
+---@param bar StatusBar|CastingBarFrameTemplate
+local function InitializeUnitFrameSpellBar(bar)
+    bar.Border:Hide()
+    bar.Flash:SetTexture(nil)
+    bar.Spark:SetTexture(nil)
+    bar.BorderShield:SetTexture(nil)
+    local height = bar:GetHeight()
+    bar.Icon:SetSize(height, height)
+    bar.Icon:SetPoint("RIGHT", bar, "LEFT")
+    bar.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    bar.Icon:Show()
+    bar.Text:ClearAllPoints()
+    bar.Text:SetPoint("LEFT", 5, 0)
+    bar.Text:SetJustifyH("LEFT")
+    bar.Text:SetWidth(bar:GetWidth() * 2 / 3)
+    bar.Text:SetFontObject(font)
+
+    ---@type FontString
+    local timeLabel = bar:CreateFontString(bar:GetName() .. "TimeLabel", "ARTWORK", font)
+    bar.timeLabel = timeLabel
+    timeLabel:SetPoint("RIGHT")
+    ---@type FontString
+    local delayTimeLabel = bar:CreateFontString(bar:GetName() .. "DelayTimeLabel", "ARTWORK", font)
+    bar.delayTimeLabel = delayTimeLabel
+    delayTimeLabel:SetPoint("RIGHT", timeLabel, "LEFT", -1, 0)
+    delayTimeLabel:SetTextColor(1, 0, 0)
+
+    CreateFrameBorder(bar, HIGHLIGHT_FONT_COLOR, 2)
+    local borderWidth = bar.borderTop:GetWidth()
+    bar.borderTop:SetWidth(borderWidth + 26)
+    bar.borderBottom:SetWidth(borderWidth + 26)
+    bar.borderTop:ClearAllPoints()
+    bar.borderTop:SetPoint("BOTTOMRIGHT", bar, "TOPRIGHT")
+    bar.borderBottom:ClearAllPoints()
+    bar.borderBottom:SetPoint("TOPRIGHT", bar, "BOTTOMRIGHT")
+    bar.borderLeft:ClearAllPoints()
+    bar.borderLeft:SetPoint("RIGHT", bar, "LEFT", -26, 0)
+
+    hooksecurefunc(bar.BorderShield, "Show", HookSpellBarBorderShieldShow)
+    hooksecurefunc(bar.BorderShield, "Hide", HookSpellBarBorderShieldHide)
+
+    bar:HookScript("OnEvent", HookUnitFrameSpellBarOnEvent)
+    bar:HookScript("OnUpdate", HookUnitFrameSpellBarOnUpdate)
+end
+
+---@param unitFrame Button
+local function CreateUnitFrameSpellBar(unitFrame, event)
+    ---@type StatusBar|CastingBarFrameTemplate
+    local bar = CreateFrame("StatusBar", unitFrame:GetName() .. "SpellBar", UIParent, "CastingBarFrameTemplate")
+    unitFrame.spellBar = bar
+    bar:Hide()
+    CastingBarFrame_SetUnit(bar, unitFrame.unit, true, true)
+    if event then
+        bar.updateEvent = event
+        bar:RegisterEvent(event)
+    end
+    bar:SetScript("OnEvent", UnitFrameSpellBarOnEvent)
+end
+
 ---@type Button
 local petFrame = CreateFrame("Button", "WlkPetFrame", UIParent, "SecureUnitButtonTemplate")
 petFrame:SetFrameStrata("HIGH")
@@ -1331,6 +1504,16 @@ playerFrame.debuffFrame:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", -(27 + 
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
+CastingBarFrame:SetSize(360 - 30, 30)
+CastingBarFrame:ClearAllPoints()
+CastingBarFrame:SetPoint("BOTTOM", 30 * 0.5, 253)
+CastingBarFrame.SetPoint = nop
+InitializeUnitFrameSpellBar(CastingBarFrame)
+PetCastingBarFrame:SetSize(360 - 30, 30)
+PetCastingBarFrame:ClearAllPoints()
+PetCastingBarFrame:SetPoint("BOTTOM", 30 * 0.5, 253)
+PetCastingBarFrame.SetPoint = nop
+InitializeUnitFrameSpellBar(PetCastingBarFrame)
 
 ---@type Button
 local targetFrame = CreateFrame("Button", "WlkTargetFrame", UIParent, "SecureUnitButtonTemplate")
@@ -1352,6 +1535,10 @@ targetFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(targetFrame)
 targetFrame.powerBarAlt:SetSize(targetFrame:GetWidth() - 27 * 5, 27)
 targetFrame.powerBarAlt:SetPoint("TOPLEFT", targetFrame, "BOTTOMLEFT")
+CreateUnitFrameSpellBar(targetFrame, "PLAYER_TARGET_CHANGED")
+targetFrame.spellBar:SetSize(targetFrame:GetWidth() + 27 - 26 - 4, 30 - 4)
+targetFrame.spellBar:SetPoint("BOTTOMLEFT", targetFrame, "TOPLEFT", 2 + 26, 60 + 3 + 2)
+InitializeUnitFrameSpellBar(targetFrame.spellBar)
 
 ---@type Button
 local focusFrame = CreateFrame("Button", "WlkFocusFrame", UIParent, "SecureUnitButtonTemplate")
@@ -1373,6 +1560,10 @@ focusFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(focusFrame)
 focusFrame.powerBarAlt:SetSize(focusFrame.debuffFrame:GetWidth() - 24 * 6, 24)
 focusFrame.powerBarAlt:SetPoint("TOPLEFT", focusFrame, "BOTTOMLEFT", -2, -2)
+CreateUnitFrameSpellBar(focusFrame, "PLAYER_FOCUS_CHANGED")
+focusFrame.spellBar:SetSize(240 - 4 - 26, 30 - 4)
+focusFrame.spellBar:SetPoint("TOPLEFT", focusFrame, "BOTTOMLEFT", 26, -2 * 2 - 24)
+InitializeUnitFrameSpellBar(focusFrame.spellBar)
 
 for i = 1, MAX_BOSS_FRAMES do
     ---@type Button
@@ -1394,6 +1585,10 @@ for i = 1, MAX_BOSS_FRAMES do
     bossFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
     InitializeUnitFrame(bossFrame)
     bossFrame.powerBarAlt:SetPoint("BOTTOMRIGHT", bossFrame, "BOTTOMLEFT", -2, 0)
+    CreateUnitFrameSpellBar(bossFrame, "INSTANCE_ENCOUNTER_ENGAGE_UNIT")
+    bossFrame.spellBar:SetSize(192 - 4 - 26, 30 - 4)
+    bossFrame.spellBar:SetPoint("TOPRIGHT", bossFrame, "TOPLEFT", -2 - 2, 0)
+    InitializeUnitFrameSpellBar(bossFrame.spellBar)
 end
 
 ---@param self StatusBar
