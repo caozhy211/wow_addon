@@ -871,6 +871,8 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
             UpdateUnitFrame(unitFrame)
         elseif unitFrame.totFrame and UnitExists(unitFrame.totFrame.unit) then
             UpdateUnitFrame(unitFrame.totFrame)
+        else
+            UpdateUnitFrameHealthBarColor(unitFrame)
         end
     elseif event == "UNIT_NAME_UPDATE" then
         UpdateUnitFrameUnitName(unitFrame)
