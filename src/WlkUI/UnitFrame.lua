@@ -556,20 +556,25 @@ local function UnitFrameUnitPowerBarAltOnLeave()
     GameTooltip:Hide()
 end
 
-local auraButtonSize = 17
-
 ---@param auraFrame Frame
 local function CreateUnitFrameUnitAuraButton(auraFrame, num)
     local template = auraFrame.type == "Buff" and "TargetBuffFrameTemplate" or "TargetDebuffFrameTemplate"
-    ---@type Button
+    ---@type Button|TargetBuffFrameTemplate|TargetDebuffFrameTemplate
     local button = CreateFrame("Button", strconcat(auraFrame:GetName(), auraFrame.type, num), auraFrame, template)
-    button:SetSize(auraButtonSize, auraButtonSize)
+    local size = auraFrame.buttonSize
+    button:SetSize(size, size)
+    if button.Stealable then
+        button.Stealable:SetSize(size + 3, size + 3)
+    end
+    button.Count:SetFontObject("Game12Font_o1")
     return button
 end
 
+local spacing = 3
+
 local function UpdateUnitFrameUnitAuraButtonAnchor(auraFrame)
     ---@type Button[]
-    local buttons = auraFrame.buffs or auraFrame.debuffs
+    local buttons = auraFrame.Buff or auraFrame.Debuff
     local orientation = auraFrame.orientation
     local point, signX, signY
     if orientation == "toLeftTop" then
@@ -580,22 +585,14 @@ local function UpdateUnitFrameUnitAuraButtonAnchor(auraFrame)
         point = "BOTTOMLEFT"
         signX = 1
         signY = 1
-    elseif orientation == "toBottomLeft" then
-        point = "TOPRIGHT"
-        signX = -1
-        signY = -1
-    elseif orientation == "toBottomRight" then
-        point = "TOPLEFT"
-        signX = 1
-        signY = -1
     end
     local countPerLine = auraFrame.countPerLine
     for i, auraButton in ipairs(buttons) do
         if not auraButton:IsShown() then
             break
         end
-        auraButton:SetPoint(point, auraFrame, (auraButtonSize + 1) * (i - 1) * signX, (auraButtonSize + 1)
-                * floor(i / countPerLine) * signY)
+        auraButton:SetPoint(point, auraFrame, (auraFrame.buttonSize + spacing) * ((i - 1) % countPerLine) * signX,
+                (auraFrame.buttonSize + spacing) * floor((i - 1) / countPerLine) * signY)
     end
 end
 
@@ -615,10 +612,9 @@ local function UpdateUnitFrameUnitAuras(unitFrame)
             if icon then
                 numBuffs = numBuffs + 1
                 ---@type Button|TargetBuffFrameTemplate
-                local buffButton = buffFrame.buffs and buffFrame.buffs[numBuffs]
+                local buffButton = buffFrame.Buff and buffFrame.Buff[numBuffs]
                 if not buffButton then
                     buffButton = CreateUnitFrameUnitAuraButton(buffFrame, numBuffs)
-                    tinsert(buffFrame.buffs, buffButton)
                     buffButton.unit = unit
                 end
                 buffButton:SetID(index)
@@ -638,19 +634,18 @@ local function UpdateUnitFrameUnitAuras(unitFrame)
             return numBuffs >= maxBuffs
         end)
 
-        if buffFrame.buffs then
+        if buffFrame.Buff then
             for i = numBuffs + 1, maxBuffs do
                 ---@type Button
-                local buffButton = buffFrame.buffs[i]
+                local buffButton = buffFrame.Buff[i]
                 if buffButton then
                     buffButton:Hide()
                 else
                     break
                 end
             end
+            UpdateUnitFrameUnitAuraButtonAnchor(unitFrame.buffFrame)
         end
-
-        UpdateUnitFrameUnitAuraButtonAnchor(unitFrame.buffFrame)
     end
 
     if unitFrame.debuffFrame then
@@ -666,10 +661,9 @@ local function UpdateUnitFrameUnitAuras(unitFrame)
                 if icon then
                     numDebuffs = numDebuffs + 1
                     ---@type Button|TargetDebuffFrameTemplate
-                    local debuffButton = debuffFrame.debuffs and debuffFrame.debuffs[numDebuffs]
+                    local debuffButton = debuffFrame.Debuff and debuffFrame.Debuff[numDebuffs]
                     if not debuffButton then
                         debuffButton = CreateUnitFrameUnitAuraButton(debuffFrame, numDebuffs)
-                        tinsert(debuffFrame.debuffs, debuffButton)
                         debuffButton.unit = unit
                     end
                     debuffButton:SetID(index)
@@ -696,19 +690,18 @@ local function UpdateUnitFrameUnitAuras(unitFrame)
             return numDebuffs >= maxDebuffs
         end)
 
-        if debuffFrame.debuffs then
+        if debuffFrame.Debuff then
             for i = numDebuffs + 1, maxDebuffs do
                 ---@type Button
-                local debuffButton = debuffFrame.debuffs[i]
+                local debuffButton = debuffFrame.Debuff[i]
                 if debuffButton then
                     debuffButton:Hide()
                 else
                     break
                 end
             end
+            UpdateUnitFrameUnitAuraButtonAnchor(unitFrame.debuffFrame)
         end
-
-        UpdateUnitFrameUnitAuraButtonAnchor(unitFrame.debuffFrame)
     end
 end
 
@@ -1077,18 +1070,23 @@ local function InitializeUnitFrame(unitFrame)
     unitFrame.manaPercentLabel = manaPercentLabel
     manaPercentLabel:SetPoint("RIGHT", -1, 0)
 
+    local size = unitFrame:GetHeight() / 2
+    local offset = unitFrame.showSelectionHighlight and 2 or 0
+    local point = unitFrame.position
+    local sign = point == "LEFT" and -1 or 1
+
     ---@type Texture
     local raidTargetIcon = unitFrame:CreateTexture(name .. "RaidTargetIcon")
     unitFrame.raidTargetIcon = raidTargetIcon
-    raidTargetIcon:SetSize(26, 26)
-    raidTargetIcon:SetPoint("BOTTOMLEFT", unitFrame, "BOTTOMRIGHT")
+    raidTargetIcon:SetSize(size, size)
+    raidTargetIcon:SetPoint("BOTTOM" .. point, (offset + size) * sign, 0)
     raidTargetIcon:SetTexture("Interface/TargetingFrame/UI-RaidTargetingIcons")
 
     ---@type Texture
     local classification = unitFrame:CreateTexture(name .. "Classification")
     unitFrame.classificationIndicator = classification
-    classification:SetSize(16, 16)
-    classification:SetPoint("TOPLEFT", unitFrame, "TOPRIGHT")
+    classification:SetSize(size, size)
+    classification:SetPoint("TOP" .. point, (offset + size) * sign, 0)
     classification:SetTexture("Interface/TargetingFrame/Nameplates")
 
     ---@type PlayerModel
@@ -1150,30 +1148,50 @@ local function InitializeUnitFrame(unitFrame)
         unitFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
     end
     if unitFrame.showIndicators then
+        sign = point == "LEFT" and 1 or -1
+
+        ---@type Texture
+        local prestigePortrait = unitFrame:CreateTexture(name .. "PrestigePortrait", "BORDER")
+        unitFrame.prestigePortrait = prestigePortrait
+        prestigePortrait:SetSize(size, size)
+        prestigePortrait:SetPoint("BOTTOM" .. point, -offset * sign, -offset - size)
+        prestigePortrait:SetTexCoord(0.1, 0.9, 0.1, 0.9)
+        ---@type Texture
+        local prestigeBadge = unitFrame:CreateTexture(name .. "PrestigeBadge")
+        unitFrame.prestigeBadge = prestigeBadge
+        prestigeBadge:SetSize(size - 5, size - 5)
+        prestigeBadge:SetPoint("CENTER", prestigePortrait)
+        ---@type Texture
+        local pvpIcon = unitFrame:CreateTexture(name .. "PvpIcon")
+        unitFrame.pvpIcon = pvpIcon
+        pvpIcon:SetSize(size, size)
+        pvpIcon:SetPoint("BOTTOM" .. point, -offset * sign, -offset - size)
+        pvpIcon:SetTexCoord(0.08, 0.59, 0, 0.56)
+
         ---@type Texture
         local leaderIcon = unitFrame:CreateTexture(name .. "LeaderIcon")
         unitFrame.leaderIcon = leaderIcon
-        leaderIcon:SetSize(21, 21)
-        leaderIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 2, 0)
+        leaderIcon:SetSize(size, size)
+        leaderIcon:SetPoint("BOTTOM" .. point, (size - offset) * sign, -offset - size)
 
         ---@type Texture
         local combatRoleIcon = unitFrame:CreateTexture(name .. "CombatRoleIcon")
         unitFrame.combatRoleIcon = combatRoleIcon
-        combatRoleIcon:SetSize(21, 21)
-        combatRoleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 3, 0)
+        combatRoleIcon:SetSize(size, size)
+        combatRoleIcon:SetPoint("BOTTOM" .. point, (size * 2 - offset) * sign, -offset - size)
         combatRoleIcon:SetTexture("Interface/LFGFrame/UI-LFG-ICON-PORTRAITROLES")
 
         ---@type Texture
         local roleIcon = unitFrame:CreateTexture(name .. "RoleIcon")
         unitFrame.roleIcon = roleIcon
-        roleIcon:SetSize(21, 21)
-        roleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 4, 0)
+        roleIcon:SetSize(size, size)
+        roleIcon:SetPoint("BOTTOM" .. point, (size * 3 - offset) * sign, -offset - size)
 
         ---@type Texture
         local masterLooterIcon = unitFrame:CreateTexture(name .. "MasterLooterIcon")
         unitFrame.masterLooterIcon = masterLooterIcon
-        masterLooterIcon:SetSize(21, 21)
-        masterLooterIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21 * 5, 0)
+        masterLooterIcon:SetSize(size, size)
+        masterLooterIcon:SetPoint("BOTTOM" .. point, (size * 4 - offset) * sign, -offset - size)
         masterLooterIcon:SetTexture("Interface/GroupFrame/UI-Group-MasterLooter")
 
         ---@type FontString
@@ -1181,32 +1199,14 @@ local function InitializeUnitFrame(unitFrame)
         unitFrame.groupLabel = groupLabel
         groupLabel:SetPoint("TOPLEFT", nameLabel, "BOTTOMLEFT", 1, 0)
 
-        ---@type Texture
-        local prestigePortrait = unitFrame:CreateTexture(name .. "PrestigePortrait", "BORDER")
-        unitFrame.prestigePortrait = prestigePortrait
-        prestigePortrait:SetSize(21, 21)
-        prestigePortrait:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21, 0)
-        prestigePortrait:SetTexCoord(0.1, 0.9, 0.1, 0.9)
-        ---@type Texture
-        local prestigeBadge = unitFrame:CreateTexture(name .. "PrestigeBadge")
-        unitFrame.prestigeBadge = prestigeBadge
-        prestigeBadge:SetSize(16, 16)
-        prestigeBadge:SetPoint("CENTER", prestigePortrait)
-        ---@type Texture
-        local pvpIcon = unitFrame:CreateTexture(name .. "PvpIcon")
-        unitFrame.pvpIcon = pvpIcon
-        pvpIcon:SetSize(21, 21)
-        pvpIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", 21, 0)
-        pvpIcon:SetTexCoord(0.08, 0.59, 0, 0.56)
-
         unitFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
     end
     if unitFrame.showStatusIcon then
         ---@type Texture
         local statusIcon = unitFrame:CreateTexture(name .. "StatusIcon")
         unitFrame.statusIcon = statusIcon
-        statusIcon:SetSize(21, 21)
-        statusIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
+        statusIcon:SetSize(size, size)
+        statusIcon:SetPoint("TOPRIGHT", unitFrame, "BOTTOMLEFT")
         statusIcon:SetTexture("Interface/CharacterFrame/UI-StateIcon")
         unitFrame:RegisterEvent("PLAYER_ENTER_COMBAT")
         unitFrame:RegisterEvent("PLAYER_LEAVE_COMBAT")
@@ -1218,22 +1218,22 @@ local function InitializeUnitFrame(unitFrame)
         ---@type Texture
         local questIcon = unitFrame:CreateTexture(name .. "QuestIcon")
         unitFrame.questIcon = questIcon
-        questIcon:SetSize(21, 21)
-        questIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
+        questIcon:SetSize(size, size)
+        questIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMRIGHT", offset, -offset)
         questIcon:SetTexture("Interface/TargetingFrame/PortraitQuestBadge")
     end
     if unitFrame.showPetBattleIcon then
         ---@type Texture
         local petBattleIcon = unitFrame:CreateTexture(name .. "PetBattleIcon")
         unitFrame.petBattleIcon = petBattleIcon
-        petBattleIcon:SetSize(21, 21)
-        petBattleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT")
+        petBattleIcon:SetSize(size, size)
+        petBattleIcon:SetPoint("TOPLEFT", unitFrame, "BOTTOMRIGHT", offset, -offset)
     end
     if unitFrame.showPowerBarAlt then
         ---@type StatusBar
         local powerBarAlt = CreateFrame("StatusBar", name .. "UnitPowerBarAlt", unitFrame)
         unitFrame.powerBarAlt = powerBarAlt
-        powerBarAlt:SetSize(100, 17)
+        powerBarAlt:SetSize(192, 16)
         powerBarAlt:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill")
         ---@type Texture
         local powerBarAltBackground = powerBarAlt:CreateTexture(name .. "UnitPowerBarAltBackground", "BACKGROUND")
@@ -1272,24 +1272,22 @@ local function CreateUnitFrameAuraFrame(unitFrame, auraType, orientation, maxCou
     frame.maxCount = maxCount
     frame.orientation = orientation
     frame.countPerLine = countPerLine
-    if auraType == "Buff" then
-        frame.buffs = {}
-    else
-        frame.debuffs = {}
-    end
+    local buttonSize = unitFrame:GetHeight() / 2
+    frame.buttonSize = buttonSize
     local rows = ceil(maxCount / countPerLine)
-    frame:SetSize(countPerLine * (auraButtonSize + 1) - 1, rows * (auraButtonSize + 1) - 1)
+    frame:SetSize(countPerLine * (buttonSize + spacing) - spacing, rows * (buttonSize + spacing) - spacing)
     return frame
 end
 
 ---@type Button
 local petFrame = CreateFrame("Button", "WlkPetFrame", UIParent, "SecureUnitButtonTemplate")
 petFrame:SetFrameStrata("HIGH")
-petFrame:SetSize(200, 42)
-petFrame:SetPoint("BOTTOMLEFT", 566, 100)
+petFrame:SetSize(773 - 540 - 21, 42)
+petFrame:SetPoint("BOTTOMLEFT", 540 + 21, 100)
 petFrame.unit = "pet"
 petFrame.unit2 = "player"
 petFrame.unitEvents = CopyTable(unitEvents)
+petFrame.position = "LEFT"
 petFrame:RegisterUnitEvent("UNIT_PET", "player")
 petFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 petFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
@@ -1302,94 +1300,95 @@ petFrame.classificationIndicator:SetPoint("TOPRIGHT", petFrame, "TOPLEFT")
 ---@type Button
 local totFrame = CreateFrame("Button", "WlkTotFrame", UIParent, "SecureUnitButtonTemplate")
 totFrame:SetFrameStrata("HIGH")
-totFrame:SetSize(200, 42)
-totFrame:SetPoint("BOTTOMRIGHT", -566, 100)
+totFrame:SetSize(petFrame:GetSize())
+totFrame:SetPoint("BOTTOMRIGHT", -540 - 21, 100)
 totFrame.unit = "targetTarget"
 totFrame.isTotFrame = true
+totFrame.position = "RIGHT"
 totFrame:RegisterUnitEvent("UNIT_TARGET", "target")
 totFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(totFrame)
 
 ---@type Button
 local playerFrame = CreateFrame("Button", "WlkPlayerFrame", UIParent, "SecureUnitButtonTemplate")
-playerFrame:SetSize(300, 56)
-playerFrame:SetPoint("BOTTOMLEFT", 566, 185)
+playerFrame:SetSize((27 + spacing) * 9, 54)
+playerFrame:SetPoint("BOTTOMLEFT", 540 + 27, 100 + 42 + 27)
 playerFrame.unit = "player"
 playerFrame.unit2 = "vehicle"
 playerFrame.unitEvents = CopyTable(unitEvents)
 playerFrame.showIndicators = 1
 playerFrame.showStatusIcon = 1
-playerFrame.buffFrame = CreateUnitFrameAuraFrame(playerFrame, "Buff", "toLeftTop", 32, 16)
-playerFrame.buffFrame:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT")
-playerFrame.debuffFrame = CreateUnitFrameAuraFrame(playerFrame, "Debuff", "toLeftTop", 16, 16)
-playerFrame.debuffFrame:SetPoint("BOTTOMRIGHT", playerFrame.buffFrame, "TOPRIGHT", 0, 5)
+playerFrame.position = "LEFT"
+playerFrame.buffFrame = CreateUnitFrameAuraFrame(playerFrame, "Buff", "toLeftTop", 34, 15)
+playerFrame.buffFrame:SetPoint("RIGHT")
+playerFrame.buffFrame:SetPoint("BOTTOM", UIParent, 0, 358 - 27 * 2 - spacing)
+playerFrame.debuffFrame = CreateUnitFrameAuraFrame(playerFrame, "Debuff", "toLeftTop", 16, 8)
+playerFrame.debuffFrame:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", -(27 + spacing) * 2, spacing)
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
-playerFrame.raidTargetIcon:ClearAllPoints()
-playerFrame.raidTargetIcon:SetPoint("BOTTOMRIGHT", playerFrame, "BOTTOMLEFT")
-playerFrame.classificationIndicator:ClearAllPoints()
-playerFrame.classificationIndicator:SetPoint("TOPRIGHT", playerFrame, "TOPLEFT")
 
 ---@type Button
 local targetFrame = CreateFrame("Button", "WlkTargetFrame", UIParent, "SecureUnitButtonTemplate")
-targetFrame:SetSize(300, 56)
-targetFrame:SetPoint("BOTTOMRIGHT", -566, 185)
+targetFrame:SetSize(playerFrame:GetSize())
+targetFrame:SetPoint("BOTTOMRIGHT", -540 - 27, 100 + 42 + 27)
 targetFrame.unit = "target"
 targetFrame.totFrame = totFrame
 targetFrame.showIndicators = 1
 targetFrame.showQuestIcon = 1
 targetFrame.showPetBattleIcon = 1
 targetFrame.showPowerBarAlt = 1
-targetFrame.debuffFrame = CreateUnitFrameAuraFrame(targetFrame, "Debuff", "toRightTop", 16, 16)
-targetFrame.debuffFrame:SetPoint("BOTTOMLEFT", targetFrame, "TOPLEFT")
-targetFrame.buffFrame = CreateUnitFrameAuraFrame(targetFrame, "Buff", "toRightTop", 32, 16)
-targetFrame.buffFrame:SetPoint("BOTTOMLEFT", targetFrame.debuffFrame, "TOPLEFT", 0, 19)
+targetFrame.position = "RIGHT"
+targetFrame.debuffFrame = CreateUnitFrameAuraFrame(targetFrame, "Debuff", "toRightTop", 16, 8)
+targetFrame.debuffFrame:SetPoint("BOTTOMLEFT", targetFrame, "TOPLEFT", (27 + spacing) * 2, spacing)
+targetFrame.buffFrame = CreateUnitFrameAuraFrame(targetFrame, "Buff", "toRightTop", 32, 8)
+targetFrame.buffFrame:SetPoint("BOTTOMLEFT", targetFrame, "TOPRIGHT", 27 + 5, -27)
 targetFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 targetFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(targetFrame)
-targetFrame.powerBarAlt:SetWidth(targetFrame:GetWidth() - 21 * 5)
-targetFrame.powerBarAlt:SetPoint("TOPRIGHT", targetFrame, "BOTTOMRIGHT", 21, -2)
+targetFrame.powerBarAlt:SetSize(targetFrame:GetWidth() - 27 * 5, 27)
+targetFrame.powerBarAlt:SetPoint("TOPLEFT", targetFrame, "BOTTOMLEFT")
 
 ---@type Button
 local focusFrame = CreateFrame("Button", "WlkFocusFrame", UIParent, "SecureUnitButtonTemplate")
-focusFrame:SetSize(210, 48)
-focusFrame:SetPoint("BOTTOMLEFT", 1380, 185)
+focusFrame:SetSize(240 - 24 - 2 * 2, 48)
+focusFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMRIGHT", -540 + 2 + 2, 30 + 24 + 2)
 focusFrame.unit = "focus"
 focusFrame.showSelectionHighlight = 1
 focusFrame.showIndicators = 1
 focusFrame.showQuestIcon = 1
 focusFrame.showPetBattleIcon = 1
 focusFrame.showPowerBarAlt = 1
-focusFrame.debuffFrame = CreateUnitFrameAuraFrame(focusFrame, "Debuff", "toRightTop", 16, 16)
-focusFrame.debuffFrame:SetPoint("BOTTOMLEFT", focusFrame, "TOPLEFT", -2, 2)
-focusFrame.buffFrame = CreateUnitFrameAuraFrame(focusFrame, "Buff", "toRightTop", 32, 16)
-focusFrame.buffFrame:SetPoint("BOTTOMLEFT", focusFrame.debuffFrame, "TOPLEFT", 0, 19)
+focusFrame.position = "RIGHT"
+focusFrame.debuffFrame = CreateUnitFrameAuraFrame(focusFrame, "Debuff", "toRightTop", 9, 9)
+focusFrame.debuffFrame:SetPoint("BOTTOMLEFT", focusFrame, "TOPLEFT", -2, 2 + 2)
+focusFrame.buffFrame = CreateUnitFrameAuraFrame(focusFrame, "Buff", "toRightTop", 18, 9)
+focusFrame.buffFrame:SetPoint("BOTTOMLEFT", focusFrame.debuffFrame, "TOPLEFT", 0, 3)
 focusFrame:RegisterEvent("PLAYER_FOCUS_CHANGED")
 focusFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(focusFrame)
-focusFrame.powerBarAlt:SetWidth(focusFrame:GetWidth() - 21 * 5)
-focusFrame.powerBarAlt:SetPoint("TOPRIGHT", focusFrame, "BOTTOMRIGHT", 21, -2)
+focusFrame.powerBarAlt:SetSize(focusFrame.debuffFrame:GetWidth() - 24 * 6, 24)
+focusFrame.powerBarAlt:SetPoint("TOPLEFT", focusFrame, "BOTTOMLEFT", -2, -2)
 
 for i = 1, MAX_BOSS_FRAMES do
     ---@type Button
     local bossFrame = CreateFrame("Button", strconcat("WlkBoss", i, "Frame"), UIParent, "SecureUnitButtonTemplate")
-    bossFrame:SetSize(240, 48)
-    bossFrame:SetPoint("BOTTOMRIGHT", -330, 311 + 100 * (i - 1))
+    bossFrame:SetSize(429 - 4 - 24 - 192, 48)
+    bossFrame:SetPoint("BOTTOMRIGHT", -298 - 24 - 2, 316 + 2 + (i - 1) * (48 + 2 * 2 + 24 * 2 + 2 + 3 + 5))
     bossFrame.unit = "boss" .. i
     bossFrame.showSelectionHighlight = 1
     bossFrame.showPowerBarAlt = 1
+    bossFrame.position = "RIGHT"
     bossFrame.debuffFrame = CreateUnitFrameAuraFrame(bossFrame, "Debuff", "toRightTop", 16, 16)
-    bossFrame.debuffFrame:SetPoint("BOTTOMLEFT", bossFrame, "TOPLEFT", -2, 2)
+    bossFrame.debuffFrame:SetPoint("BOTTOMRIGHT", bossFrame, "TOPRIGHT", 2 + 24, 2 + 2)
     bossFrame.buffFrame = CreateUnitFrameAuraFrame(bossFrame, "Buff", "toRightTop", 16, 16)
-    bossFrame.buffFrame:SetPoint("BOTTOMLEFT", bossFrame.debuffFrame, "TOPLEFT", 0, 1)
+    bossFrame.buffFrame:SetPoint("BOTTOMRIGHT", bossFrame.debuffFrame, "TOPRIGHT", 0, 3)
     if i == 1 then
         bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     end
     bossFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "boss" .. i)
     bossFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
     InitializeUnitFrame(bossFrame)
-    bossFrame.powerBarAlt:SetWidth(180)
     bossFrame.powerBarAlt:SetPoint("BOTTOMRIGHT", bossFrame, "BOTTOMLEFT", -2, 0)
 end
 
