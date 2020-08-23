@@ -1412,3 +1412,24 @@ PlayerPowerBarAltStatusFrame:HookScript("OnEvent", function(self, _, ...)
         UnitPowerBarAltStatus_ToggleFrame(self)
     end
 end)
+
+--- PlayerPowerBarAlt 的宽度
+local WIDTH1 = 256
+--- PlayerPowerBarAlt 的高度
+local HEIGHT1 = 256
+--- OrderHallCommandBar 的高度
+local HEIGHT2 = 25
+local scale = 0.75
+PlayerPowerBarAlt:SetScale(scale)
+PlayerPowerBarAlt:SetMovable(true)
+PlayerPowerBarAlt:SetUserPlaced(true)
+---@type Frame
+local eventFrame = CreateFrame("Frame")
+eventFrame:RegisterEvent("PLAYER_LOGIN")
+eventFrame:SetScript("OnEvent", function(_, event)
+    eventFrame:UnregisterEvent(event)
+    PlayerPowerBarAlt:ClearAllPoints()
+    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "TOPRIGHT", (-298 - 429 + WIDTH1 * 0.5 * scale) / scale,
+            (-HEIGHT2 - HEIGHT1 * 0.5 * scale) / scale)
+    PlayerPowerBarAlt:SetMovable(false)
+end)
