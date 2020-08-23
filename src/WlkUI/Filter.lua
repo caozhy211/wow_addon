@@ -4,14 +4,13 @@ local filter
 ---@type Frame
 local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("ADDON_LOADED")
----@param self Frame
-eventFrame:SetScript("OnEvent", function(self, event, ...)
+eventFrame:SetScript("OnEvent", function(_, event, ...)
     if addonName == ... then
+        eventFrame:UnregisterEvent(event)
         if not WlkChatFilter then
             WlkChatFilter = {}
         end
         filter = WlkChatFilter
-        self:UnregisterEvent(event)
     end
 end)
 
@@ -22,13 +21,20 @@ local chatInfoEvents = {
     "CHAT_MSG_WHISPER",
 }
 
-local function filterChat(_, _, message, ...)
-    for _, keyword in ipairs(filter) do
-        if strmatch(message, keyword) then
-            return true
+local function tMatch(tbl, ...)
+    for i = 1, select("#", ...) do
+        local str = select(i, ...)
+        for _, value in ipairs(tbl) do
+            if strmatch(str, value) then
+                return true
+            end
         end
     end
-    return false, message, ...
+    return false
+end
+
+local function filterChat(_, _, message, ...)
+    return tMatch(filter, message), message, ...
 end
 
 for _, event in ipairs(chatInfoEvents) do
@@ -62,4 +68,19 @@ SlashCmdList["CHAT_FILTER"] = function(arg)
     else
         ChatFrame1:AddMessage(HELP, info.r, info.g, info.b, info.id)
     end
+end
+
+local BN_TOAST_TYPE_CLUB_INVITATION = 6;
+
+local rawShowToast = BNToastFrame.ShowToast
+BNToastFrame.ShowToast = function()
+    local toast = BNToastFrame.BNToasts[1]
+    if toast.toastType == BN_TOAST_TYPE_CLUB_INVITATION then
+        local clubName = toast.toastData.club.name
+        local description = toast.toastData.club.description
+        if tMatch(filter, clubName, description) then
+            return tremove(BNToastFrame.BNToasts, 1)
+        end
+    end
+    return rawShowToast(BNToastFrame)
 end
