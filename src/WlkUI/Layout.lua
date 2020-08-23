@@ -32,3 +32,7 @@ LossOfControlFrame:SetScale(scale)
 LossOfControlFrame:ClearAllPoints()
 LossOfControlFrame:SetPoint("BOTTOM", 0, (142 + HEIGHT1 * scale) / scale)
 LossOfControlFrame.SetPoint = nop
+
+TalkingHeadFrame:ClearAllPoints()
+TalkingHeadFrame:SetPoint("TOPLEFT")
+TalkingHeadFrame.SetPoint = nop
