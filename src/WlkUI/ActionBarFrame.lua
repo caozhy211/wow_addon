@@ -237,3 +237,20 @@ hooksecurefunc("MainMenuBarVehicleLeaveButton_Update", function()
     MainMenuBarVehicleLeaveButton:ClearAllPoints()
     MainMenuBarVehicleLeaveButton:SetPoint("CENTER", MultiBarBottomLeftButton12, "RIGHT", SPACING4 / 2, 0)
 end)
+
+--- WorldMapFrame 和 UIParent 的底部边距
+local PADDING1 = 433
+--- ZoneAbilityFrame.SpellButton.Style 和 ExtraActionButton1.style 的高度
+local HEIGHT2 = 128
+
+local scale = 0.5
+
+ExtraActionBarFrame:SetScale(scale)
+ExtraActionBarFrame:ClearAllPoints()
+ExtraActionBarFrame:SetPoint("CENTER", UIParent, "BOTTOM", 0, (PADDING1 - HEIGHT2 * 0.5 * scale) / scale)
+ExtraActionBarFrame.SetPoint = nop
+
+ZoneAbilityFrame:SetScale(scale)
+ZoneAbilityFrame:ClearAllPoints()
+ZoneAbilityFrame:SetPoint("CENTER", UIParent, "BOTTOM", 0, (PADDING1 - HEIGHT2 * 1.5 * scale) / scale)
+ZoneAbilityFrame.SetPoint = nop
