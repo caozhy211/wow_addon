@@ -36,6 +36,9 @@ local function HookCooldownOnUpdate(self, elapsed)
         timer:SetText(text)
         timer:SetTextColor(r, g, b)
         timer.updateInterval = updateInterval
+        if not timer:IsShown() then
+            timer:Show()
+        end
     else
         timer:Hide()
     end
@@ -47,11 +50,14 @@ local function HookCooldownOnHide(self)
     timer:Hide()
 end
 
+---@param self Cooldown
 local function HookCooldownOnShow(self)
     ---@type FontString
     local timer = self.cdTimer
-    timer.updateInterval = 0
-    timer:Show()
+    if self:GetCooldownDuration() > 1500 then
+        timer.updateInterval = 0
+        timer:Show()
+    end
 end
 
 local NAMEPLATE_BUFF_HEIGHT = 14
