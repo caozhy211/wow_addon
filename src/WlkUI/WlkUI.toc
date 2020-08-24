@@ -13,8 +13,9 @@ Cooldown.lua
 ExportFrame.lua
 Filter.lua
 GridFrame.lua
+Layout.lua
+MerchantFrame.lua
 Minimap.lua
 MirrorTimer.lua
-Layout.lua
 Settings.lua
 UnitFrame.lua
