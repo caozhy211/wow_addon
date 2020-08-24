@@ -868,7 +868,6 @@ local function UnitFrameSwitchUnit(unitFrame)
     local manaBar = unitFrame.manaBar
     manaBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", unitFrame.unit)
     manaBar:RegisterUnitEvent("UNIT_MAXPOWER", unitFrame.unit)
-    unitFrame:SetAttribute("unit", unitFrame.unit)
 end
 
 local unitEvents = {
