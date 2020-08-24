@@ -602,7 +602,10 @@ local function CreateUnitFrameUnitAuraButton(auraFrame, num)
     if button.Stealable then
         button.Stealable:SetSize(size + 3, size + 3)
     end
+    button.Count:ClearAllPoints()
+    button.Count:SetPoint("BOTTOMRIGHT", 3, 0)
     button.Count:SetFontObject("Game12Font_o1")
+    button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     return button
 end
 
@@ -868,43 +871,6 @@ local function UnitFrameSwitchUnit(unitFrame)
     unitFrame:SetAttribute("unit", unitFrame.unit)
 end
 
-local totems = {}
-
-local function UpdateTotemButtons()
-    ---@type Button
-    local button
-    local buttonIndex = 1
-    for i = 1, MAX_TOTEMS do
-        local haveTotem, _, _, duration, icon = GetTotemInfo(i)
-        if haveTotem then
-            button = totems[buttonIndex]
-            button.slot = i
-
-            local buttonName = button:GetName()
-            local buttonIcon = _G[buttonName .. "IconTexture"]
-            local buttonDuration = _G[buttonName .. "Duration"]
-
-            if duration > 0 then
-                buttonIcon:SetTexture(icon)
-                buttonIcon:Show()
-                button:SetScript("OnUpdate", TotemButton_OnUpdate)
-                button:Show()
-            else
-                buttonIcon:Hide()
-                buttonDuration:Hide()
-                button:SetScript("OnUpdate", nil)
-                button:Hide()
-            end
-
-            buttonIndex = buttonIndex + 1
-        else
-            button = totems[MAX_TOTEMS - i + buttonIndex]
-            button.slot = 0
-            button:Hide()
-        end
-    end
-end
-
 local unitEvents = {
     "UNIT_NAME_UPDATE", "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "UNIT_MAXHEALTH", "UNIT_LEVEL", "UNIT_HEAL_PREDICTION",
     "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_CLASSIFICATION_CHANGED", "UNIT_THREAT_LIST_UPDATE", "UNIT_CONNECTION",
@@ -1014,10 +980,6 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
 
     if event == "UNIT_AURA" then
         UpdateUnitFrameUnitAuras(unitFrame)
-    end
-
-    if event == "PLAYER_TOTEM_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
-        UpdateTotemButtons()
     end
 end
 
@@ -1315,9 +1277,6 @@ local function InitializeUnitFrame(unitFrame)
     end
     if unitFrame.buffFrame or unitFrame.debuffFrame then
         unitFrame:RegisterUnitEvent("UNIT_AURA", unit)
-        if unitFrame.unitEvents then
-            tinsert(unitFrame.unitEvents, "UNIT_AURA")
-        end
     end
 end
 
@@ -1534,26 +1493,104 @@ playerFrame.unitEvents = CopyTable(unitEvents)
 playerFrame.showIndicators = 1
 playerFrame.showStatusIcon = 1
 playerFrame.position = "LEFT"
-playerFrame.buffFrame = CreateUnitFrameAuraFrame(playerFrame, "Buff", "toLeftTop", 34, 15)
-playerFrame.buffFrame:SetPoint("RIGHT")
-playerFrame.buffFrame:SetPoint("BOTTOM", UIParent, 0, 358 - 27 * 2 - spacing)
-playerFrame.debuffFrame = CreateUnitFrameAuraFrame(playerFrame, "Debuff", "toLeftTop", 16, 8)
-playerFrame.debuffFrame:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", -(27 + spacing) * 2, spacing)
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
 
+---@param auraButton AuraButtonTemplate
+hooksecurefunc("AuraButton_UpdateDuration", function(auraButton)
+    if auraButton.wlkCooldown then
+        auraButton.duration:Hide()
+    end
+end)
+
+hooksecurefunc("CreateFrame", function(_, frameName)
+    if frameName and (strmatch(frameName, "^BuffButton%d$") or strmatch(frameName, "^DebuffButton%d$")) then
+        ---@type Button|AuraButtonTemplate|BuffButtonTemplate|DebuffButtonTemplate
+        local button = _G[frameName]
+        button:SetSize(27, 27)
+        button.SetAlpha = nop
+        if button.Border then
+            button.Border:ClearAllPoints()
+            button.Border:SetPoint("TOPLEFT", -1, 1)
+            button.Border:SetPoint("BOTTOMRIGHT", 1, -1)
+        end
+        button.count:ClearAllPoints()
+        button.count:SetPoint("BOTTOMRIGHT", 3, 0)
+        button.count:SetJustifyH("RIGHT")
+        button.count:SetFontObject("Game12Font_o1")
+        button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        ---@type Cooldown
+        local cooldown = CreateFrame("Cooldown", frameName .. "WlkCooldown", button, "CooldownFrameTemplate")
+        button.wlkCooldown = cooldown
+        cooldown:SetReverse(true)
+        cooldown:SetDrawEdge(true)
+    end
+end)
+
+hooksecurefunc("AuraButton_Update", function(buttonName, index, _, _, _, _, duration, expirationTime)
+    local startTime = expirationTime - duration
+    CooldownFrame_Set(_G[buttonName .. index].wlkCooldown, startTime, duration, duration > 0, true)
+end)
+
+hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
+    ---@type Button
+    local button
+    for i = 1, BUFF_MAX_DISPLAY do
+        button = BuffFrame.BuffButton[i]
+        if button and button.SetPoint ~= nop then
+            button:ClearAllPoints()
+            button:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", (i - 1) % 15 * -(27 + 3),
+                    78 + floor((i - 1) / 15) * (27 + 3))
+            button.SetPoint = nop
+        end
+    end
+end)
+
+hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
+    ---@type Button
+    local button = BuffFrame[buttonName][index]
+    if button.SetPoint ~= nop then
+        button:ClearAllPoints()
+        button:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", (index - 1) % 8 * -(27 + 3) - 60,
+                3 + floor((index - 1) / 8) * (27 + 3))
+        button.SetPoint = nop
+    end
+end)
+
+for i = 1, NUM_TEMP_ENCHANT_FRAMES do
+    ---@type Button|AuraButtonTemplate
+    local button = _G["TempEnchant" .. i]
+    button:SetSize(27, 27)
+    button:ClearAllPoints()
+    button:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", (1 - i) * (27 + 3) - 60, 78 + 60)
+    button.Border:Hide()
+    button.SetAlpha = nop
+    button.duration:ClearAllPoints()
+    button.duration:SetPoint("TOPRIGHT", 3, 0)
+    button.duration:SetFontObject("Game12Font_o1")
+    button.Icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+end
+
+TotemFrame:SetParent(playerFrame)
+
 for i = 1, MAX_TOTEMS do
     ---@type Button|TotemButtonTemplate
-    local totem = CreateFrame("Button", "WlkTotemButton" .. i, playerFrame, "TotemButtonTemplate")
-    totems[i] = totem
-    totem:SetSize(29, 29)
-    totem:SetPoint("BOTTOMRIGHT", playerFrame.buffFrame, "TOPRIGHT", (1 - i) * (29 + 0.5), 16)
-    totem.duration:SetFontObject(font)
-    totem.duration:SetPoint("TOP", totem, "BOTTOM")
-    totem:RegisterForClicks()
+    local button = _G["TotemFrameTotem" .. i]
+    button:SetSize(29, 29)
+    button:ClearAllPoints()
+    button:SetPoint("RIGHT", playerFrame, (1 - i) * (29 + 0.5), 0)
+    button:SetPoint("TOP", UIParent, "BOTTOM", 0, 433 - 2.5)
+    button.duration:SetFontObject(font)
+    button.duration:SetPoint("TOP", button, "BOTTOM", 0, -1)
 end
-playerFrame:RegisterEvent("PLAYER_TOTEM_UPDATE")
+
+---@param button Button
+hooksecurefunc("TotemButton_Update", function(button)
+    ---@type Cooldown
+    local cooldown = _G[button:GetName() .. "IconCooldown"]
+    cooldown:Hide()
+end)
 
 CastingBarFrame:SetSize(360 - 30, 30)
 CastingBarFrame:ClearAllPoints()
