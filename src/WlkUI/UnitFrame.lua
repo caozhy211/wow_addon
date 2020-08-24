@@ -33,15 +33,15 @@ local function UpdateUnitFrameUnitClassification(unitFrame)
     if CompactUnitFrame_UpdatePvPClassificationIndicator(unitFrame) then
         return
     else
-        local classification = UnitClassification(unitFrame.unit);
+        local classification = UnitClassification(unitFrame.unit)
         if (classification == "elite" or classification == "worldboss") then
-            icon:SetAtlas("nameplates-icon-elite-gold");
-            icon:Show();
+            icon:SetAtlas("nameplates-icon-elite-gold")
+            icon:Show()
         elseif (classification == "rareelite") then
-            icon:SetAtlas("nameplates-icon-elite-silver");
-            icon:Show();
+            icon:SetAtlas("nameplates-icon-elite-silver")
+            icon:Show()
         else
-            icon:Hide();
+            icon:Hide()
         end
     end
 end
@@ -868,6 +868,43 @@ local function UnitFrameSwitchUnit(unitFrame)
     unitFrame:SetAttribute("unit", unitFrame.unit)
 end
 
+local totems = {}
+
+local function UpdateTotemButtons()
+    ---@type Button
+    local button
+    local buttonIndex = 1
+    for i = 1, MAX_TOTEMS do
+        local haveTotem, _, _, duration, icon = GetTotemInfo(i)
+        if haveTotem then
+            button = totems[buttonIndex]
+            button.slot = i
+
+            local buttonName = button:GetName()
+            local buttonIcon = _G[buttonName .. "IconTexture"]
+            local buttonDuration = _G[buttonName .. "Duration"]
+
+            if duration > 0 then
+                buttonIcon:SetTexture(icon)
+                buttonIcon:Show()
+                button:SetScript("OnUpdate", TotemButton_OnUpdate)
+                button:Show()
+            else
+                buttonIcon:Hide()
+                buttonDuration:Hide()
+                button:SetScript("OnUpdate", nil)
+                button:Hide()
+            end
+
+            buttonIndex = buttonIndex + 1
+        else
+            button = totems[MAX_TOTEMS - i + buttonIndex]
+            button.slot = 0
+            button:Hide()
+        end
+    end
+end
+
 local unitEvents = {
     "UNIT_NAME_UPDATE", "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "UNIT_MAXHEALTH", "UNIT_LEVEL", "UNIT_HEAL_PREDICTION",
     "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_CLASSIFICATION_CHANGED", "UNIT_THREAT_LIST_UPDATE", "UNIT_CONNECTION",
@@ -977,6 +1014,10 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
 
     if event == "UNIT_AURA" then
         UpdateUnitFrameUnitAuras(unitFrame)
+    end
+
+    if event == "PLAYER_TOTEM_UPDATE" or event == "PLAYER_ENTERING_WORLD" then
+        UpdateTotemButtons()
     end
 end
 
@@ -1428,11 +1469,8 @@ local function InitializeUnitFrameSpellBar(bar)
     local borderWidth = bar.borderTop:GetWidth()
     bar.borderTop:SetWidth(borderWidth + 26)
     bar.borderBottom:SetWidth(borderWidth + 26)
-    bar.borderTop:ClearAllPoints()
     bar.borderTop:SetPoint("BOTTOMRIGHT", bar, "TOPRIGHT")
-    bar.borderBottom:ClearAllPoints()
     bar.borderBottom:SetPoint("TOPRIGHT", bar, "BOTTOMRIGHT")
-    bar.borderLeft:ClearAllPoints()
     bar.borderLeft:SetPoint("RIGHT", bar, "LEFT", -26, 0)
 
     hooksecurefunc(bar.BorderShield, "Show", HookSpellBarBorderShieldShow)
@@ -1504,6 +1542,19 @@ playerFrame.debuffFrame:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", -(27 + 
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
+
+for i = 1, MAX_TOTEMS do
+    ---@type Button|TotemButtonTemplate
+    local totem = CreateFrame("Button", "WlkTotemButton" .. i, playerFrame, "TotemButtonTemplate")
+    totems[i] = totem
+    totem:SetSize(29, 29)
+    totem:SetPoint("BOTTOMRIGHT", playerFrame.buffFrame, "TOPRIGHT", (1 - i) * (29 + 0.5), 16)
+    totem.duration:SetFontObject(font)
+    totem.duration:SetPoint("TOP", totem, "BOTTOM")
+    totem:RegisterForClicks()
+end
+playerFrame:RegisterEvent("PLAYER_TOTEM_UPDATE")
+
 CastingBarFrame:SetSize(360 - 30, 30)
 CastingBarFrame:ClearAllPoints()
 CastingBarFrame:SetPoint("BOTTOM", 30 * 0.5, 253)
