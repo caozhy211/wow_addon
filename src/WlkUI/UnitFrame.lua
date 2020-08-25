@@ -1331,27 +1331,22 @@ local function GetUnitCastingInfo(bar)
     end
 end
 
+local castingStartTime, castingDelayTime
+
 local function HookUnitFrameSpellBarOnEvent(self, event, ...)
     local unit = ...
     if unit ~= self.unit then
         return
     end
-    local startTime, endTime, delayTime
-    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_CHANNEL_START" then
-        startTime, endTime = GetUnitCastingInfo(self)
-        delayTime = 0
+    if event == "UNIT_SPELLCAST_START" then
+        castingStartTime = GetUnitCastingInfo(self)
+        castingDelayTime = 0
     elseif event == "UNIT_SPELLCAST_DELAYED" then
-        local oldStartTime = startTime
-        startTime, endTime = GetUnitCastingInfo(self)
-        if startTime and endTime then
-            if self.casting then
-                delayTime = (delayTime or 0) + (startTime - (oldStartTime or startTime))
-            elseif self.channeling then
-                delayTime = (delayTime or 0) + ((oldStartTime or startTime) - startTime)
-            end
+        local startTime = GetUnitCastingInfo(self)
+        if startTime and self.casting then
+            castingDelayTime = (castingDelayTime or 0) + (startTime - (castingStartTime or startTime))
         end
     end
-    self.delayTime = delayTime
 end
 
 local function FormatTime(seconds)
@@ -1379,8 +1374,8 @@ local function HookUnitFrameSpellBarOnUpdate(self, elapsed)
     elseif self.channeling then
         timeLabel:SetFormattedText("%s/%s", FormatTime(self.value), FormatTime(self.maxValue))
     end
-    if self.delayTime and self.delayTime >= 0.1 and (self.casting or self.channeling) then
-        delayTimeLabel:SetFormattedText("+%.1f", self.delayTime)
+    if castingDelayTime and castingDelayTime >= 0.1 and self.casting then
+        delayTimeLabel:SetFormattedText("+%.2f", castingDelayTime)
     else
         delayTimeLabel:SetText("")
     end
