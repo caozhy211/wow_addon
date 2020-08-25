@@ -1523,8 +1523,11 @@ hooksecurefunc("CreateFrame", function(_, frameName)
 end)
 
 hooksecurefunc("AuraButton_Update", function(buttonName, index, _, _, _, _, duration, expirationTime)
-    local startTime = expirationTime - duration
-    CooldownFrame_Set(_G[buttonName .. index].wlkCooldown, startTime, duration, duration > 0, true)
+    local cooldown = _G[buttonName .. index].wlkCooldown
+    if cooldown then
+        local startTime = expirationTime - duration
+        CooldownFrame_Set(cooldown, startTime, duration, duration > 0, true)
+    end
 end)
 
 hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
