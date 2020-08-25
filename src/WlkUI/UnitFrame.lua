@@ -878,7 +878,8 @@ local unitEvents = {
 
 local function UnitFrameOnEvent(unitFrame, event, ...)
     local unit = unitFrame.unit
-    if not UnitExists(unit) and (event ~= "UNIT_EXITING_VEHICLE" or unit ~= "vehicle") then
+    if not UnitExists(unit) and (event ~= "UNIT_EXITING_VEHICLE" or unit ~= "vehicle")
+            and not ShowBossFrameWhenUninteractable(unit) then
         return
     end
     local arg1, arg2 = ...
