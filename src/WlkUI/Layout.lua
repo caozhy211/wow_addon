@@ -36,3 +36,13 @@ LossOfControlFrame.SetPoint = nop
 TalkingHeadFrame:ClearAllPoints()
 TalkingHeadFrame:SetPoint("TOPLEFT")
 TalkingHeadFrame.SetPoint = nop
+
+---@param frame Frame
+local function HideFrame(frame)
+    frame:Hide()
+    frame:UnregisterAllEvents()
+end
+
+for i = 1, MAX_BOSS_FRAMES do
+    HideFrame(_G[strconcat("Boss", i, "TargetFrame")])
+end
