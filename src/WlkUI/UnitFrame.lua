@@ -1528,15 +1528,17 @@ hooksecurefunc("AuraButton_Update", function(buttonName, index, _, _, _, _, dura
 end)
 
 hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
-    ---@type Button
-    local button
-    for i = 1, BUFF_MAX_DISPLAY do
-        button = BuffFrame.BuffButton[i]
-        if button and button.SetPoint ~= nop then
-            button:ClearAllPoints()
-            button:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", (i - 1) % 15 * -(27 + 3),
-                    78 + floor((i - 1) / 15) * (27 + 3))
-            button.SetPoint = nop
+    if BuffFrame.BuffButton then
+        ---@type Button
+        local button
+        for i = 1, BUFF_MAX_DISPLAY do
+            button = BuffFrame.BuffButton[i]
+            if button and button.SetPoint ~= nop then
+                button:ClearAllPoints()
+                button:SetPoint("BOTTOMRIGHT", playerFrame, "TOPRIGHT", (i - 1) % 15 * -(27 + 3),
+                        78 + floor((i - 1) / 15) * (27 + 3))
+                button.SetPoint = nop
+            end
         end
     end
 end)
