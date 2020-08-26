@@ -11,65 +11,49 @@ local offsetY2 = 284
 local font = "GameFontHighlight"
 
 ---@type Frame
-local resourceBlocksFrame = CreateFrame("Frame", "WlkClassResourceBlocksFrame", UIParent)
-resourceBlocksFrame:SetSize(width1, height1)
-resourceBlocksFrame:SetPoint(point1, UIParent, "BOTTOM", offsetX1, offsetY1)
+local resourceBlocks = CreateFrame("Frame", "WlkClassResourceBlocksFrame", UIParent)
+resourceBlocks:SetSize(width1, height1)
+resourceBlocks:SetPoint(point1, UIParent, "BOTTOM", offsetX1, offsetY1)
 
----@type StatusBar
-local resourceBar = CreateFrame("StatusBar", "WlkClassResourceBarFrame", UIParent)
-resourceBar:SetSize(width1, height1)
-resourceBar:SetPoint(point1, UIParent, "BOTTOM", offsetX1, offsetY1)
-resourceBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill")
-resourceBar.frameType = "bar"
+local function CreateClassResourceBarFrame(barName, width, height)
+    ---@type StatusBar
+    local bar = CreateFrame("StatusBar", barName, UIParent)
+    bar:SetSize(width, height)
+    bar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill")
+    bar.frameType = "bar"
 
----@type Texture
-local resourceBarBackground = resourceBar:CreateTexture("WlkClassResourceBarBackground", "BACKGROUND")
-resourceBarBackground:SetAllPoints()
-resourceBarBackground:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+    ---@type Texture
+    local background = bar:CreateTexture(barName .. "Background", "BACKGROUND")
+    background:SetAllPoints()
+    background:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
 
----@type FontString
-local resourceLabel = resourceBar:CreateFontString("WlkClassResourceLabel", "ARTWORK", font)
-resourceBar.leftLabel = resourceLabel
-resourceLabel:SetPoint("LEFT", 1, 0)
----@type FontString
-local resourcePercentLabel = resourceBar:CreateFontString("WlkClassResourcePercentLabel", "ARTWORK", font)
-resourceBar.rightLabel = resourcePercentLabel
-resourcePercentLabel:SetPoint("RIGHT", -1, 0)
+    ---@type Texture
+    local predictionCost = bar:CreateTexture(barName .. "PredictionCost", "BORDER")
+    bar.predictionCost = predictionCost
+    predictionCost:SetSize(width, height - 2)
+    predictionCost:SetPoint("TOPLEFT")
+    predictionCost:SetColorTexture(1, 1, 1, 0.55)
 
----@type StatusBar
-local powerBar = CreateFrame("StatusBar", "WlkClassPowerBarFrame", UIParent)
-powerBar:SetSize(width2, height2)
-powerBar:SetPoint(point2, UIParent, "BOTTOM", offsetX2, offsetY2)
-powerBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill")
-powerBar.frameType = "bar"
+    ---@type FontString
+    local leftLabel = bar:CreateFontString(barName .. "ValueLabel", "ARTWORK", font)
+    bar.leftLabel = leftLabel
+    leftLabel:SetPoint("LEFT", 1, 0)
 
----@type Texture
-local powerBarBackground = powerBar:CreateTexture("WlkClassPowerBarBackground", "BACKGROUND")
-powerBarBackground:SetAllPoints()
-powerBarBackground:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+    ---@type FontString
+    local rightLabel = bar:CreateFontString(barName .. "ValueLabel", "ARTWORK", font)
+    bar.rightLabel = rightLabel
+    rightLabel:SetPoint("RIGHT", -1, 0)
 
----@type FontString
-local powerLabel = powerBar:CreateFontString("WlkClassPowerLabel", "ARTWORK", font)
-powerBar.leftLabel = powerLabel
-powerLabel:SetPoint("LEFT", 1, 0)
----@type FontString
-local powerPercentLabel = powerBar:CreateFontString("WlkClassPowerPercentLabel", "ARTWORK", font)
-powerBar.rightLabel = powerPercentLabel
-powerPercentLabel:SetPoint("RIGHT", -1, 0)
-
-local unit = "player"
-
-local function AbbreviateNumber(number)
-    if number >= 1e8 then
-        return format("%.2f%s", number / 1e8, SECOND_NUMBER_CAP)
-    elseif number >= 1e6 then
-        return format("%d%s", number / 1e4, FIRST_NUMBER_CAP)
-    elseif number >= 1e4 then
-        return format("%.1f%s", number / 1e4, FIRST_NUMBER_CAP)
-    end
-    return number
+    return bar
 end
 
+local resourceBar = CreateClassResourceBarFrame("WlkClassResourceBarFrame", width1, height1)
+resourceBar:SetPoint(point1, UIParent, "BOTTOM", offsetX1, offsetY1)
+
+local powerBar = CreateClassResourceBarFrame("WlkClassPowerBarFrame", width2, height2)
+powerBar:SetPoint(point2, UIParent, "BOTTOM", offsetX2, offsetY2)
+
+local unit = "player"
 ---@type Frame[]
 local blocks = {}
 local maxPowerShown
@@ -97,17 +81,17 @@ end
 local tSort = table.sort
 
 local function UpdateBlocksValue()
-    local powerType = resourceBlocksFrame.powerType
+    local powerType = resourceBlocks.powerType
     if powerType == Enum.PowerType.SoulShards then
         local power = WarlockPowerBar_UnitPower("player")
         local numShards, numPartials = math.modf(power)
         for i = 1, UnitPowerMax("player", powerType) do
             blocks[i].background:SetAlpha(i > numShards and 0 or 1)
             if numPartials > 0 and i == numShards + 1 then
-                resourceBlocksFrame.partialsLabel:SetText(numPartials * 10)
-                resourceBlocksFrame.partialsLabel:SetPoint("CENTER", blocks[i])
+                resourceBlocks.partialsLabel:SetText(numPartials * 10)
+                resourceBlocks.partialsLabel:SetPoint("CENTER", blocks[i])
             elseif numPartials == 0 then
-                resourceBlocksFrame.partialsLabel:SetText("")
+                resourceBlocks.partialsLabel:SetText("")
             end
         end
     elseif powerType == Enum.PowerType.Runes then
@@ -135,7 +119,7 @@ local function UpdateBlocksValue()
 end
 
 local function UpdateBlocksMaxValue()
-    local powerType = resourceBlocksFrame.powerType
+    local powerType = resourceBlocks.powerType
     local maxPower = UnitPowerMax(unit, powerType)
     if powerType == blockPowerTypeShown and maxPower == maxPowerShown then
         return
@@ -146,7 +130,7 @@ local function UpdateBlocksMaxValue()
     for i = 1, maxPower do
         local block = blocks[i]
         if not block then
-            block = CreateFrame("Frame", "WlkClassResourceBlock" .. i, resourceBlocksFrame)
+            block = CreateFrame("Frame", "WlkClassResourceBlock" .. i, resourceBlocks)
             blocks[i] = block
             block:SetBackdrop(blockBackdrop)
             block.background = block:CreateTexture(block:GetName() .. "Background", "BACKGROUND")
@@ -172,27 +156,35 @@ local function UpdateBlocksMaxValue()
 end
 
 local function UpdateBlocksColor()
-    local powerTokens = resourceBlocksFrame.powerTokens
+    local powerTokens = resourceBlocks.powerTokens
     local powerToken = powerTokens and powerTokens[1]
-    local powerType = resourceBlocksFrame.powerType
+    local powerType = resourceBlocks.powerType
     local color = PowerBarColor[powerToken] or PowerBarColor[powerType] or C_ClassColor.GetClassColor(class)
     for _, block in ipairs(blocks) do
         block.background:SetColorTexture(color.r, color.g, color.b)
     end
 end
 
+local function AbbreviateNumber(number)
+    if number >= 1e8 then
+        return format("%.2f%s", number / 1e8, SECOND_NUMBER_CAP)
+    elseif number >= 1e6 then
+        return format("%d%s", number / 1e4, FIRST_NUMBER_CAP)
+    elseif number >= 1e4 then
+        return format("%.1f%s", number / 1e4, FIRST_NUMBER_CAP)
+    end
+    return number
+end
+
 ---@param bar StatusBar
 local function UpdateBarValue(bar)
     local powerType = bar.powerType
     local power = UnitPower(unit, powerType)
-    bar:SetValue(power)
+    bar:SetValue(power - (bar.cost or 0))
     local _, maxValue = bar:GetMinMaxValues()
-    ---@type FontString
-    local leftLabel = bar.leftLabel
-    leftLabel:SetFormattedText("%s/%s", AbbreviateNumber(power), AbbreviateNumber(maxValue))
-    ---@type FontString
-    local rightLabel = bar.rightLabel
-    rightLabel:SetText(FormatPercentage(PercentageBetween(power, 0, maxValue)))
+    bar.predictionCost:SetWidth(power / maxValue * bar:GetWidth())
+    bar.leftLabel:SetFormattedText("%s/%s", AbbreviateNumber(power), AbbreviateNumber(maxValue))
+    bar.rightLabel:SetText(FormatPercentage(PercentageBetween(power, 0, maxValue)))
 end
 
 ---@param bar StatusBar
@@ -226,6 +218,31 @@ end
 local function ClassResourceFrameOnEvent(self, event, ...)
     if event == "RUNE_POWER_UPDATE" then
         UpdateBlocksValue()
+    elseif event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_STOP" or event == "UNIT_SPELLCAST_FAILED"
+            or event == "UNIT_SPELLCAST_SUCCEEDED" then
+        local powerType = self.powerType or UnitPowerType(unit)
+        local _, _, _, startTime, endTime, _, _, _, spellId = UnitCastingInfo(unit)
+        local cost = 0
+
+        if event == "UNIT_SPELLCAST_START" and startTime ~= endTime then
+            local costTable = GetSpellPowerCost(spellId)
+            for _, costInfo in ipairs(costTable) do
+                if costInfo.type == powerType then
+                    cost = costInfo.cost
+                    break
+                end
+            end
+            self.cost = cost
+        else
+            local currentSpellId = select(9, UnitCastingInfo(unit))
+            if currentSpellId and self.cost then
+                cost = self.cost
+            else
+                self.cost = nil
+            end
+        end
+
+        UpdateBarValue(self)
     else
         local _, powerToken = ...
         local powerTokens = self.powerTokens
@@ -248,10 +265,8 @@ local function ClassResourceFrameOnEvent(self, event, ...)
     end
 end
 
-resourceBlocksFrame:SetScript("OnEvent", ClassResourceFrameOnEvent)
-
+resourceBlocks:SetScript("OnEvent", ClassResourceFrameOnEvent)
 resourceBar:SetScript("OnEvent", ClassResourceFrameOnEvent)
-
 powerBar:SetScript("OnEvent", ClassResourceFrameOnEvent)
 
 ---@type Frame
@@ -310,8 +325,8 @@ if class == "MONK" then
     end)
 elseif class == "WARLOCK" then
     ---@type FontString
-    local label = resourceBlocksFrame:CreateFontString("WlkPartialShardsLabel", "ARTWORK", font)
-    resourceBlocksFrame.partialsLabel = label
+    local label = resourceBlocks:CreateFontString("WlkPartialShardsLabel", "ARTWORK", font)
+    resourceBlocks.partialsLabel = label
 end
 
 ---@param frame Frame
@@ -321,6 +336,12 @@ local function ShowClassResourceFrame(frame)
     else
         frame:RegisterUnitEvent("UNIT_MAXPOWER", unit)
         frame:RegisterUnitEvent("UNIT_POWER_FREQUENT", unit)
+    end
+    if frame.frameType == "bar" then
+        frame:RegisterUnitEvent("UNIT_SPELLCAST_START", unit)
+        frame:RegisterUnitEvent("UNIT_SPELLCAST_STOP", unit)
+        frame:RegisterUnitEvent("UNIT_SPELLCAST_FAILED", unit)
+        frame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", unit)
     end
     frame:Show()
 end
@@ -333,11 +354,11 @@ end
 
 local function SetClassResourceFramesShown(showBlocksFrame, showResourceBar, showPowerBar)
     if showBlocksFrame then
-        ShowClassResourceFrame(resourceBlocksFrame)
+        ShowClassResourceFrame(resourceBlocks)
         UpdateBlocksMaxValue()
         UpdateBlocksColor()
     else
-        HideResourceFrame(resourceBlocksFrame)
+        HideResourceFrame(resourceBlocks)
     end
     if showResourceBar then
         ShowClassResourceFrame(resourceBar)
@@ -362,8 +383,8 @@ local function UpdateClassResourceFrames()
     if unit == "vehicle" then
         local maxPower = UnitPowerMax(unit)
         if PlayerVehicleHasComboPoints() then
-            resourceBlocksFrame.powerType = Enum.PowerType.ComboPoints
-            resourceBlocksFrame.powerTokens = { "COMBO_POINTS", }
+            resourceBlocks.powerType = Enum.PowerType.ComboPoints
+            resourceBlocks.powerTokens = { "COMBO_POINTS", }
             SetClassResourceFramesShown(true, false, maxPower > 0)
         else
             SetClassResourceFramesShown(false, maxPower > 0, false)
@@ -377,8 +398,8 @@ local function UpdateClassResourceFrames()
                 eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
                 SetClassResourceFramesShown(false, true, false)
             else
-                resourceBlocksFrame.powerType = Enum.PowerType.SoulShards
-                resourceBlocksFrame.powerTokens = { "SOUL_SHARDS", }
+                resourceBlocks.powerType = Enum.PowerType.SoulShards
+                resourceBlocks.powerTokens = { "SOUL_SHARDS", }
                 SetClassResourceFramesShown(true, false, true)
             end
         elseif class == "PALADIN" then
@@ -387,8 +408,8 @@ local function UpdateClassResourceFrames()
                 SetClassResourceFramesShown(false, true, false)
             else
                 if spec == SPEC_PALADIN_RETRIBUTION then
-                    resourceBlocksFrame.powerType = Enum.PowerType.HolyPower
-                    resourceBlocksFrame.powerTokens = { "HOLY_POWER", }
+                    resourceBlocks.powerType = Enum.PowerType.HolyPower
+                    resourceBlocks.powerTokens = { "HOLY_POWER", }
                     SetClassResourceFramesShown(true, false, true)
                 else
                     SetClassResourceFramesShown(false, true, false)
@@ -396,16 +417,16 @@ local function UpdateClassResourceFrames()
             end
         elseif class == "MAGE" then
             if spec == SPEC_MAGE_ARCANE then
-                resourceBlocksFrame.powerType = Enum.PowerType.ArcaneCharges
-                resourceBlocksFrame.powerTokens = { "ARCANE_CHARGES", }
+                resourceBlocks.powerType = Enum.PowerType.ArcaneCharges
+                resourceBlocks.powerTokens = { "ARCANE_CHARGES", }
                 SetClassResourceFramesShown(true, false, true)
             else
                 SetClassResourceFramesShown(false, true, false)
             end
         elseif class == "MONK" then
             if spec == SPEC_MONK_WINDWALKER then
-                resourceBlocksFrame.powerType = Enum.PowerType.Chi
-                resourceBlocksFrame.powerTokens = { "CHI", "DARK_FORCE", }
+                resourceBlocks.powerType = Enum.PowerType.Chi
+                resourceBlocks.powerTokens = { "CHI", "DARK_FORCE", }
                 SetClassResourceFramesShown(true, false, true)
                 staggerBar:Hide()
             elseif spec == SPEC_MONK_BREWMASTER then
@@ -416,13 +437,13 @@ local function UpdateClassResourceFrames()
                 staggerBar:Hide()
             end
         elseif class == "ROGUE" then
-            resourceBlocksFrame.powerType = Enum.PowerType.ComboPoints
-            resourceBlocksFrame.powerTokens = { "COMBO_POINTS", }
+            resourceBlocks.powerType = Enum.PowerType.ComboPoints
+            resourceBlocks.powerTokens = { "COMBO_POINTS", }
             SetClassResourceFramesShown(true, false, true)
         elseif class == "DRUID" then
             if powerType == Enum.PowerType.Energy then
-                resourceBlocksFrame.powerType = Enum.PowerType.ComboPoints
-                resourceBlocksFrame.powerTokens = { "COMBO_POINTS", }
+                resourceBlocks.powerType = Enum.PowerType.ComboPoints
+                resourceBlocks.powerTokens = { "COMBO_POINTS", }
                 powerBar.powerType = nil
                 powerBar.powerTokens = nil
                 SetClassResourceFramesShown(true, false, true)
@@ -434,7 +455,7 @@ local function UpdateClassResourceFrames()
                 SetClassResourceFramesShown(false, true, false)
             end
         elseif class == "DEATHKNIGHT" then
-            resourceBlocksFrame.powerType = Enum.PowerType.Runes
+            resourceBlocks.powerType = Enum.PowerType.Runes
             SetClassResourceFramesShown(true, false, true)
         elseif class == "SHAMAN" then
             if powerType == Enum.PowerType.Maelstrom then
