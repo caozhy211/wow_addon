@@ -9,6 +9,7 @@
 ActionBarFrame.lua
 ChatFrame.lua
 ChatMenuFrame.lua
+ClassResourceFrames.lua
 Cooldown.lua
 ExportFrame.lua
 Filter.lua

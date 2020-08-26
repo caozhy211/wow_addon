@@ -173,31 +173,25 @@ end
 local function UpdateUnitFrameManaBarColor(unitFrame)
     ---@type StatusBar
     local manaBar = unitFrame.manaBar
-    if not manaBar.lockColor then
+    if manaBar and not manaBar.lockColor then
         local unit = unitFrame.unit
         local r, g, b
         if not UnitIsConnected(unit) then
             r, g, b = 0.5, 0.5, 0.5
         else
-            if manaBar.powerType then
-                r, g, b = GetTableColor(PowerBarColor[manaBar.powerType])
+            local barInfo = GetUnitPowerBarInfo(unit)
+            if barInfo and barInfo.showOnRaid then
+                r, g, b = 0.7, 0.7, 0.6
             else
-                local barInfo = GetUnitPowerBarInfo(unit)
-                if barInfo and barInfo.showOnRaid then
-                    r, g, b = 0.7, 0.7, 0.6
+                local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
+                local info = PowerBarColor[powerToken]
+                if info then
+                    r, g, b = GetTableColor(info)
+                elseif altR then
+                    r, g, b = altR, altG, altB
                 else
-                    local powerType, powerToken, altR, altG, altB = UnitPowerType(unit)
-                    local info = PowerBarColor[powerToken]
-                    if info then
-                        r, g, b = GetTableColor(info)
-                    else
-                        if not altR then
-                            info = PowerBarColor[powerType] or PowerBarColor["MANA"]
-                            r, g, b = GetTableColor(info)
-                        else
-                            r, g, b = altR, altG, altB
-                        end
-                    end
+                    info = PowerBarColor[powerType] or PowerBarColor["MANA"]
+                    r, g, b = GetTableColor(info)
                 end
             end
         end
@@ -226,12 +220,12 @@ end
 local function UpdateUnitFrameUnitMana(unitFrame)
     ---@type  StatusBar
     local manaBar = unitFrame.manaBar
-    if manaBar.lockValues then
+    if not manaBar or manaBar.lockValues then
         return
     end
     local unit = unitFrame.unit
     UpdateUnitFrameManaBarColor(unitFrame)
-    local maxValue = UnitPowerMax(unit, manaBar.powerType)
+    local maxValue = UnitPowerMax(unit)
     if maxValue > 0 then
         if not manaBar:IsShown() then
             ShowManaBar(unitFrame)
@@ -242,7 +236,7 @@ local function UpdateUnitFrameUnitMana(unitFrame)
             manaBar:SetValue(maxValue)
             manaBar.currValue = maxValue
         else
-            local value = UnitPower(unit, manaBar.powerType)
+            local value = UnitPower(unit)
             manaBar:SetValue(value)
             manaBar.currValue = value
         end
@@ -265,9 +259,9 @@ local function UnitFrameManaBarOnUpdate(self, elapsed)
     if not self.disconnected and not self.lockValues then
         local unitFrame = self:GetParent()
         local unit = unitFrame.unit
-        local maxValue = UnitPowerMax(unit, self.powerType)
+        local maxValue = UnitPowerMax(unit)
         if maxValue > 0 then
-            local value = UnitPower(unit, self.powerType)
+            local value = UnitPower(unit)
             if value ~= self.currValue and UnitGUID(unit) then
                 if not self:IsShown() then
                     ShowManaBar(unitFrame)
@@ -866,14 +860,16 @@ local function UnitFrameSwitchUnit(unitFrame)
     healthBar:RegisterUnitEvent("UNIT_MAXHEALTH", unitFrame.unit)
     ---@type StatusBar
     local manaBar = unitFrame.manaBar
-    manaBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", unitFrame.unit)
-    manaBar:RegisterUnitEvent("UNIT_MAXPOWER", unitFrame.unit)
+    if manaBar then
+        manaBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", unitFrame.unit)
+        manaBar:RegisterUnitEvent("UNIT_MAXPOWER", unitFrame.unit)
+    end
 end
 
 local unitEvents = {
     "UNIT_NAME_UPDATE", "UNIT_HEAL_ABSORB_AMOUNT_CHANGED", "UNIT_MAXHEALTH", "UNIT_LEVEL", "UNIT_HEAL_PREDICTION",
     "UNIT_ABSORB_AMOUNT_CHANGED", "UNIT_CLASSIFICATION_CHANGED", "UNIT_THREAT_LIST_UPDATE", "UNIT_CONNECTION",
-    "UNIT_DISPLAYPOWER", "UNIT_PORTRAIT_UPDATE",
+    "UNIT_PORTRAIT_UPDATE",
 }
 
 local function UnitFrameOnEvent(unitFrame, event, ...)
@@ -940,13 +936,14 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
         UpdateUnitFrameHealthBarColor(unitFrame)
     elseif event == "UNIT_CONNECTION" then
         UpdateUnitFrameHealthBarColor(unitFrame)
-        UpdateUnitFrameManaBarColor(unitFrame)
-    elseif event == "UNIT_DISPLAYPOWER" then
-        UpdateUnitFrameManaBarColor(unitFrame)
     elseif event == "UNIT_PORTRAIT_UPDATE" or event == "PORTRAITS_UPDATED" then
         UpdateUnitFramePortrait(unitFrame)
     elseif event == "RAID_TARGET_UPDATE" then
         TargetFrame_UpdateRaidTargetIcon(unitFrame)
+    end
+
+    if event == "UNIT_DISPLAYPOWER" or event == "UNIT_CONNECTION" then
+        UpdateUnitFrameManaBarColor(unitFrame)
     end
 
     if event == "PLAYER_TARGET_CHANGED" then
@@ -1005,7 +1002,7 @@ local function InitializeUnitFrame(unitFrame)
     ---@type StatusBar
     local healthBar = CreateFrame("StatusBar", name .. "HealthBar", unitFrame)
     unitFrame.healthbar = healthBar
-    healthBar:SetSize(unitFrame:GetWidth(), unitFrame:GetHeight() * 2 / 3)
+    healthBar:SetSize(unitFrame:GetSize())
     healthBar:SetPoint("TOP")
     healthBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Hp-Fill", "BORDER")
 
@@ -1092,27 +1089,6 @@ local function InitializeUnitFrame(unitFrame)
     unitFrame.healthAbsorbLabel = healthAbsorbLabel
     healthAbsorbLabel:SetPoint("LEFT", healthLabel, "RIGHT", 1, 0)
 
-    ---@type StatusBar
-    local manaBar = CreateFrame("StatusBar", name .. "ManaBar", unitFrame)
-    unitFrame.manaBar = manaBar
-    manaBar:SetSize(unitFrame:GetWidth(), unitFrame:GetHeight() / 3)
-    manaBar:SetPoint("BOTTOM")
-    manaBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
-
-    ---@type Texture
-    local manaBarBackground = manaBar:CreateTexture(name .. "ManaBarBackground", "BACKGROUND")
-    manaBarBackground:SetAllPoints()
-    manaBarBackground:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
-
-    ---@type FontString
-    local manaLabel = manaBar:CreateFontString(name .. "UnitMana", "ARTWORK", font)
-    unitFrame.manaLabel = manaLabel
-    manaLabel:SetPoint("LEFT", 1, 0)
-    ---@type FontString
-    local manaPercentLabel = manaBar:CreateFontString(name .. "UnitManaPercent", "ARTWORK", font)
-    unitFrame.manaPercentLabel = manaPercentLabel
-    manaPercentLabel:SetPoint("RIGHT", -1, 0)
-
     local size = unitFrame:GetHeight() / 2
     local offset = unitFrame.showSelectionHighlight and 2 or 0
     local point = unitFrame.position
@@ -1144,10 +1120,6 @@ local function InitializeUnitFrame(unitFrame)
     healthBar:RegisterUnitEvent("UNIT_MAXHEALTH", unit)
     healthBar:SetScript("OnEvent", UnitFrameHealthBarOnEvent)
     healthBar:SetScript("OnSizeChanged", UnitFrameHealthBarOnSizeChanged)
-    manaBar:SetScript("OnUpdate", UnitFrameManaBarOnUpdate)
-    manaBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", unit)
-    manaBar:RegisterUnitEvent("UNIT_MAXPOWER", unit)
-    manaBar:SetScript("OnEvent", UnitFrameManaBarOnEvent)
 
     unitFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
     unitFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -1161,6 +1133,37 @@ local function InitializeUnitFrame(unitFrame)
     unitFrame:SetScript("OnEvent", UnitFrameOnEvent)
 
     if unit ~= "player" then
+        ---@type StatusBar
+        local manaBar = CreateFrame("StatusBar", name .. "ManaBar", unitFrame)
+        unitFrame.manaBar = manaBar
+        manaBar:SetSize(unitFrame:GetWidth(), unitFrame:GetHeight() / 3)
+        manaBar:SetPoint("BOTTOM")
+        healthBar:SetHeight(unitFrame:GetHeight() * 2 / 3)
+        manaBar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill", "BORDER")
+
+        ---@type Texture
+        local manaBarBackground = manaBar:CreateTexture(name .. "ManaBarBackground", "BACKGROUND")
+        manaBarBackground:SetAllPoints()
+        manaBarBackground:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
+
+        ---@type FontString
+        local manaLabel = manaBar:CreateFontString(name .. "UnitMana", "ARTWORK", font)
+        unitFrame.manaLabel = manaLabel
+        manaLabel:SetPoint("LEFT", 1, 0)
+        ---@type FontString
+        local manaPercentLabel = manaBar:CreateFontString(name .. "UnitManaPercent", "ARTWORK", font)
+        unitFrame.manaPercentLabel = manaPercentLabel
+        manaPercentLabel:SetPoint("RIGHT", -1, 0)
+
+        manaBar:SetScript("OnUpdate", UnitFrameManaBarOnUpdate)
+        manaBar:RegisterUnitEvent("UNIT_DISPLAYPOWER", unit)
+        manaBar:RegisterUnitEvent("UNIT_MAXPOWER", unit)
+        manaBar:SetScript("OnEvent", UnitFrameManaBarOnEvent)
+
+        if unitFrame.unitEvents then
+            tinsert(unitFrame.unitEvents, "UNIT_DISPLAYPOWER")
+        end
+
         unitFrame:SetScript("OnUpdate", UnitFrameOnUpdate)
     end
     if unitFrame.showSelectionHighlight then
