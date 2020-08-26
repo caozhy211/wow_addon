@@ -60,7 +60,6 @@ end
 SLASH_EXPORT_SYSTEM_API1 = "/esa"
 
 local apiText
-local namespaces = {}
 local events = {}
 local EVENT_FUNCTION_FORMAT = strconcat("---@alias EventType string |%s\n\n",
         "---@param event EventType\nfunction Frame:RegisterEvent(event) end\n\n",
@@ -74,10 +73,6 @@ local _, build = GetBuildInfo()
 SlashCmdList["EXPORT_SYSTEM_API"] = function()
     if apiText == nil then
         for _, apiInfo in ipairs(APIDocumentation.systems) do
-            if apiInfo.Namespace then
-                tinsert(namespaces, format("%s = {}", apiInfo.Namespace))
-            end
-
             for _, eventInfo in ipairs(apiInfo.Events) do
                 tinsert(events, format("'\"%s\"'", eventInfo.LiteralName))
             end
@@ -102,9 +97,8 @@ SlashCmdList["EXPORT_SYSTEM_API"] = function()
             end
         end
 
-        apiText = format("--- version: %s\n\n%s\n\n%s\n\n%s\n\n%s", build, table.concat(namespaces, "\n"),
-                format(EVENT_FUNCTION_FORMAT, table.concat(events, "|")), table.concat(enums, "\n"),
-                table.concat(numericConstants, "\n"))
+        apiText = format("--- version: %s\n\n%s\n\n%s\n\n%s", build, format(EVENT_FUNCTION_FORMAT,
+                table.concat(events, "|")), table.concat(enums, "\n"), table.concat(numericConstants, "\n"))
     end
     ShowExportFrame(apiText)
 end
