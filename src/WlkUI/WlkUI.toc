@@ -18,5 +18,6 @@ Layout.lua
 MerchantFrame.lua
 Minimap.lua
 MirrorTimer.lua
+Nameplate.lua
 Settings.lua
 UnitFrame.lua
