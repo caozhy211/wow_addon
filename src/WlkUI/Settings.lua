@@ -533,3 +533,25 @@ hooksecurefunc(StaticPopupDialogs["CONFIRM_DESTROY_COMMUNITY"], "OnShow", functi
     local editBox = self.editBox
     editBox:SetText(COMMUNITIES_DELETE_CONFIRM_STRING)
 end)
+
+---@type CheckButton
+local focusButton = CreateFrame("CheckButton", "WlkFocusUnitButton", UIParent, "SecureActionButtonTemplate")
+focusButton:SetAttribute("type1", "macro")
+focusButton:SetAttribute("macrotext", "/focus mouseover")
+
+local modifierKey = "SHIFT"
+local button = 1
+SetOverrideBindingClick(focusButton, true, strconcat(modifierKey, "-BUTTON", button), "WlkFocusUnitButton")
+
+---@param frame Frame
+local function AddFocusAttribute(frame)
+    if frame then
+        frame:SetAttribute(strconcat(modifierKey, "-TYPE", button), "focus")
+    end
+end
+
+hooksecurefunc("CreateFrame", function(_, frameName, _, template)
+    if template == "SecureUnitButtonTemplate" then
+        AddFocusAttribute(_G[frameName])
+    end
+end)
