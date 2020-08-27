@@ -20,4 +20,5 @@ Minimap.lua
 MirrorTimer.lua
 Nameplate.lua
 Settings.lua
+Tooltip.lua
 UnitFrame.lua
