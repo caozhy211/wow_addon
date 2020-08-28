@@ -54,6 +54,7 @@ SlashCmdList["EXPORT_FRAME_NAME"] = function()
     local object = FrameStackTooltip.highlightFrame
     if object then
         ShowExportFrame(object:GetDebugName())
+        FrameStackTooltip_Hide(FrameStackTooltip)
     end
 end
 
