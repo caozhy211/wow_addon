@@ -4,7 +4,7 @@
 ## Author: czy211
 ## Version: 4.0.0
 ## SavedVariables: WlkChatFilter
-## OptionalDeps: Blizzard_DebugTools, Blizzard_APIDocumentation, Blizzard_BindingUI, Blizzard_TalkingHeadUI
+## OptionalDeps: Blizzard_DebugTools, Blizzard_APIDocumentation, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
 
 ActionBarFrame.lua
 ChatFrame.lua
@@ -14,6 +14,7 @@ Cooldown.lua
 ExportFrame.lua
 Filter.lua
 GridFrame.lua
+ItemInfo.lua
 Layout.lua
 MerchantFrame.lua
 Minimap.lua
