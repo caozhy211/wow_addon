@@ -20,43 +20,32 @@ local function GetTimerInfo(seconds)
     return text, scale, updateInterval, color.r, color.g, color.b
 end
 
-local function HookCooldownOnUpdate(self, elapsed)
-    ---@type FontString
-    local timer = self.cdTimer
+---@param self Frame
+local function TimerFrameOnUpdate(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
-    if self.elapsed < timer.updateInterval then
+    if self.elapsed < self.updateInterval then
         return
     end
     self.elapsed = 0
 
-    local timeLeft = timer.duration - (GetTime() - timer.start)
+    local timeLeft = self.duration - (GetTime() - self.start)
     if timeLeft > 0 then
+        local label = self.label
         local text, scale, updateInterval, r, g, b = GetTimerInfo(timeLeft)
-        timer:SetFont("Fonts/blei00d.TTF", timer.height * scale, "OUTLINE")
-        timer:SetText(text)
-        timer:SetTextColor(r, g, b)
-        timer.updateInterval = updateInterval
-        if not timer:IsShown() then
-            timer:Show()
-        end
+        label:SetFont("Fonts/blei00d.TTF", label.height * scale, "OUTLINE")
+        label:SetText(text)
+        label:SetTextColor(r, g, b)
+        self.updateInterval = updateInterval
     else
-        timer:Hide()
+        self:Hide()
     end
 end
 
 local function HookCooldownOnHide(self)
-    ---@type FontString
-    local timer = self.cdTimer
-    timer:Hide()
-end
-
----@param self Cooldown
-local function HookCooldownOnShow(self)
-    ---@type FontString
-    local timer = self.cdTimer
-    if self:GetCooldownDuration() > 1500 then
-        timer.updateInterval = 0
-        timer:Show()
+    ---@type Frame
+    local timerFrame = self.timerFrame
+    if timerFrame and timerFrame:IsShown() then
+        timerFrame:Hide()
     end
 end
 
@@ -76,22 +65,31 @@ local mt = getmetatable(CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate
 ---@param self Cooldown
 hooksecurefunc(mt, "SetCooldown", function(self, start, duration)
     local height = GetTimerParentHeight(self)
+    ---@type Frame
+    local timerFrame = self.timerFrame
     if duration > 1.5 and height > NAMEPLATE_BUFF_HEIGHT or abs(height - NAMEPLATE_BUFF_HEIGHT) < 0.005 then
-        ---@type FontString
-        local timer = self.cdTimer
-        if not timer then
-            timer = self:CreateFontString()
-            self.cdTimer = timer
-            timer:SetPoint("CENTER")
-            self:HookScript("OnUpdate", HookCooldownOnUpdate)
+        if not timerFrame then
+            timerFrame = CreateFrame("Frame", nil, self)
+            self.timerFrame = timerFrame
+            timerFrame:SetAllPoints()
+            ---@type FontString
+            local label = timerFrame:CreateFontString()
+            timerFrame.label = label
+            label:SetPoint("CENTER")
+            timerFrame:SetScript("OnUpdate", TimerFrameOnUpdate)
             self:HookScript("OnHide", HookCooldownOnHide)
-            self:HookScript("OnShow", HookCooldownOnShow)
         end
-        if timer.start ~= start or timer.duration ~= duration then
-            timer.start = start
-            timer.duration = duration
-            timer.height = height / 2
-            timer.updateInterval = 0
+        if timerFrame.start ~= start or timerFrame.duration ~= duration then
+            timerFrame.start = start
+            timerFrame.duration = duration
+            timerFrame.updateInterval = 0.01
+            timerFrame.label.height = height / 2
         end
+        if not timerFrame:IsShown() then
+            timerFrame.updateInterval = 0.01
+            timerFrame:Show()
+        end
+    elseif timerFrame and timerFrame:IsShown() then
+        timerFrame:Hide()
     end
 end)
