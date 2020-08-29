@@ -503,16 +503,19 @@ local function AddInfoToItemLink(link)
     end
     wipe(replacementTable)
     replacementTable[#replacementTable + 1] = "%1"
-    local level, _, subclass, invType = GetItemInfoText(link)
+    local level, bind, subclass, invType = GetItemInfoText(link)
     if level then
         replacementTable[#replacementTable + 1] = level
+    end
+    if bind then
+        replacementTable[#replacementTable + 1] = "(裝綁)"
     end
     if subclass and invType then
         replacementTable[#replacementTable + 1] = format("(%s/%s)", subclass, invType)
     elseif subclass or invType then
         replacementTable[#replacementTable + 1] = "(" .. (subclass or invType) .. ")"
     end
-    if level or subclass or invType then
+    if level or bind or subclass or invType then
         replacementTable[#replacementTable + 1] = ": "
     end
     replacementTable[#replacementTable + 1] = "%2"
