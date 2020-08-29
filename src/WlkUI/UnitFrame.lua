@@ -1453,7 +1453,7 @@ end
 ---@type Button
 local petFrame = CreateFrame("Button", "WlkPetFrame", UIParent, "SecureUnitButtonTemplate")
 petFrame:SetFrameStrata("HIGH")
-petFrame:SetSize(773 - 540 - 21, 42)
+petFrame:SetSize(768 - 540 - 21, 42)
 petFrame:SetPoint("BOTTOMLEFT", 540 + 21, 100)
 petFrame.unit = "pet"
 petFrame.unit2 = "player"

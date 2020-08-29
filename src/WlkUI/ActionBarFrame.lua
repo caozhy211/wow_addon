@@ -136,7 +136,7 @@ local NUM_DIV = 19
 --- OverrideActionBarXpBarXpMidXpDiv 中心相对 OverrideActionBarXpBarXpMid 中心的垂直偏移值
 local OFFSET_Y2 = 10
 
-local xpBarWidth = 350
+local xpBarWidth = 360
 local xpMidWidth = xpBarWidth - DIFF1
 local numDiv = 9
 local divOffsetX = xpBarWidth / (numDiv + 1)
