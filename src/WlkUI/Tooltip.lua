@@ -124,7 +124,7 @@ local scanner = CreateFrame("GameTooltip", "WlkTooltipInspectMouseoverScanner", 
 local function GetInspectUnitItemLevel()
     if UnitIsUnit("mouseover", "player") then
         local _, itemLevel = GetAverageItemLevel()
-        return format("%s: %s", STAT_AVERAGE_ITEM_LEVEL, HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(itemLevel)))
+        return STAT_AVERAGE_ITEM_LEVEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(itemLevel))
     end
     local fail
     local spec = GetInspectSpecialization("mouseover")
@@ -149,7 +149,7 @@ local function GetInspectUnitItemLevel()
                     if quality == LE_ITEM_QUALITY_HEIRLOOM then
                         for j = 2, scanner:NumLines() do
                             ---@type FontString
-                            local label = _G["WlkTooltipInspectMouseoverScannerTextLeft" .. j]
+                            local label = _G[scanner:GetName() .. "TextLeft" .. j]
                             local text = label:GetText()
                             if text then
                                 text = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
@@ -186,7 +186,7 @@ local function GetInspectUnitItemLevel()
     else
         sum = sum + mainLevel + offLevel
     end
-    return format("%s: %s", STAT_AVERAGE_ITEM_LEVEL, HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(sum / 16)))
+    return STAT_AVERAGE_ITEM_LEVEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(sum / 16))
 end
 
 local function GetInspectUnitSpecialization()
@@ -235,7 +235,7 @@ eventFrame:SetScript("OnUpdate", function(self, elapsed)
     if UnitExists("mouseovertarget") then
         local targetText
         if UnitIsUnit("mouseovertarget", "player") then
-            targetText = RED_FONT_COLOR:WrapTextInColorCode(strconcat(">>", YOU, "<<"))
+            targetText = RED_FONT_COLOR:WrapTextInColorCode(">>" .. YOU .. "<<")
         else
             local name = UnitName("mouseovertarget")
             if UnitIsPlayer("mouseovertarget") then
@@ -245,9 +245,9 @@ eventFrame:SetScript("OnUpdate", function(self, elapsed)
             end
         end
         if targetLabel then
-            targetLabel:SetFormattedText("%s: %s", TARGET, targetText)
+            targetLabel:SetText(TARGET .. ": " .. targetText)
         else
-            GameTooltip:AddLine(format("%s: %s", TARGET, targetText))
+            GameTooltip:AddLine(TARGET .. ": " .. targetText)
         end
         GameTooltip:Show()
     elseif targetLabel then
@@ -286,6 +286,8 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
     inspecting = false
 end)
 
+local guildR, guildG, guildB = 0.25, 1, 0.25
+
 GameTooltip:HookScript("OnTooltipSetUnit", function()
     local _, unit = GameTooltip:GetUnit()
     if UnitIsPlayer(unit) then
@@ -294,12 +296,12 @@ GameTooltip:HookScript("OnTooltipSetUnit", function()
         local line
         if GetGuildInfo(unit) then
             line = _G["GameTooltipTextLeft" .. index]
-            line:SetTextColor(Chat_GetChannelColor(ChatTypeInfo["GUILD"]))
+            line:SetTextColor(guildR, guildG, guildB)
             index = index + 1
         end
         line = _G["GameTooltipTextLeft" .. index]
         local _, class = UnitClass(unit)
-        line:SetTextColor(GetTableColor(RAID_CLASS_COLORS[class]))
+        line:SetTextColor(GetClassColor(class))
         index = index + 1
         local factionColor = GetFactionColor(UnitFactionGroup(unit))
         if factionColor then
@@ -308,8 +310,8 @@ GameTooltip:HookScript("OnTooltipSetUnit", function()
         end
     end
     if unit and CanInspect(unit) then
-        GameTooltip:AddDoubleLine(strconcat(STAT_AVERAGE_ITEM_LEVEL, ": ",
-                HIGHLIGHT_FONT_COLOR:WrapTextInColorCode("...")), "...", nil, nil, nil, 1, 1, 1)
+        GameTooltip:AddDoubleLine(STAT_AVERAGE_ITEM_LEVEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode("..."),
+                "...", nil, nil, nil, 1, 1, 1)
         GameTooltip:Show()
         inspectItemLevel = nil
         inspectSpec = nil

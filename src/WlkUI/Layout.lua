@@ -18,11 +18,13 @@ local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("PLAYER_LOGIN")
 
 eventFrame:SetScript("OnEvent", function(_, event)
-    eventFrame:UnregisterEvent(event)
-    ObjectiveTrackerFrame:ClearAllPoints()
-    ObjectiveTrackerFrame:SetPoint("TOPLEFT", GetScreenWidth() + OFFSET_X1 + WIDTH2, OFFSET_Y1)
-    ObjectiveTrackerFrame:SetPoint("BOTTOMRIGHT", OFFSET_X1 + WIDTH1 + WIDTH2, OFFSET_Y2)
-    ObjectiveTrackerFrame:SetMovable(false)
+    if event == "PLAYER_LOGIN" then
+        eventFrame:UnregisterEvent(event)
+        ObjectiveTrackerFrame:ClearAllPoints()
+        ObjectiveTrackerFrame:SetPoint("TOPLEFT", GetScreenWidth() + OFFSET_X1 + WIDTH2, OFFSET_Y1)
+        ObjectiveTrackerFrame:SetPoint("BOTTOMRIGHT", OFFSET_X1 + WIDTH1 + WIDTH2, OFFSET_Y2)
+        ObjectiveTrackerFrame:SetMovable(false)
+    end
 end)
 
 --- LossOfControlFrame.RedLineBottom 的高度
@@ -44,5 +46,5 @@ local function HideFrame(frame)
 end
 
 for i = 1, MAX_BOSS_FRAMES do
-    HideFrame(_G[strconcat("Boss", i, "TargetFrame")])
+    HideFrame(_G["Boss" .. i .. "TargetFrame"])
 end

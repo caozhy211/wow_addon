@@ -1,6 +1,6 @@
 for i = 1, MIRRORTIMER_NUMTIMERS do
     ---@type Texture
-    local border = _G[strconcat("MirrorTimer", i, "Border")]
+    local border = _G["MirrorTimer" .. i .. "Border"]
     border:Hide()
 end
 

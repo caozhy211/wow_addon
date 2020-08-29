@@ -131,23 +131,24 @@ local function UpdateBlocksMaxValue()
         local block = blocks[i]
         if not block then
             block = CreateFrame("Frame", "WlkClassResourceBlock" .. i, resourceBlocks)
-            blocks[i] = block
+            blocks[#blocks + 1] = block
             block:SetBackdrop(blockBackdrop)
             block.background = block:CreateTexture(block:GetName() .. "Background", "BACKGROUND")
             block.background:SetAllPoints()
             block.background:SetTexture("Interface/ChatFrame/CHATFRAMEBACKGROUND")
             if powerType == Enum.PowerType.Runes then
-                runeIndexes[i] = i
+                runeIndexes[#runeIndexes + 1] = i
                 ---@type Cooldown
                 local cooldown = CreateFrame("Cooldown", block:GetName() .. "Cooldown", block, "CooldownFrameTemplate")
                 block.cooldown = cooldown
                 cooldown:SetAllPoints()
                 cooldown:SetDrawEdge(true)
             end
+        else
+            block:Show()
         end
         block:SetSize(width, height1)
         block:SetPoint("LEFT", (i - 1) * (width + spacing), 0)
-        block:Show()
     end
     for i = maxPower + 1, #blocks do
         blocks[i]:Hide()
@@ -161,7 +162,7 @@ local function UpdateBlocksColor()
     local powerType = resourceBlocks.powerType
     local color = PowerBarColor[powerToken] or PowerBarColor[powerType] or C_ClassColor.GetClassColor(class)
     for _, block in ipairs(blocks) do
-        block.background:SetColorTexture(color.r, color.g, color.b)
+        block.background:SetColorTexture(GetTableColor(color))
     end
 end
 
@@ -183,7 +184,7 @@ local function UpdateBarValue(bar)
     bar:SetValue(power - (bar.cost or 0))
     local _, maxValue = bar:GetMinMaxValues()
     bar.predictionCost:SetWidth(power / maxValue * bar:GetWidth())
-    bar.leftLabel:SetFormattedText("%s/%s", AbbreviateNumber(power), AbbreviateNumber(maxValue))
+    bar.leftLabel:SetText(AbbreviateNumber(power) .. "/" .. AbbreviateNumber(maxValue))
     bar.rightLabel:SetText(FormatPercentage(PercentageBetween(power, 0, maxValue)))
 end
 
@@ -293,7 +294,7 @@ if class == "MONK" then
         local maxHealth = UnitHealthMax("player")
         staggerBar:SetMinMaxValues(0, maxHealth)
         local stagger = UnitStagger("player")
-        staggerBar.staggerLabel:SetFormattedText("%s/%s", AbbreviateNumber(stagger), AbbreviateNumber(maxHealth))
+        staggerBar.staggerLabel:SetText(AbbreviateNumber(stagger) .. "/" .. AbbreviateNumber(maxHealth))
         staggerBar.staggerPercentLabel:SetText(FormatPercentage(PercentageBetween(stagger, 0, maxHealth)))
     end
 
@@ -378,13 +379,15 @@ end
 
 local blocksShowLevel = class == "WARLOCK" and SHARDBAR_SHOW_LEVEL or class == "PALADIN" and PALADINPOWERBAR_SHOW_LEVEL
         or 0
+resourceBlocks.powerTokens = {}
 
 local function UpdateClassResourceFrames()
+    wipe(resourceBlocks.powerTokens)
     if unit == "vehicle" then
         local maxPower = UnitPowerMax(unit)
         if PlayerVehicleHasComboPoints() then
             resourceBlocks.powerType = Enum.PowerType.ComboPoints
-            resourceBlocks.powerTokens = { "COMBO_POINTS", }
+            resourceBlocks.powerTokens[1] = "COMBO_POINTS"
             SetClassResourceFramesShown(true, false, maxPower > 0)
         else
             SetClassResourceFramesShown(false, maxPower > 0, false)
@@ -399,7 +402,7 @@ local function UpdateClassResourceFrames()
                 SetClassResourceFramesShown(false, true, false)
             else
                 resourceBlocks.powerType = Enum.PowerType.SoulShards
-                resourceBlocks.powerTokens = { "SOUL_SHARDS", }
+                resourceBlocks.powerTokens[1] = "SOUL_SHARDS"
                 SetClassResourceFramesShown(true, false, true)
             end
         elseif class == "PALADIN" then
@@ -409,7 +412,7 @@ local function UpdateClassResourceFrames()
             else
                 if spec == SPEC_PALADIN_RETRIBUTION then
                     resourceBlocks.powerType = Enum.PowerType.HolyPower
-                    resourceBlocks.powerTokens = { "HOLY_POWER", }
+                    resourceBlocks.powerTokens[1] = "HOLY_POWER"
                     SetClassResourceFramesShown(true, false, true)
                 else
                     SetClassResourceFramesShown(false, true, false)
@@ -418,7 +421,7 @@ local function UpdateClassResourceFrames()
         elseif class == "MAGE" then
             if spec == SPEC_MAGE_ARCANE then
                 resourceBlocks.powerType = Enum.PowerType.ArcaneCharges
-                resourceBlocks.powerTokens = { "ARCANE_CHARGES", }
+                resourceBlocks.powerTokens[1] = "ARCANE_CHARGES"
                 SetClassResourceFramesShown(true, false, true)
             else
                 SetClassResourceFramesShown(false, true, false)
@@ -426,7 +429,8 @@ local function UpdateClassResourceFrames()
         elseif class == "MONK" then
             if spec == SPEC_MONK_WINDWALKER then
                 resourceBlocks.powerType = Enum.PowerType.Chi
-                resourceBlocks.powerTokens = { "CHI", "DARK_FORCE", }
+                resourceBlocks.powerTokens[1] = "CHI"
+                resourceBlocks.powerTokens[2] = "DARK_FORCE"
                 SetClassResourceFramesShown(true, false, true)
                 staggerBar:Hide()
             elseif spec == SPEC_MONK_BREWMASTER then
@@ -438,12 +442,12 @@ local function UpdateClassResourceFrames()
             end
         elseif class == "ROGUE" then
             resourceBlocks.powerType = Enum.PowerType.ComboPoints
-            resourceBlocks.powerTokens = { "COMBO_POINTS", }
+            resourceBlocks.powerTokens[1] = "COMBO_POINTS"
             SetClassResourceFramesShown(true, false, true)
         elseif class == "DRUID" then
             if powerType == Enum.PowerType.Energy then
                 resourceBlocks.powerType = Enum.PowerType.ComboPoints
-                resourceBlocks.powerTokens = { "COMBO_POINTS", }
+                resourceBlocks.powerTokens[1] = "COMBO_POINTS"
                 powerBar.powerType = nil
                 powerBar.powerTokens = nil
                 SetClassResourceFramesShown(true, false, true)

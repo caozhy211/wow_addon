@@ -1,8 +1,7 @@
 Minimap:SetMaskTexture("Interface/ChatFrame/CHATFRAMEBACKGROUND")
 Minimap:SetBackdrop({ edgeFile = "Interface/Buttons/WHITE8X8", edgeSize = 2, })
 local _, class = UnitClass("player")
-local r, g, b = GetClassColor(class)
-Minimap:SetBackdropBorderColor(r, g, b)
+Minimap:SetBackdropBorderColor(GetClassColor(class))
 
 MinimapBorder:Hide()
 MinimapBorderTop:Hide()

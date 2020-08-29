@@ -34,6 +34,16 @@ local menuButtons = {
     { text = "重", color = "MAGE", command = "/reload", },
 }
 
+local function GetChannelIndex(channelName, ...)
+    for i = 2, select("#", ...), 3 do
+        if select(i, ...) == channelName then
+            return select(i - 1, ...)
+        end
+    end
+end
+
+local channelR, channelG, channelB = 1, 0.75, 0.75
+
 ---@param self Button
 local function ChatMenuButtonOnClick(self, button)
     local command = menuButtons[self:GetID()].command
@@ -47,34 +57,26 @@ local function ChatMenuButtonOnClick(self, button)
         ChatFrame_OpenChat(command .. SELECTED_CHAT_FRAME.editBox:GetText(), SELECTED_CHAT_FRAME)
     else
         local channelName = command
-        local channelIndex
-        local channelList = { GetChannelList() }
-        for i = 2, #channelList, 3 do
-            if channelList[i] == channelName then
-                channelIndex = channelList[i - 1]
-                break
-            end
-        end
-        local info = ChatTypeInfo["CHANNEL"]
+        local channelIndex = GetChannelIndex(channelName, GetChannelList())
         local text
         if button == "RightButton" then
             if channelIndex then
                 LeaveChannelByName(channelName)
                 text = format(CHAT_YOU_LEFT_NOTICE, channelIndex, channelName)
-                ChatFrame1:AddMessage(text, info.r, info.g, info.b, text, info.id)
+                ChatFrame1:AddMessage(text, channelR, channelG, channelB)
             else
                 JoinPermanentChannel(channelName)
                 channelIndex = ChatFrame_AddChannel(ChatFrame1, channelName)
                 text = format(CHAT_YOU_JOINED_NOTICE, channelIndex, channelName)
-                ChatFrame1:AddMessage(text, info.r, info.g, info.b, info.id)
+                ChatFrame1:AddMessage(text, channelR, channelG, channelB)
             end
         else
             if channelIndex then
                 text = format("%s%d %s", KEY_SLASH, channelIndex, SELECTED_CHAT_FRAME.editBox:GetText())
                 ChatFrame_OpenChat(text, SELECTED_CHAT_FRAME)
             else
-                text = format(CHAT_NOT_MEMBER_NOTICE, format(" [%s] ", channelName))
-                ChatFrame1:AddMessage(text, info.r, info.g, info.b, info.id)
+                text = format(CHAT_NOT_MEMBER_NOTICE, " [" .. channelName .. "]")
+                ChatFrame1:AddMessage(text, channelR, channelG, channelB)
             end
         end
     end
@@ -93,8 +95,7 @@ for i = 1, numRows do
         local label = button:CreateFontString(button:GetName() .. "Label", "ARTWORK", "GameFontHighlight")
         label:SetPoint("CENTER")
         label:SetText(menuButtons[id].text)
-        r, g, b = GetClassColor(menuButtons[id].color)
-        label:SetTextColor(r, g, b)
+        label:SetTextColor(GetClassColor(menuButtons[id].color))
 
         button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
         button:SetScript("OnClick", ChatMenuButtonOnClick)

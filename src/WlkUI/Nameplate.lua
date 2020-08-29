@@ -1,6 +1,11 @@
+---@param frame Button
+local function IsNotForbiddenNameplateUnitFrame(frame)
+    return not frame:IsForbidden() and strmatch(frame.unit, "^nameplate%d$")
+end
+
 ---@param frame Button|BaseNamePlateUnitFrameTemplate
 hooksecurefunc("CompactUnitFrame_UpdateHealth", function(frame)
-    if not frame:IsForbidden() and strmatch(frame.unit, "^nameplate%d$") then
+    if IsNotForbiddenNameplateUnitFrame(frame) then
         local label = frame.healthBar.label
         if not label then
             label = frame.healthBar:CreateFontString(frame:GetName() .. "HealthLabel", "ARTWORK", "Game10Font_o1")
@@ -17,7 +22,7 @@ hooksecurefunc("CompactUnitFrame_UpdateHealth", function(frame)
             healthString = format("%d", health)
         end
         local maxHealth = UnitHealthMax(frame.displayedUnit)
-        label:SetFormattedText("%s - %s", healthString, FormatPercentage(PercentageBetween(health, 0, maxHealth)))
+        label:SetText(healthString .. " - " .. FormatPercentage(PercentageBetween(health, 0, maxHealth)))
     end
 end)
 
@@ -38,7 +43,7 @@ end)
 
 ---@param frame Button|BaseNamePlateUnitFrameTemplate
 hooksecurefunc("CompactUnitFrame_UpdateName", function(frame)
-    if not frame:IsForbidden() and strmatch(frame.unit, "^nameplate%d$") then
+    if IsNotForbiddenNameplateUnitFrame(frame) then
         local name = GetUnitName(frame.unit, true)
         frame.name:SetText(name)
         if CompactUnitFrame_IsTapDenied(frame) then
@@ -125,7 +130,7 @@ end
 
 ---@param frame Button
 hooksecurefunc("CompactUnitFrame_UpdateSelectionHighlight", function(frame)
-    if not frame:IsForbidden() and strmatch(frame.unit, "^nameplate%d$") then
+    if IsNotForbiddenNameplateUnitFrame(frame) then
         if UnitIsUnit(frame.displayedUnit, "target") then
             ShowSelectionIndicators(frame)
         else
@@ -140,10 +145,10 @@ local acceptQuests = {}
 local scanner = CreateFrame("GameTooltip", "WlkNameplateUnitScanner", UIParent, "GameTooltipTemplate")
 
 local function IsTitleText(r, g, b)
-    local red = 1
-    local green = 0.82
-    local blue = 0
-    return abs(r - red) < 0.005 and abs(g - green) < 0.005 and abs(b - blue) < 0.005
+    local titleR = 1
+    local titleG = 0.82
+    local titleB = 0
+    return abs(r - titleR) < 0.005 and abs(g - titleG) < 0.005 and abs(b - titleB) < 0.005
 end
 
 local function IsQuestUnit(unit)
@@ -152,7 +157,7 @@ local function IsQuestUnit(unit)
     scanner:SetUnit(unit)
     for i = 3, scanner:NumLines() do
         ---@type FontString
-        local line = _G["WlkNameplateUnitScannerTextLeft" .. i]
+        local line = _G[scanner:GetName() .. "TextLeft" .. i]
         local text = line:GetText()
         local r, g, b = line:GetTextColor()
         if IsTitleText(r, g, b) then

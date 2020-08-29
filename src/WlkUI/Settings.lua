@@ -379,6 +379,13 @@ local bagFilters = {
     LE_BAG_FILTER_FLAG_EQUIPMENT,
 }
 
+local function AddAllChannel(...)
+    for i = 2, select("#", ...), 3 do
+        local channelName = select(i, ...)
+        ChatFrame_AddChannel(ChatFrame1, channelName)
+    end
+end
+
 customButton:SetScript("OnClick", function()
     if IsInCombat() then
         return
@@ -442,10 +449,7 @@ customButton:SetScript("OnClick", function()
     FCF_ResetChatWindows()
     ChatConfig_ResetChatSettings()
     -- 显示所有频道对话消息
-    local channelList = { GetChannelList() }
-    for i = 2, #channelList, 3 do
-        ChatFrame_AddChannel(ChatFrame1, channelList[i])
-    end
+    AddAllChannel(GetChannelList())
     -- 显示经验值消息
     ChatFrame_AddMessageGroup(ChatFrame1, "COMBAT_XP_GAIN")
     -- 不显示频道切换消息
@@ -501,7 +505,7 @@ StaticPopupDialogs["APPLY_SETTINGS"] = {
 
 local scaleX = GetScreenWidth() / 1920
 local scaleY = GetScreenHeight() / 1080
-if abs(scaleX - 1) > 0.001 or abs(scaleY - 1) > 0.001 then
+if abs(scaleX - 1) > 0.005 or abs(scaleY - 1) > 0.005 then
     local scale = min(scaleX, scaleY)
     SetCVar("useUiScale", 1)
     SetCVar("uiScale", scale * UIParent:GetEffectiveScale())
@@ -541,12 +545,12 @@ focusButton:SetAttribute("macrotext", "/focus mouseover")
 
 local modifierKey = "SHIFT"
 local button = 1
-SetOverrideBindingClick(focusButton, true, strconcat(modifierKey, "-BUTTON", button), "WlkFocusUnitButton")
+SetOverrideBindingClick(focusButton, true, modifierKey .. "-BUTTON" .. button, "WlkFocusUnitButton")
 
 ---@param frame Frame
 local function AddFocusAttribute(frame)
     if frame then
-        frame:SetAttribute(strconcat(modifierKey, "-TYPE", button), "focus")
+        frame:SetAttribute(modifierKey .. "-TYPE" .. button, "focus")
     end
 end
 

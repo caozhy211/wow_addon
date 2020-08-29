@@ -70,59 +70,67 @@ local EVENT_FUNCTION_FORMAT = strconcat("---@alias EventType string |%s\n\n",
 local enums = {}
 local numericConstants = {}
 local _, build = GetBuildInfo()
+local tConcat = table.concat
 
 SlashCmdList["EXPORT_SYSTEM_API"] = function()
     if apiText == nil then
         for _, apiInfo in ipairs(APIDocumentation.systems) do
             for _, eventInfo in ipairs(apiInfo.Events) do
-                tinsert(events, format("'\"%s\"'", eventInfo.LiteralName))
+                events[#events + 1] = "'\"" .. eventInfo.LiteralName .. "\"'"
             end
 
             for _, tableInfo in ipairs(apiInfo.Tables) do
                 if tableInfo.Type == "Enumeration" then
-                    tinsert(enums, format("    %s = {", tableInfo.Name))
+                    enums[#enums + 1] = "    " .. tableInfo.Name .. " = {"
                     for _, fieldInfo in ipairs(tableInfo.Fields) do
-                        tinsert(enums, format("        %s = %s,", fieldInfo.Name, fieldInfo.EnumValue))
+                        enums[#enums + 1] = format("        %s = %s,", fieldInfo.Name, fieldInfo.EnumValue)
                     end
-                    tinsert(enums, "    },")
+                    enums[#enums + 1] = "    },"
                 end
             end
         end
 
         tinsert(enums, 1, "Enum = {")
-        tinsert(enums, "}")
+        enums[#enums + 1] = "}"
 
         for name, value in pairs(_G) do
             if (strmatch(name, "^LE_") or strmatch(name, "_LE_")) and not strmatch(name, "GAME_ERR") then
-                tinsert(numericConstants, format("%s = %s", name, value))
+                numericConstants[#numericConstants + 1] = name .. " = " .. value
             end
         end
 
         apiText = format("--- version: %s\n\n%s\n\n%s\n\n%s", build, format(EVENT_FUNCTION_FORMAT,
-                table.concat(events, "|")), table.concat(enums, "\n"), table.concat(numericConstants, "\n"))
+                tConcat(events, "|")), tConcat(enums, "\n"), tConcat(numericConstants, "\n"))
     end
     ShowExportFrame(apiText)
 end
 
 SLASH_EXPORT_CHAT1 = "/ec"
 
+local function GetMouseoverChatText(...)
+    for i = 1, select("#", ...) do
+        ---@type FontString
+        local label = select(i, ...)
+        local message = label:GetText()
+        if message and MouseIsOver(label) and label:IsVisible() then
+            return message
+        end
+    end
+end
+
 local allMessages = {}
 
 SlashCmdList["EXPORT_CHAT"] = function()
-    local message
-    ---@param line FontString
-    for _, line in ipairs({ SELECTED_CHAT_FRAME.FontStringContainer:GetRegions() }) do
-        message = line:GetText()
-        if message and MouseIsOver(line) and line:IsVisible() then
-            return ShowExportFrame(message)
+    local message = GetMouseoverChatText(SELECTED_CHAT_FRAME.FontStringContainer:GetRegions())
+    if message then
+        ShowExportFrame(message)
+    else
+        wipe(allMessages)
+        for i = 1, SELECTED_CHAT_FRAME:GetNumMessages() do
+            message = SELECTED_CHAT_FRAME:GetMessageInfo(i)
+            allMessages[#allMessages + 1] = message
         end
+        ShowExportFrame(tConcat(allMessages, "\n"))
     end
-
-    wipe(allMessages)
-    for i = 1, SELECTED_CHAT_FRAME:GetNumMessages() do
-        message = SELECTED_CHAT_FRAME:GetMessageInfo(i)
-        tinsert(allMessages, message)
-    end
-    ShowExportFrame(table.concat(allMessages, "\n"))
 end
 

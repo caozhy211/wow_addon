@@ -45,19 +45,21 @@ local eventFrame = CreateFrame("Frame")
 eventFrame:RegisterEvent("VARIABLES_LOADED")
 
 eventFrame:SetScript("OnEvent", function(_, event)
-    eventFrame:UnregisterEvent(event)
-    if GetCVar("alwaysShowActionBars") == "1" then
-        -- 总是显示快捷列时，显示最下面一排按钮的边框
-        for i = 1, NUM_ACTIONBAR_BUTTONS do
-            ---@type Button
-            local button = _G["ActionButton" .. i]
-            button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-            ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-            if i <= NUM_MULTI_BAR_BUTTON_IN_MAIN_MENU_BAR then
-                button = _G["MultiBarBottomRightButton" .. i]
+    if event == "VARIABLES_LOADED" then
+        eventFrame:UnregisterEvent(event)
+        if GetCVar("alwaysShowActionBars") == "1" then
+            -- 总是显示快捷列时，显示最下面一排按钮的边框
+            for i = 1, NUM_ACTIONBAR_BUTTONS do
+                ---@type Button
+                local button = _G["ActionButton" .. i]
                 button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
                 ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
-                button.noGrid = nil
+                if i <= NUM_MULTI_BAR_BUTTON_IN_MAIN_MENU_BAR then
+                    button = _G["MultiBarBottomRightButton" .. i]
+                    button:SetAttribute("showgrid", ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+                    ActionButton_ShowGrid(button, ACTION_BUTTON_SHOW_GRID_REASON_CVAR)
+                    button.noGrid = nil
+                end
             end
         end
     end
@@ -113,7 +115,7 @@ end
 ---@param self ActionButtonTemplate
 hooksecurefunc("ActionButton_UpdateRangeIndicator", function(self, checksRange, inRange)
     if checksRange and not inRange then
-        self.icon:SetVertexColor(GetTableColor(RED_FONT_COLOR))
+        self.icon:SetVertexColor(1, 0, 0)
     elseif self.action then
         ActionButton_UpdateUsable(self)
     end

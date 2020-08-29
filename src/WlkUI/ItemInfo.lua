@@ -98,7 +98,7 @@ local function GetItemInfoText(link, levelOnly, short, scanFunc, ...)
         end
         for i = 2, min(9, scanner:NumLines()) do
             ---@type FontString
-            local label = _G[strconcat(scanner:GetName(), "TextLeft", i)]
+            local label = _G[scanner:GetName() .. "TextLeft" .. i]
             local text = label:GetText()
             if text then
                 if not level then
@@ -114,7 +114,7 @@ local function GetItemInfoText(link, levelOnly, short, scanFunc, ...)
                     if text == _G[equipLoc] then
                         invType = short and ColorText(equipLoc, SHORT_INV_TYPE[equipLoc], label:GetTextColor())
                                 or _G[equipLoc]
-                        label = _G[strconcat(scanner:GetName(), "TextRight", i)]
+                        label = _G[scanner:GetName() .. "TextRight" .. i]
                         if label and label:GetText() then
                             subclass = short and ColorText(equipLoc, SHORT_SUBCLASS[classId][subclassId],
                                     label:GetTextColor()) or subtype
@@ -175,7 +175,7 @@ hooksecurefunc("ContainerFrame_Update", function(self)
     local bagId = self:GetID()
     for i = 1, self.size do
         ---@type ItemButton
-        local button = _G[strconcat(self:GetName(), "Item", i)]
+        local button = _G[self:GetName() .. "Item" .. i]
         local slotId = button:GetID()
         local link = GetContainerItemLink(bagId, slotId)
         AddInfoToItemButton(button, link, "SetBagItem", bagId, slotId)
@@ -221,20 +221,20 @@ hooksecurefunc("EquipmentFlyout_DisplayButton", function(button)
 end)
 
 hooksecurefunc("TradeFrame_UpdatePlayerItem", function(id)
-    local button = _G[strconcat("TradePlayerItem", id, "ItemButton")]
+    local button = _G["TradePlayerItem" .. id .. "ItemButton"]
     local link = GetTradePlayerItemLink(id)
     AddInfoToItemButton(button, link)
 end)
 
 hooksecurefunc("TradeFrame_UpdateTargetItem", function(id)
-    local button = _G[strconcat("TradeRecipientItem", id, "ItemButton")]
+    local button = _G["TradeRecipientItem" .. id .. "ItemButton"]
     local link = GetTradeTargetItemLink(id)
     AddInfoToItemButton(button, link)
 end)
 
 hooksecurefunc("InboxFrame_Update", function()
     for i = 1, INBOXITEMS_TO_DISPLAY do
-        local button = _G[strconcat("MailItem", i, "Button")]
+        local button = _G["MailItem" .. i .. "Button"]
         if button.hasItem then
             local link = select(15, GetInboxHeaderInfo(button.index))
             AddInfoToItemButton(button, link)
@@ -399,7 +399,7 @@ local function AddInfoToQuestRewardButton(self)
             local sellPrice = link and select(11, GetItemInfo(link)) or 0
             if sellPrice * numItems >= highestPrice then
                 highestPrice = sellPrice * numItems
-                tinsert(highestPriceButtons, button)
+                highestPriceButtons[#highestPriceButtons + 1] = button
             end
         end
         if button.objectType == "item" then
@@ -478,7 +478,7 @@ local function GetSocketInfoText(link)
     for key, value in pairs(statsTable) do
         if EMPTY_SOCKETS[key] then
             for _ = 1, value do
-                tinsert(socketsTable, key)
+                socketsTable[#socketsTable + 1] = key
             end
         end
     end
@@ -487,10 +487,10 @@ local function GetSocketInfoText(link)
         local gemId = gemLink and GetItemInfoFromHyperlink(gemLink)
         local socketText = gemId and GetPathFromFileId(GetItemIcon(gemId))
                 or ("Interface/ItemSocketingFrame/" .. EMPTY_SOCKETS[socket])
-        tinsert(gemsTable, format("|T%s:0|t", socketText))
+        gemsTable[#gemsTable + 1] = "|T" .. socketText .. ":0|t"
     end
     if #socketsTable > 0 then
-        tinsert(gemsTable, " ")
+        gemsTable[#gemsTable + 1] = " "
     end
     return tConcat(gemsTable)
 end
@@ -502,26 +502,26 @@ local function AddInfoToItemLink(link)
         return linkCaches[link]
     end
     wipe(replacementTable)
-    tinsert(replacementTable, "%1")
+    replacementTable[#replacementTable + 1] = "%1"
     local level, _, subclass, invType = GetItemInfoText(link)
     if level then
-        tinsert(replacementTable, level)
+        replacementTable[#replacementTable + 1] = level
     end
     if subclass and invType then
-        tinsert(replacementTable, format("(%s/%s)", subclass, invType))
+        replacementTable[#replacementTable + 1] = format("(%s/%s)", subclass, invType)
     elseif subclass or invType then
-        tinsert(replacementTable, format("(%s)", subclass or invType))
+        replacementTable[#replacementTable + 1] = "(" .. (subclass or invType) .. ")"
     end
     if level or subclass or invType then
-        tinsert(replacementTable, ": ")
+        replacementTable[#replacementTable + 1] = ": "
     end
-    tinsert(replacementTable, "%2")
-    tinsert(replacementTable, GetSocketInfoText(link))
+    replacementTable[#replacementTable + 1] = "%2"
+    replacementTable[#replacementTable + 1] = GetSocketInfoText(link)
     linkCaches[link] = gsub(link, "(|h%[)(.-%]|h)", tConcat(replacementTable))
     return linkCaches[link]
 end
 
-local function Filter(_, _, message, ...)
+local function FilterChatMessage(_, _, message, ...)
     message = gsub(message, "|Hitem:%d+:.-|h.-|h", AddInfoToItemLink)
     return false, message, ...
 end
@@ -546,5 +546,5 @@ local chatFiltersEvents = {
 }
 
 for _, event in ipairs(chatFiltersEvents) do
-    ChatFrame_AddMessageEventFilter(event, Filter)
+    ChatFrame_AddMessageEventFilter(event, FilterChatMessage)
 end

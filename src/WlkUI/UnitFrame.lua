@@ -62,7 +62,7 @@ local function UpdateUnitFrameUnitHealthLabels(unitFrame, value, maxValue)
     local healthLabel = unitFrame.healthLabel
     ---@type FontString
     local healthPercentLabel = unitFrame.healthPercentLabel
-    healthLabel:SetFormattedText("%s/%s", AbbreviateNumber(value), AbbreviateNumber(maxValue))
+    healthLabel:SetText(AbbreviateNumber(value) .. "/" .. AbbreviateNumber(maxValue))
     healthPercentLabel:SetText(FormatPercentage(PercentageBetween(value, 0, maxValue)))
 end
 
@@ -139,10 +139,9 @@ local function UpdateUnitFrameHealthBarColor(unitFrame)
     if not UnitIsConnected(unit) then
         r, g, b = 0.5, 0.5, 0.5
     else
-        local _, class = UnitClass(unit)
-        local classColor = RAID_CLASS_COLORS[class]
-        if UnitIsPlayer(unit) and classColor then
-            r, g, b = GetTableColor(classColor)
+        if UnitIsPlayer(unit) then
+            local _, class = UnitClass(unit)
+            r, g, b = GetClassColor(class)
         elseif not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) then
             r, g, b = 0.9, 0.9, 0.9
         elseif CompactUnitFrame_IsOnThreatListWithPlayer(unit) then
@@ -166,7 +165,7 @@ local function UpdateUnitFrameUnitManaLabels(unitFrame, value, maxValue)
     local manaLabel = unitFrame.manaLabel
     ---@type FontString
     local manaPercentLabel = unitFrame.manaPercentLabel
-    manaLabel:SetFormattedText("%s/%s", AbbreviateNumber(value), AbbreviateNumber(maxValue))
+    manaLabel:SetText(AbbreviateNumber(value) .. "/" .. AbbreviateNumber(maxValue))
     manaPercentLabel:SetText(FormatPercentage(PercentageBetween(value, 0, maxValue)))
 end
 
@@ -407,10 +406,10 @@ local function UpdateUnitFrameRaidRoster(unitFrame)
         local raidId = UnitInRaid(unit)
         if raidId then
             local _, _, subgroup, _, _, _, _, _, _, role, isMasterLooter = GetRaidRosterInfo(raidId)
-            groupLabel:SetFormattedText("(%s)", subgroup)
+            groupLabel:SetText("(" .. subgroup .. ")")
             groupLabel:Show()
             if role then
-                roleIcon:SetTexture(strconcat("Interface/GroupFrame/UI-Group-", role, "Icon"))
+                roleIcon:SetTexture("Interface/GroupFrame/UI-Group-" .. role .. "Icon")
                 roleIcon:Show()
             else
                 roleIcon:Hide()
@@ -530,7 +529,7 @@ local function UpdateUnitFrameUnitPowerBarAltValue(bar, unit)
         local currentPower = UnitPower(unit, ALTERNATE_POWER_INDEX)
         bar:SetValue(currentPower)
         local minValue, maxValue = bar:GetMinMaxValues()
-        valueLabel:SetFormattedText("%s/%s", AbbreviateNumber(currentPower), AbbreviateNumber(maxValue))
+        valueLabel:SetText(AbbreviateNumber(currentPower) .. "/" .. AbbreviateNumber(maxValue))
         valuePercentLabel:SetText(FormatPercentage(PercentageBetween(currentPower, minValue, maxValue)))
     end
 end
@@ -590,7 +589,7 @@ end
 local function CreateUnitFrameUnitAuraButton(auraFrame, num)
     local template = auraFrame.type == "Buff" and "TargetBuffFrameTemplate" or "TargetDebuffFrameTemplate"
     ---@type Button|TargetBuffFrameTemplate|TargetDebuffFrameTemplate
-    local button = CreateFrame("Button", strconcat(auraFrame:GetName(), auraFrame.type, num), auraFrame, template)
+    local button = CreateFrame("Button", auraFrame:GetName() .. auraFrame.type .. num, auraFrame, template)
     local size = auraFrame.buttonSize
     button:SetSize(size, size)
     if button.Stealable then
@@ -896,7 +895,7 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
         end
     elseif event == "INSTANCE_ENCOUNTER_ENGAGE_UNIT" then
         for i = 1, MAX_BOSS_FRAMES do
-            local frame = _G[strconcat("WlkBoss", i, "Frame")]
+            local frame = _G["WlkBoss" .. i .. "Frame"]
             if UnitExists(frame.unit) then
                 UpdateUnitFrame(frame)
             end
@@ -1161,7 +1160,7 @@ local function InitializeUnitFrame(unitFrame)
         manaBar:SetScript("OnEvent", UnitFrameManaBarOnEvent)
 
         if unitFrame.unitEvents then
-            tinsert(unitFrame.unitEvents, "UNIT_DISPLAYPOWER")
+            unitFrame.unitEvents[#unitFrame.unitEvents + 1] = "UNIT_DISPLAYPOWER"
         end
 
         unitFrame:SetScript("OnUpdate", UnitFrameOnUpdate)
@@ -1287,7 +1286,7 @@ end
 ---@return Frame
 local function CreateUnitFrameAuraFrame(unitFrame, auraType, orientation, maxCount, countPerLine)
     ---@type Frame
-    local frame = CreateFrame("Frame", strconcat(unitFrame:GetName(), auraType, "Frame"), unitFrame)
+    local frame = CreateFrame("Frame", unitFrame:GetName() .. auraType .. "Frame", unitFrame)
     frame.type = auraType
     frame.maxCount = maxCount
     frame.orientation = orientation
@@ -1374,9 +1373,9 @@ local function HookUnitFrameSpellBarOnUpdate(self, elapsed)
     ---@type FontString
     local delayTimeLabel = self.delayTimeLabel
     if self.casting then
-        timeLabel:SetFormattedText("%s/%s", FormatTime(self.maxValue - self.value), FormatTime(self.maxValue))
+        timeLabel:SetText(FormatTime(self.maxValue - self.value) .. "/" .. FormatTime(self.maxValue))
     elseif self.channeling then
-        timeLabel:SetFormattedText("%s/%s", FormatTime(self.value), FormatTime(self.maxValue))
+        timeLabel:SetText(FormatTime(self.value) .. "/" .. FormatTime(self.maxValue))
     end
     if castingDelayTime and castingDelayTime >= 0.1 and self.casting then
         delayTimeLabel:SetFormattedText("+%.2f", castingDelayTime)
@@ -1658,7 +1657,7 @@ InitializeUnitFrameSpellBar(focusFrame.spellBar)
 
 for i = 1, MAX_BOSS_FRAMES do
     ---@type Button
-    local bossFrame = CreateFrame("Button", strconcat("WlkBoss", i, "Frame"), UIParent, "SecureUnitButtonTemplate")
+    local bossFrame = CreateFrame("Button", "WlkBoss" .. i .. "Frame", UIParent, "SecureUnitButtonTemplate")
     bossFrame:SetSize(429 - 4 - 24 - 192, 48)
     bossFrame:SetPoint("BOTTOMRIGHT", -298 - 24 - 2, 316 + 2 + (i - 1) * (48 + 2 * 2 + 24 * 2 + 2 + 3 + 5))
     bossFrame.unit = "boss" .. i

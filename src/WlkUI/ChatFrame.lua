@@ -10,12 +10,13 @@ local dockedChatFrames = GeneralDockManager.DOCKED_CHAT_FRAMES
 
 ---@param editBox EditBox
 local function UpdateChatFrameEditBoxOptions(editBox)
+    local name = editBox:GetName()
     ---@type Texture
-    local editBoxTexture = _G[editBox:GetName() .. "Left"]
+    local editBoxTexture = _G[name .. "Left"]
     editBoxTexture:Hide()
-    editBoxTexture = _G[editBox:GetName() .. "Right"]
+    editBoxTexture = _G[name .. "Right"]
     editBoxTexture:Hide()
-    editBoxTexture = _G[editBox:GetName() .. "Mid"]
+    editBoxTexture = _G[name .. "Mid"]
     editBoxTexture:Hide()
 
     editBox:SetAltArrowKeyMode(false)
@@ -78,8 +79,7 @@ for name, shortname in pairs(CHANNEL_SHORTNAMES) do
         local chatFrame = _G["ChatFrame" .. i]
         local rawAddMessage = chatFrame.AddMessage
         chatFrame.AddMessage = function(self, message, ...)
-            local text = gsub(message, strconcat("|h%[(%d+)%. ", name, ".-%]|h"),
-                    strconcat("|h%[%1%. ", shortname, "%]|h"))
+            local text = gsub(message, "(|h%[%d+%. )" .. name .. ".-(%]|h)", "%1" .. shortname .. "%2")
             return rawAddMessage(self, text, ...)
         end
     end

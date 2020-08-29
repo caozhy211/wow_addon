@@ -76,7 +76,7 @@ local mt = getmetatable(CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate
 ---@param self Cooldown
 hooksecurefunc(mt, "SetCooldown", function(self, start, duration)
     local height = GetTimerParentHeight(self)
-    if duration > 1.5 and height > NAMEPLATE_BUFF_HEIGHT or abs(height - NAMEPLATE_BUFF_HEIGHT) < 0.001 then
+    if duration > 1.5 and height > NAMEPLATE_BUFF_HEIGHT or abs(height - NAMEPLATE_BUFF_HEIGHT) < 0.005 then
         ---@type FontString
         local timer = self.cdTimer
         if not timer then
