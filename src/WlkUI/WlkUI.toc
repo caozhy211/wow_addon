@@ -20,6 +20,7 @@ MerchantFrame.lua
 Minimap.lua
 MirrorTimer.lua
 Nameplate.lua
+PVPTalentFrame.lua
 Settings.lua
 Tooltip.lua
 UnitFrame.lua
