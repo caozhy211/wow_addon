@@ -232,7 +232,7 @@ eventFrame:SetScript("OnUpdate", function(self, elapsed)
             break
         end
     end
-    if UnitExists("mouseovertarget") then
+    if UnitExists("mouseovertarget") and GameTooltip:GetUnit() then
         local targetText
         if UnitIsUnit("mouseovertarget", "player") then
             targetText = RED_FONT_COLOR:WrapTextInColorCode(">>" .. YOU .. "<<")
