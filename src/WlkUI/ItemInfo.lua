@@ -474,7 +474,7 @@ local function GetSocketInfoText(link)
     wipe(gemsTable)
     wipe(statsTable)
     wipe(socketsTable)
-    statsTable = GetItemStats(link)
+    GetItemStats(link, statsTable)
     for key, value in pairs(statsTable) do
         if EMPTY_SOCKETS[key] then
             for _ = 1, value do
