@@ -9,7 +9,7 @@ eventFrame:RegisterEvent("MERCHANT_SHOW")
 eventFrame:SetScript("OnEvent", function(_, event)
     if event == "MERCHANT_SHOW" then
         local totalSellPrice = 0
-        for i = 1, NUM_BAG_FRAMES do
+        for i = 0, NUM_BAG_FRAMES do
             for j = 1, GetContainerNumSlots(i) do
                 local _, count, _, quality, _, _, link = GetContainerItemInfo(i, j)
                 if link then
