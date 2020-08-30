@@ -238,6 +238,8 @@ hooksecurefunc("InboxFrame_Update", function()
         if button.hasItem then
             local link = select(15, GetInboxHeaderInfo(button.index))
             AddInfoToItemButton(button, link)
+        else
+            AddInfoToItemButton(button)
         end
     end
 end)
