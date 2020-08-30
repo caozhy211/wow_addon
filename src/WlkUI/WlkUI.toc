@@ -15,6 +15,7 @@ ExportFrame.lua
 Filter.lua
 GridFrame.lua
 ItemInfo.lua
+ItemTrackerFrame.lua
 Layout.lua
 MerchantFrame.lua
 Minimap.lua
