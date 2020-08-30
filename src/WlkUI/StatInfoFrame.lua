@@ -10,6 +10,7 @@ local OFFSET_Y2 = -320
 local statInfoFrame = CreateFrame("Frame", "WlkStatInfoFrame", UIParent)
 statInfoFrame:SetSize(OFFSET_X2 - OFFSET_X1, OFFSET_Y1 - OFFSET_Y2)
 statInfoFrame:SetPoint("TOPRIGHT", OFFSET_X2, OFFSET_Y1)
+statInfoFrame:SetFrameStrata("BACKGROUND")
 
 local numStatFrames = 9
 local spacing = 2
