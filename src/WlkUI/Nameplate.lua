@@ -1,6 +1,6 @@
 ---@param frame Button
 local function IsNotForbiddenNameplateUnitFrame(frame)
-    return not frame:IsForbidden() and strmatch(frame.unit, "^nameplate%d$")
+    return not frame:IsForbidden() and strmatch(frame.unit, "^nameplate%d+$")
 end
 
 ---@param frame Button|BaseNamePlateUnitFrameTemplate
