@@ -31,9 +31,6 @@ local function PvpTalentButtonOnUpdate(self, elapsed)
 
     local r, g, b
     local spellId = self:GetAttribute("spell")
-    if not spellId then
-        return
-    end
     if IsPassiveSpell(spellId) then
         r, g, b = GetTableColor(PASSIVE_SPELL_FONT_COLOR)
     else
@@ -85,7 +82,6 @@ for i = 1, NUM_PVP_TALENT do
 
     button:SetScript("OnEnter", PvpTalentButtonOnEnter)
     button:SetScript("OnLeave", PvpTalentButtonOnLeave)
-    button:SetScript("OnUpdate", PvpTalentButtonOnUpdate)
 end
 
 local TRINKET_INDEX = 1
@@ -131,9 +127,11 @@ pvpTalentFrame:SetScript("OnEvent", function(_, event)
                 local _, _, texture, _, _, spellId = GetPvpTalentInfoByID(talentId)
                 button.icon:SetTexture(texture)
                 button:SetAttribute("spell", i == TRINKET_INDEX and HONOR_MEDAL_ID or spellId)
+                button:SetScript("OnUpdate", PvpTalentButtonOnUpdate)
             else
                 button.icon:SetTexture(nil)
                 button:SetAttribute("spell", nil)
+                button:SetScript("OnUpdate", nil)
             end
         end
     end
