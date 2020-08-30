@@ -78,7 +78,6 @@ for i = 1, NUM_PVP_TALENT do
     button:SetAttribute("type", "spell")
     button:SetAttribute("checkfocuscast", true)
     button:SetAttribute("unit2", "player")
-    button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
 
     button:SetScript("OnEnter", PvpTalentButtonOnEnter)
     button:SetScript("OnLeave", PvpTalentButtonOnLeave)
@@ -102,12 +101,12 @@ pvpTalentFrame:SetScript("OnEvent", function(_, event)
         if IsUsableSpell(HONOR_MEDAL_ID) and not pvpTalentFrame:IsShown() then
             pvpTalentFrame:Show()
             for i = 1, NUM_PVP_TALENT do
-                buttons[i]:Enable()
+                buttons[i]:RegisterForClicks("LeftButtonUp", "RightButtonUp")
             end
         elseif not IsUsableSpell(HONOR_MEDAL_ID) and pvpTalentFrame:IsShown() then
             pvpTalentFrame:Hide()
             for i = 1, NUM_PVP_TALENT do
-                buttons[i]:Disable()
+                buttons[i]:RegisterForClicks()
             end
         end
     elseif event == "SPELL_UPDATE_COOLDOWN" then
