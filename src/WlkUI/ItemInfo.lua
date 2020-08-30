@@ -397,8 +397,12 @@ local function AddInfoToQuestRewardButton(self)
             local numItems = questLog and select(3, GetQuestLogChoiceInfo(id))
                     or select(3, GetQuestItemInfo("choice", id))
             local sellPrice = link and select(11, GetItemInfo(link)) or 0
-            if sellPrice * numItems >= highestPrice then
-                highestPrice = sellPrice * numItems
+            local price = sellPrice * numItems
+            if price > highestPrice then
+                highestPrice = price
+                wipe(highestPriceButtons)
+                highestPriceButtons[1] = button
+            elseif price == highestPrice then
                 highestPriceButtons[#highestPriceButtons + 1] = button
             end
         end
