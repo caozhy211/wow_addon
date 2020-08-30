@@ -22,6 +22,7 @@ Minimap.lua
 MirrorTimer.lua
 Nameplate.lua
 PVPTalentFrame.lua
+StatInfoFrame.lua
 Settings.lua
 Tooltip.lua
 UnitFrame.lua
