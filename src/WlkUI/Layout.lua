@@ -35,8 +35,11 @@ LossOfControlFrame:ClearAllPoints()
 LossOfControlFrame:SetPoint("BOTTOM", 0, (142 + HEIGHT1 * scale) / scale)
 LossOfControlFrame.SetPoint = nop
 
+--- WlkTargetFrameSpellBar.borderTop 顶部相对 UIParent 底部的偏移值
+local offsetY1 = 316
+
 TalkingHeadFrame:ClearAllPoints()
-TalkingHeadFrame:SetPoint("TOPLEFT")
+TalkingHeadFrame:SetPoint("BOTTOMRIGHT", OFFSET_X1, offsetY1)
 TalkingHeadFrame.SetPoint = nop
 
 ---@param frame Frame
