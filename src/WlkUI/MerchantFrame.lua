@@ -1,5 +1,5 @@
 ---@type ColorMixin
-local color = CreateColor(1, 1, 0)
+local color = YELLOW_FONT_COLOR
 
 ---@type Frame
 local eventFrame = CreateFrame("Frame")

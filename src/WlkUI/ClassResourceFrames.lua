@@ -15,10 +15,11 @@ local resourceBlocks = CreateFrame("Frame", "WlkClassResourceBlocksFrame", UIPar
 resourceBlocks:SetSize(width1, height1)
 resourceBlocks:SetPoint(point1, UIParent, "BOTTOM", offsetX1, offsetY1)
 
-local function CreateClassResourceBarFrame(barName, width, height)
+local function CreateClassResourceBarFrame(barName, width, height, point, offsetX, offsetY)
     ---@type StatusBar
     local bar = CreateFrame("StatusBar", barName, UIParent)
     bar:SetSize(width, height)
+    bar:SetPoint(point, UIParent, "BOTTOM", offsetX, offsetY)
     bar:SetStatusBarTexture("Interface/RaidFrame/Raid-Bar-Resource-Fill")
     bar.frameType = "bar"
 
@@ -47,11 +48,8 @@ local function CreateClassResourceBarFrame(barName, width, height)
     return bar
 end
 
-local resourceBar = CreateClassResourceBarFrame("WlkClassResourceBarFrame", width1, height1)
-resourceBar:SetPoint(point1, UIParent, "BOTTOM", offsetX1, offsetY1)
-
-local powerBar = CreateClassResourceBarFrame("WlkClassPowerBarFrame", width2, height2)
-powerBar:SetPoint(point2, UIParent, "BOTTOM", offsetX2, offsetY2)
+local resourceBar = CreateClassResourceBarFrame("WlkClassResourceBarFrame", width1, height1, point1, offsetX1, offsetY1)
+local powerBar = CreateClassResourceBarFrame("WlkClassPowerBarFrame", width2, height2, point2, offsetX2, offsetY2)
 
 local unit = "player"
 ---@type Frame[]
@@ -96,8 +94,7 @@ local function UpdateBlocksValue()
         end
     elseif powerType == Enum.PowerType.Runes then
         tSort(runeIndexes, RuneComparison)
-        for i = 1, #runeIndexes do
-            local runeIndex = runeIndexes[i]
+        for i, runeIndex in ipairs(runeIndexes) do
             local start, duration, ready = GetRuneCooldown(runeIndex)
             local block = blocks[i]
             if ready then
@@ -284,18 +281,18 @@ if class == "MONK" then
     staggerBar.background:SetAllPoints()
     staggerBar.background:SetTexture("Interface/RaidFrame/Raid-Bar-Resource-Background")
     ---@type FontString
-    staggerBar.staggerLabel = staggerBar:CreateFontString("WlkStaggerLabel", "ARTWORK", font)
-    staggerBar.staggerLabel:SetPoint("LEFT", 1, 0)
+    staggerBar.leftLabel = staggerBar:CreateFontString("WlkStaggerLabel", "ARTWORK", font)
+    staggerBar.leftLabel:SetPoint("LEFT", 1, 0)
     ---@type FontString
-    staggerBar.staggerPercentLabel = staggerBar:CreateFontString("WlkStaggerPercentLabel", "ARTWORK", font)
-    staggerBar.staggerPercentLabel:SetPoint("RIGHT", -1, 0)
+    staggerBar.rightLabel = staggerBar:CreateFontString("WlkStaggerPercentLabel", "ARTWORK", font)
+    staggerBar.rightLabel:SetPoint("RIGHT", -1, 0)
 
     local function UpdateMaxStagger()
         local maxHealth = UnitHealthMax("player")
         staggerBar:SetMinMaxValues(0, maxHealth)
         local stagger = UnitStagger("player")
-        staggerBar.staggerLabel:SetText(AbbreviateNumber(stagger) .. "/" .. AbbreviateNumber(maxHealth))
-        staggerBar.staggerPercentLabel:SetText(FormatPercentage(PercentageBetween(stagger, 0, maxHealth)))
+        staggerBar.leftLabel:SetText(AbbreviateNumber(stagger) .. "/" .. AbbreviateNumber(maxHealth))
+        staggerBar.rightLabel:SetText(FormatPercentage(PercentageBetween(stagger, 0, maxHealth)))
     end
 
     staggerBar:SetScript("OnUpdate", function(self, elapsed)
@@ -322,7 +319,7 @@ if class == "MONK" then
         else
             info = info[STAGGER_GREEN_INDEX]
         end
-        staggerBar:SetStatusBarColor(info.r, info.g, info.b)
+        staggerBar:SetStatusBarColor(GetTableColor(info))
     end)
 elseif class == "WARLOCK" then
     ---@type FontString
@@ -353,7 +350,7 @@ local function HideResourceFrame(frame)
     frame:Hide()
 end
 
-local function SetClassResourceFramesShown(showBlocksFrame, showResourceBar, showPowerBar)
+local function UpdateClassResourceFramesVisibility(showBlocksFrame, showResourceBar, showPowerBar)
     if showBlocksFrame then
         ShowClassResourceFrame(resourceBlocks)
         UpdateBlocksMaxValue()
@@ -388,9 +385,9 @@ local function UpdateClassResourceFrames()
         if PlayerVehicleHasComboPoints() then
             resourceBlocks.powerType = Enum.PowerType.ComboPoints
             resourceBlocks.powerTokens[1] = "COMBO_POINTS"
-            SetClassResourceFramesShown(true, false, maxPower > 0)
+            UpdateClassResourceFramesVisibility(true, false, maxPower > 0)
         else
-            SetClassResourceFramesShown(false, maxPower > 0, false)
+            UpdateClassResourceFramesVisibility(false, maxPower > 0, false)
         end
     elseif unit == "player" then
         local level = UnitLevel("player")
@@ -399,88 +396,88 @@ local function UpdateClassResourceFrames()
         if class == "WARLOCK" then
             if level < blocksShowLevel then
                 eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
             else
                 resourceBlocks.powerType = Enum.PowerType.SoulShards
                 resourceBlocks.powerTokens[1] = "SOUL_SHARDS"
-                SetClassResourceFramesShown(true, false, true)
+                UpdateClassResourceFramesVisibility(true, false, true)
             end
         elseif class == "PALADIN" then
             if level < blocksShowLevel then
                 eventFrame:RegisterEvent("PLAYER_LEVEL_UP")
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
             else
                 if spec == SPEC_PALADIN_RETRIBUTION then
                     resourceBlocks.powerType = Enum.PowerType.HolyPower
                     resourceBlocks.powerTokens[1] = "HOLY_POWER"
-                    SetClassResourceFramesShown(true, false, true)
+                    UpdateClassResourceFramesVisibility(true, false, true)
                 else
-                    SetClassResourceFramesShown(false, true, false)
+                    UpdateClassResourceFramesVisibility(false, true, false)
                 end
             end
         elseif class == "MAGE" then
             if spec == SPEC_MAGE_ARCANE then
                 resourceBlocks.powerType = Enum.PowerType.ArcaneCharges
                 resourceBlocks.powerTokens[1] = "ARCANE_CHARGES"
-                SetClassResourceFramesShown(true, false, true)
+                UpdateClassResourceFramesVisibility(true, false, true)
             else
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
             end
         elseif class == "MONK" then
             if spec == SPEC_MONK_WINDWALKER then
                 resourceBlocks.powerType = Enum.PowerType.Chi
                 resourceBlocks.powerTokens[1] = "CHI"
                 resourceBlocks.powerTokens[2] = "DARK_FORCE"
-                SetClassResourceFramesShown(true, false, true)
+                UpdateClassResourceFramesVisibility(true, false, true)
                 staggerBar:Hide()
             elseif spec == SPEC_MONK_BREWMASTER then
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
                 staggerBar:Show()
             else
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
                 staggerBar:Hide()
             end
         elseif class == "ROGUE" then
             resourceBlocks.powerType = Enum.PowerType.ComboPoints
             resourceBlocks.powerTokens[1] = "COMBO_POINTS"
-            SetClassResourceFramesShown(true, false, true)
+            UpdateClassResourceFramesVisibility(true, false, true)
         elseif class == "DRUID" then
             if powerType == Enum.PowerType.Energy then
                 resourceBlocks.powerType = Enum.PowerType.ComboPoints
                 resourceBlocks.powerTokens[1] = "COMBO_POINTS"
                 powerBar.powerType = nil
                 powerBar.powerTokens = nil
-                SetClassResourceFramesShown(true, false, true)
+                UpdateClassResourceFramesVisibility(true, false, true)
             elseif powerType == Enum.PowerType.LunarPower then
                 powerBar.powerType = Enum.PowerType.Mana
                 powerBar.powerTokens = { "MANA", }
-                SetClassResourceFramesShown(false, true, true)
+                UpdateClassResourceFramesVisibility(false, true, true)
             else
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
             end
         elseif class == "DEATHKNIGHT" then
             resourceBlocks.powerType = Enum.PowerType.Runes
-            SetClassResourceFramesShown(true, false, true)
+            UpdateClassResourceFramesVisibility(true, false, true)
         elseif class == "SHAMAN" then
             if powerType == Enum.PowerType.Maelstrom then
                 powerBar.powerType = Enum.PowerType.Mana
                 powerBar.powerTokens = { "MANA", }
-                SetClassResourceFramesShown(false, true, true)
+                UpdateClassResourceFramesVisibility(false, true, true)
             else
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
             end
         elseif class == "PRIEST" then
             if powerType == Enum.PowerType.Insanity then
                 powerBar.powerType = Enum.PowerType.Mana
                 powerBar.powerTokens = { "MANA", }
                 resourceBar.powerTokens = { "INSANITY", }
-                SetClassResourceFramesShown(false, true, true)
+                UpdateClassResourceFramesVisibility(false, true, true)
             else
                 resourceBar.powerTokens = nil
-                SetClassResourceFramesShown(false, true, false)
+                UpdateClassResourceFramesVisibility(false, true, false)
             end
         else
-            SetClassResourceFramesShown(false, true, false)
+            UpdateClassResourceFramesVisibility(false, true, false)
         end
     end
 end

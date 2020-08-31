@@ -1,9 +1,9 @@
---- ChatFrame1Background 和 UIParent 的底部边距
-local PADDING1 = 116
+--- ChatFrame1Background 底部相对 UIParent 底部的偏移值
+local OFFSET_Y1 = 116
 
 local numRows = 4
 local numCols = 3
-local height = PADDING1 / numRows
+local height = OFFSET_Y1 / numRows
 local width = height
 
 ---@type Frame
@@ -63,13 +63,12 @@ local function ChatMenuButtonOnClick(self, button)
             if channelIndex then
                 LeaveChannelByName(channelName)
                 text = format(CHAT_YOU_LEFT_NOTICE, channelIndex, channelName)
-                ChatFrame1:AddMessage(text, channelR, channelG, channelB)
             else
                 JoinPermanentChannel(channelName)
                 channelIndex = ChatFrame_AddChannel(ChatFrame1, channelName)
                 text = format(CHAT_YOU_JOINED_NOTICE, channelIndex, channelName)
-                ChatFrame1:AddMessage(text, channelR, channelG, channelB)
             end
+            ChatFrame1:AddMessage(text, channelR, channelG, channelB)
         else
             if channelIndex then
                 text = format("%s%d %s", KEY_SLASH, channelIndex, SELECTED_CHAT_FRAME.editBox:GetText())
@@ -104,9 +103,7 @@ end
 
 SLASH_RL1 = "/rl"
 
-SlashCmdList["RL"] = function()
-    ReloadUI()
-end
+SlashCmdList["RL"] = ReloadUI
 
 SLASH_CLEAR_CHAT1 = "/cl"
 

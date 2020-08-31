@@ -34,10 +34,10 @@ local function UpdateUnitFrameUnitClassification(unitFrame)
         return
     else
         local classification = UnitClassification(unitFrame.unit)
-        if (classification == "elite" or classification == "worldboss") then
+        if classification == "elite" or classification == "worldboss" then
             icon:SetAtlas("nameplates-icon-elite-gold")
             icon:Show()
-        elseif (classification == "rareelite") then
+        elseif classification == "rareelite" then
             icon:SetAtlas("nameplates-icon-elite-silver")
             icon:Show()
         else

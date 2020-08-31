@@ -1,5 +1,5 @@
 local addonName = ...
-local filter
+local filter = {}
 
 ---@type Frame
 local eventFrame = CreateFrame("Frame")
@@ -10,9 +10,10 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
     if event == "ADDON_LOADED" and addonName == ... then
         eventFrame:UnregisterEvent(event)
         if not WlkChatFilter then
-            WlkChatFilter = {}
+            WlkChatFilter = filter
+        else
+            filter = WlkChatFilter
         end
-        filter = WlkChatFilter
     end
 end)
 
@@ -23,7 +24,7 @@ local chatFilterEvents = {
     "CHAT_MSG_YELL",
 }
 
-local function tMatch(tbl, ...)
+local function TableMatch(tbl, ...)
     for i = 1, select("#", ...) do
         local str = select(i, ...)
         for _, value in ipairs(tbl) do
@@ -36,7 +37,7 @@ local function tMatch(tbl, ...)
 end
 
 local function FilterChatMessage(_, _, message, ...)
-    return tMatch(filter, message), message, ...
+    return TableMatch(filter, message), message, ...
 end
 
 for _, event in ipairs(chatFilterEvents) do
@@ -56,7 +57,7 @@ SlashCmdList["CHAT_FILTER"] = function(arg)
     if option == "list" then
         ChatFrame1:AddMessage(KEYWORD_LIST, systemR, systemG, systemB)
         for i, keyword in ipairs(filter) do
-            local text = format(i .. ": " .. keyword)
+            local text = i .. ": " .. keyword
             ChatFrame1:AddMessage(text)
         end
     elseif option == "delete" then
@@ -72,7 +73,7 @@ SlashCmdList["CHAT_FILTER"] = function(arg)
     end
 end
 
-local BN_TOAST_TYPE_CLUB_INVITATION = 6;
+local BN_TOAST_TYPE_CLUB_INVITATION = 6
 
 local rawShowToast = BNToastFrame.ShowToast
 BNToastFrame.ShowToast = function()
@@ -80,8 +81,9 @@ BNToastFrame.ShowToast = function()
     if toast.toastType == BN_TOAST_TYPE_CLUB_INVITATION then
         local clubName = toast.toastData.club.name
         local description = toast.toastData.club.description
-        if tMatch(filter, clubName, description) then
-            return tremove(BNToastFrame.BNToasts, 1)
+        if TableMatch(filter, clubName, description) then
+            tremove(BNToastFrame.BNToasts, 1)
+            return
         end
     end
     return rawShowToast(BNToastFrame)

@@ -16,9 +16,8 @@ hooksecurefunc("MirrorTimerFrame_OnUpdate", function(frame)
     ---@type StatusBar
     local statusbar = _G[name .. "StatusBar"]
     local _, maxValue = statusbar:GetMinMaxValues()
-    local currentValue = statusbar:GetValue()
+    local value = statusbar:GetValue()
     ---@type ColorMixin
-    local color = currentValue > 30 and GREEN_FONT_COLOR or RED_FONT_COLOR
-    label:SetFormattedText("%s %s/%s", text, color:WrapTextInColorCode(SecondsToClock(currentValue)),
-            SecondsToClock(maxValue))
+    local color = value > 30 and GREEN_FONT_COLOR or RED_FONT_COLOR
+    label:SetFormattedText("%s %s/%s", text, color:WrapTextInColorCode(SecondsToClock(value)), SecondsToClock(maxValue))
 end)

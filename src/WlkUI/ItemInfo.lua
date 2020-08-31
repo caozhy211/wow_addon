@@ -1,9 +1,9 @@
 ---@param button ItemButton
 ---@param color ColorMixin
-local function CreateItemButtonLabel(button, position, offsetX, offsetY, color)
+local function CreateItemButtonLabel(button, point, offsetX, offsetY, color)
     ---@type FontString
     local label = button:CreateFontString(nil, "OVERLAY", "Game12Font_o1")
-    label:SetPoint(position, offsetX, offsetY)
+    label:SetPoint(point, offsetX, offsetY)
     if color then
         label:SetTextColor(color:GetRGB())
     end

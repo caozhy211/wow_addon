@@ -1,10 +1,12 @@
+--- LossOfControlFrame 顶部相对 UIParent 底部的偏移值
+local offsetY1 = 226
 local NUM_PVP_TALENT = 4
 local size = 27
 local spacing = 5
 ---@type Frame
 local pvpTalentFrame = CreateFrame("Frame", "WlkPVPTalentFrame", UIParent)
 pvpTalentFrame:SetSize((size + spacing) * NUM_PVP_TALENT - spacing, size)
-pvpTalentFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -180, 142 + 81 + 3)
+pvpTalentFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -180, offsetY1)
 
 ---@param self Button
 local function PvpTalentButtonOnEnter(self)

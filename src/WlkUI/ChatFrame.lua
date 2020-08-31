@@ -23,7 +23,7 @@ local function UpdateChatFrameEditBoxOptions(editBox)
 end
 
 ---@param chatFrame ScrollingMessageFrame
-local function UpdateChatFrameEditBox(initialUpdate, chatFrame)
+local function UpdateChatFrameEditBox(firstUpdate, chatFrame)
     for i = 1, NUM_CHAT_WINDOWS do
         ---@type EditBox
         local editBox = _G["ChatFrame" .. i .. "EditBox"]
@@ -33,7 +33,7 @@ local function UpdateChatFrameEditBox(initialUpdate, chatFrame)
         editBox:SetPoint("BOTTOMLEFT", rightmostTab, "BOTTOMRIGHT", -PADDING1, OFFSET_Y1)
         editBox:SetPoint("BOTTOMRIGHT", ChatFrame1Background, "TOPRIGHT", PADDING1, OFFSET_Y1 - SPACING1)
 
-        if initialUpdate then
+        if firstUpdate then
             UpdateChatFrameEditBoxOptions(editBox)
         end
     end
@@ -73,15 +73,19 @@ local CHANNEL_SHORTNAMES = {
     [WORLD[locale]] = "世界",
 }
 
-for name, shortname in pairs(CHANNEL_SHORTNAMES) do
-    for i = 1, NUM_CHAT_WINDOWS do
-        ---@type ScrollingMessageFrameMixin
-        local chatFrame = _G["ChatFrame" .. i]
-        local rawAddMessage = chatFrame.AddMessage
-        chatFrame.AddMessage = function(self, message, ...)
-            local text = gsub(message, "(|h%[%d+%. )" .. name .. ".-(%]|h)", "%1" .. shortname .. "%2")
-            return rawAddMessage(self, text, ...)
-        end
+---@param chatFrame ScrollingMessageFrameMixin
+local function AbbreviateChatFrameChannelName(chatFrame, name, shortname)
+    local rawAddMessage = chatFrame.AddMessage
+    chatFrame.AddMessage = function(self, message, ...)
+        local text = gsub(message, "(|h%[%d+%. )" .. name .. ".-(%]|h)", "%1" .. shortname .. "%2")
+        return rawAddMessage(self, text, ...)
+    end
+end
+
+for i = 1, NUM_CHAT_WINDOWS do
+    local chatFrame = _G["ChatFrame" .. i]
+    for name, shortname in pairs(CHANNEL_SHORTNAMES) do
+        AbbreviateChatFrameChannelName(chatFrame, name, shortname)
     end
 end
 
@@ -118,30 +122,26 @@ hooksecurefunc("ChatEdit_UpdateHeader", function(editBox)
     end
 end)
 
---- ChatFrame1ButtonFrameBackground 和 ChatFrame1 的水平间距
-local SPACING2 = 3
---- ChatFrame1ButtonFrameBackground 的宽度
-local WIDTH1 = 33
---- QuickJoinToastButton 和 ChatFrame1 的垂直间距
-local SPACING3 = 27
---- QuickJoinToastButton 的高度
-local HEIGHT1 = 32
---- CompactRaidFrameManagerContainerResizeFrame 和 UIParent 的底部边距
-local PADDING2 = 330
---- ChatFrame1 和 ChatFrame1Background 的底部差距
-local MARGIN1 = 6
---- ChatFrame1 和 ChatFrame1Background 的右边差距
-local MARGIN2 = 24
+--- ChatFrame1 左边相对 ChatFrame1ButtonFrameBackground 左边的偏移值
+local OFFSET_Y2 = 36
+--- CompactRaidFrameManagerContainerResizeFrame 底部相对 UIParent 底部的偏移值
+local OFFSET_Y3 = 330
+--- QuickJoinToastButton 顶部相对 ChatFrame1 顶部的偏移值
+local OFFSET_Y4 = 59
+--- ChatFrame1 底部相对 ChatFrame1Background 底部的偏移值
+local OFFSET_Y5 = 6
+--- ChatFrame1Background 右边相对 ChatFrame1 右边的偏移值
+local OFFSET_X1 = 24
 
---- ChatFrame1Background 右下角的横坐标
-local x = 540
---- ChatFrame1Background 右下角的纵坐标
-local y = 116
+--- ChatFrame1Background 右边相对 UIParent 左边的偏移值
+local offsetX = 540
+--- ChatFrame1Background 底部相对 UIParent 底部的偏移值
+local offsetY = 116
 
 hooksecurefunc("UIParent_ManageFramePosition", function(index)
     if _G[index] == ChatFrame1 then
         ChatFrame1:ClearAllPoints()
-        ChatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", SPACING2 + WIDTH1, PADDING2 - HEIGHT1 - SPACING3)
-        ChatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", x - MARGIN2, y + MARGIN1)
+        ChatFrame1:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", OFFSET_Y2, OFFSET_Y3 - OFFSET_Y4)
+        ChatFrame1:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", offsetX - OFFSET_X1, offsetY + OFFSET_Y5)
     end
 end)

@@ -1,10 +1,12 @@
+--- LossOfControlFrame 顶部相对 UIParent 底部的偏移值
+local offsetY1 = 226
 local numTrackerButtons = 7
 local size = 27
 local spacing = 5
 ---@type Frame
 local trackerFrame = CreateFrame("Frame", "WlkItemTrackerFrame", UIParent)
 trackerFrame:SetSize((size + spacing) * numTrackerButtons - spacing, size)
-trackerFrame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 180, 142 + 81 + 3)
+trackerFrame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", 180, offsetY1)
 
 ---@param self Button
 local function TrackerButtonOnEnter(self)
@@ -123,7 +125,7 @@ local function GetTrackerButtonByItemId(itemId)
     end
 end
 
-local attributesToUpdate = {}
+local attributesToBeUpdate = {}
 
 ---@param button Button|ActionButtonTemplate
 local function UpdateTrackerButtonAttribute(button, value)
@@ -132,7 +134,7 @@ local function UpdateTrackerButtonAttribute(button, value)
     end
     if InCombatLockdown() then
         trackerFrame:RegisterEvent("PLAYER_REGEN_ENABLED")
-        attributesToUpdate[button] = value
+        attributesToBeUpdate[button] = value
     else
         button:SetAttribute("item", value)
         if value then
@@ -261,10 +263,10 @@ trackerFrame:SetScript("OnEvent", function(_, event, ...)
         UpdateContainerTrackedItems()
     elseif event == "PLAYER_REGEN_ENABLED" then
         trackerFrame:UnregisterEvent(event)
-        for button, value in pairs(attributesToUpdate) do
+        for button, value in pairs(attributesToBeUpdate) do
             UpdateTrackerButtonAttribute(button, value)
         end
-        wipe(attributesToUpdate)
+        wipe(attributesToBeUpdate)
     elseif event == "BAG_UPDATE_COOLDOWN" then
         for i = 1, numTrackerButtons do
             if buttons[i].itemId then

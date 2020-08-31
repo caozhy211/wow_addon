@@ -140,7 +140,7 @@ hooksecurefunc("CompactUnitFrame_UpdateSelectionHighlight", function(frame)
 end)
 
 local scenarioName
-local acceptQuests = {}
+local activeQuests = {}
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WlkNameplateUnitScanner", UIParent, "GameTooltipTemplate")
 
@@ -161,7 +161,7 @@ local function IsQuestUnit(unit)
         local text = line:GetText()
         local r, g, b = line:GetTextColor()
         if IsTitleText(r, g, b) then
-            if text == scenarioName or text == UnitName("player") or acceptQuests[text] then
+            if text == scenarioName or text == UnitName("player") or activeQuests[text] then
                 checkProgress = true
             else
                 break
@@ -233,23 +233,23 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
         scenarioName = C_Scenario.GetInfo()
         for i = 1, GetNumQuestLogEntries() do
             local title, _, _, isHeader, _, _, _, questId, _, _, _, _, _, isBounty = GetQuestLogTitle(i)
-            if not isHeader and not isBounty and not acceptQuests[title] then
-                acceptQuests[title] = questId
+            if not isHeader and not isBounty and not activeQuests[title] then
+                activeQuests[title] = questId
             end
         end
         UpdateNameplatesQuestIcon()
     elseif event == "QUEST_ACCEPTED" then
         local questIndex, questId = ...
         local title = GetQuestLogTitle(questIndex)
-        if title and not acceptQuests[title] then
-            acceptQuests[title] = questId
+        if title and not activeQuests[title] then
+            activeQuests[title] = questId
             UpdateNameplatesQuestIcon()
         end
     elseif event == "QUEST_REMOVED" then
         local questId = ...
-        for title, id in pairs(acceptQuests) do
+        for title, id in pairs(activeQuests) do
             if id == questId then
-                acceptQuests[title] = nil
+                activeQuests[title] = nil
                 break
             end
         end
