@@ -53,7 +53,7 @@ local systemR, systemG, systemB = 1, 1, 0
 SLASH_CHAT_FILTER1 = "/cf"
 
 SlashCmdList["CHAT_FILTER"] = function(arg)
-    local option, value = strsplit(" ", arg)
+    local option, value = strsplit(" ", arg, 2)
     if option == "list" then
         ChatFrame1:AddMessage(KEYWORD_LIST, systemR, systemG, systemB)
         for i, keyword in ipairs(filter) do
