@@ -5,6 +5,7 @@ local size = 27
 local spacing = 5
 ---@type Frame
 local pvpTalentFrame = CreateFrame("Frame", "WlkPVPTalentFrame", UIParent)
+pvpTalentFrame:SetAlpha(0)
 pvpTalentFrame:SetSize((size + spacing) * NUM_PVP_TALENT - spacing, size)
 pvpTalentFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", -180, offsetY1)
 
@@ -81,7 +82,8 @@ for i = 1, NUM_PVP_TALENT do
     button:SetAttribute("checkfocuscast", true)
     button:SetAttribute("unit2", "player")
 
-    button:SetScript("OnEnter", PvpTalentButtonOnEnter)
+    button:RegisterForClicks()
+
     button:SetScript("OnLeave", PvpTalentButtonOnLeave)
 end
 
@@ -100,15 +102,25 @@ pvpTalentFrame:SetScript("OnEvent", function(_, event)
             SetBindingClick(bindKeys[i], buttons[i]:GetName())
         end
     elseif event == "SPELLS_CHANGED" then
-        if IsUsableSpell(HONOR_MEDAL_ID) and not pvpTalentFrame:IsShown() then
-            pvpTalentFrame:Show()
+        if IsUsableSpell(HONOR_MEDAL_ID) and not pvpTalentFrame.visible then
+            pvpTalentFrame.visible = true
+            pvpTalentFrame:SetAlpha(1)
             for i = 1, NUM_PVP_TALENT do
-                buttons[i]:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+                local button = buttons[i]
+                button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+                button:SetScript("OnEnter", PvpTalentButtonOnEnter)
+                if button:GetAttribute("spell") then
+                    button:SetScript("OnUpdate", PvpTalentButtonOnUpdate)
+                end
             end
-        elseif not IsUsableSpell(HONOR_MEDAL_ID) and pvpTalentFrame:IsShown() then
-            pvpTalentFrame:Hide()
+        elseif not IsUsableSpell(HONOR_MEDAL_ID) and pvpTalentFrame.visible then
+            pvpTalentFrame.visible = false
+            pvpTalentFrame:SetAlpha(0)
             for i = 1, NUM_PVP_TALENT do
-                buttons[i]:RegisterForClicks()
+                local button = buttons[i]
+                button:RegisterForClicks()
+                button:SetScript("OnEnter", nil)
+                button:SetScript("OnUpdate", nil)
             end
         end
     elseif event == "SPELL_UPDATE_COOLDOWN" then
@@ -128,7 +140,9 @@ pvpTalentFrame:SetScript("OnEvent", function(_, event)
                 local _, _, texture, _, _, spellId = GetPvpTalentInfoByID(talentId)
                 button.icon:SetTexture(texture)
                 button:SetAttribute("spell", i == TRINKET_INDEX and HONOR_MEDAL_ID or spellId)
-                button:SetScript("OnUpdate", PvpTalentButtonOnUpdate)
+                if pvpTalentFrame.visible then
+                    button:SetScript("OnUpdate", PvpTalentButtonOnUpdate)
+                end
             else
                 button.icon:SetTexture(nil)
                 button:SetAttribute("spell", nil)
