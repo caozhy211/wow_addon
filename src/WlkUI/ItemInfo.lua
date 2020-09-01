@@ -103,7 +103,7 @@ local function GetItemInfoText(link, levelOnly, short, scanFunc, ...)
             if text then
                 if not level then
                     level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                            or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%%(%(%%d+%)%%%)"))
+                            or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%((%%d+)%%)"))
                     if level and levelOnly then
                         return level
                     end

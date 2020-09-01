@@ -153,7 +153,7 @@ local function GetInspectUnitItemLevel()
                             local text = label:GetText()
                             if text then
                                 text = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                                        or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%%(%(%%d+%)%%%)"))
+                                        or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%((%%d+)%%)"))
                                 if text then
                                     itemLevel = tonumber(text)
                                     break
