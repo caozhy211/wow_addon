@@ -42,6 +42,13 @@ TalkingHeadFrame:ClearAllPoints()
 TalkingHeadFrame:SetPoint("BOTTOMRIGHT", OFFSET_X1, offsetY1)
 TalkingHeadFrame.SetPoint = nop
 
+--- WlkPetFrame 顶部相对 UIParent 底部的偏移值
+local offsetY2 = 142
+
+ArcheologyDigsiteProgressBar:ClearAllPoints()
+ArcheologyDigsiteProgressBar:SetPoint("BOTTOM", 0, offsetY2)
+ArcheologyDigsiteProgressBar.SetPoint = nop
+
 ---@param frame Frame
 local function HideFrame(frame)
     frame:Hide()
