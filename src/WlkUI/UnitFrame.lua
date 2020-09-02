@@ -1276,6 +1276,10 @@ local function InitializeUnitFrame(unitFrame)
 
         unitFrame:RegisterUnitEvent("UNIT_POWER_BAR_SHOW")
         unitFrame:RegisterUnitEvent("UNIT_POWER_BAR_HIDE")
+        if unitFrame.unitEvents then
+            unitEvents[#unitEvents + 1] = "UNIT_POWER_BAR_SHOW"
+            unitEvents[#unitEvents + 1] = "UNIT_POWER_BAR_HIDE"
+        end
     end
     if unitFrame.buffFrame or unitFrame.debuffFrame then
         unitFrame:RegisterUnitEvent("UNIT_AURA", unit)
@@ -1489,10 +1493,13 @@ playerFrame.unit2 = "vehicle"
 playerFrame.unitEvents = CopyTable(unitEvents)
 playerFrame.showIndicators = 1
 playerFrame.showStatusIcon = 1
+playerFrame.showPowerBarAlt = 1
 playerFrame.position = "LEFT"
 playerFrame:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 playerFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
 InitializeUnitFrame(playerFrame)
+playerFrame.powerBarAlt:SetSize(playerFrame:GetWidth() - 27 * 5, 27)
+playerFrame.powerBarAlt:SetPoint("TOPRIGHT", playerFrame, "BOTTOMRIGHT")
 
 ---@param auraButton AuraButtonTemplate
 hooksecurefunc("AuraButton_UpdateDuration", function(auraButton)
