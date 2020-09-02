@@ -93,7 +93,6 @@ local HONOR_MEDAL_ID = 195710
 pvpTalentFrame:RegisterEvent("PLAYER_LOGIN")
 pvpTalentFrame:RegisterEvent("SPELLS_CHANGED")
 pvpTalentFrame:RegisterEvent("PLAYER_PVP_TALENT_UPDATE")
-pvpTalentFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
 
 pvpTalentFrame:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
@@ -103,6 +102,7 @@ pvpTalentFrame:SetScript("OnEvent", function(_, event)
         end
     elseif event == "SPELLS_CHANGED" then
         if IsUsableSpell(HONOR_MEDAL_ID) and not pvpTalentFrame.visible then
+            pvpTalentFrame:RegisterEvent("SPELL_UPDATE_COOLDOWN")
             pvpTalentFrame.visible = true
             pvpTalentFrame:SetAlpha(1)
             for i = 1, NUM_PVP_TALENT do
@@ -114,6 +114,7 @@ pvpTalentFrame:SetScript("OnEvent", function(_, event)
                 end
             end
         elseif not IsUsableSpell(HONOR_MEDAL_ID) and pvpTalentFrame.visible then
+            pvpTalentFrame:UnregisterEvent("SPELL_UPDATE_COOLDOWN")
             pvpTalentFrame.visible = false
             pvpTalentFrame:SetAlpha(0)
             for i = 1, NUM_PVP_TALENT do
