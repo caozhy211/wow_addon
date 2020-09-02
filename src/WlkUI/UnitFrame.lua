@@ -1510,8 +1510,8 @@ hooksecurefunc("AuraButton_UpdateDuration", function(auraButton)
     end
 end)
 
-hooksecurefunc("CreateFrame", function(_, frameName)
-    if frameName and (strmatch(frameName, "^BuffButton%d$") or strmatch(frameName, "^DebuffButton%d$")) then
+hooksecurefunc("CreateFrame", function(_, frameName, parent)
+    if frameName and parent == BuffFrame then
         ---@type Button|AuraButtonTemplate|BuffButtonTemplate|DebuffButtonTemplate
         local button = _G[frameName]
         button:SetSize(27, 27)
