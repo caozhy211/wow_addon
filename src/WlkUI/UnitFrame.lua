@@ -85,6 +85,7 @@ local function UpdateUnitFrameUnitHealth(unitFrame)
         healthBar.currValue = value
     end
     UpdateUnitFrameUnitHealthLabels(unitFrame, healthBar.currValue, maxValue)
+    UnitFrameHealPredictionBars_Update(unitFrame)
 end
 
 ---@param self StatusBar
@@ -104,6 +105,7 @@ local function UnitFrameHealthBarOnUpdate(self, elapsed)
             self.currValue = value
             local maxValue = UnitHealthMax(unit)
             UpdateUnitFrameUnitHealthLabels(unitFrame, value, maxValue)
+            UnitFrameHealPredictionBars_Update(unitFrame)
         end
     end
 end
