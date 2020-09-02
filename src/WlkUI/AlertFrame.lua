@@ -1350,7 +1350,7 @@ local function CreateWorldQuestCompleteAlert(event, isUpdate, questId, name, mon
             end
         end
 
-        if xpReward and xpReward > 0 then
+        if xpReward and xpReward > 0 and UnitLevel("player") < MAX_PLAYER_LEVEL then
             index = index + 1
             ---@type Frame
             reward = alert["reward" .. index]
