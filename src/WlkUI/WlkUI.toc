@@ -8,6 +8,7 @@
 ## SavedVariablesPerCharacter: WlkCombatData
 
 ActionBarFrame.lua
+AlertFrame.lua
 ChatFrame.lua
 ChatMenuFrame.lua
 ClassResourceFrames.lua
