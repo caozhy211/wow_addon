@@ -1,21 +1,21 @@
---- PlayerPowerBarAlt 左边相对 UIParent 右边的偏移值
-local offsetX1 = -490
---- WlkBoss5FrameBuffFrame 左边相对 UIParent 右边的偏移值
-local offsetX2 = -727
+--- MicroButtonAndBagsBar 左边相对 UIParent 右边的偏移值
+local OFFSET_X1 = -298
+--- PlayerPowerBarAlt 右边相对 UIParent 右边的偏移值
+local offsetX1 = -535
 --- OrderHallCommandBar 底部相对 UIParent 顶部的偏移值
 local OFFSET_Y1 = -25
---- VehicleSeatIndicator 底部相对 UIParent 顶部的偏移值
-local OFFSET_Y2 = -320
+--- PlayerPowerBarAlt 底部相对 UIParent 顶部的偏移值
+local OFFSET_Y2 = -217
 
 ---@type Frame
 local alertFrame = CreateFrame("Frame", "WlkAlertFrame", UIParent)
-alertFrame:SetSize(offsetX1 - offsetX2, OFFSET_Y1 - OFFSET_Y2)
-alertFrame:SetPoint("TOPRIGHT", offsetX1, OFFSET_Y1)
+alertFrame:SetSize(OFFSET_X1 - offsetX1, OFFSET_Y1 - OFFSET_Y2)
+alertFrame:SetPoint("TOPRIGHT", OFFSET_X1, OFFSET_Y1)
 
-local width = offsetX1 - offsetX2
+local width = OFFSET_X1 - offsetX1
 local height = 45
-local maxNumActives = 6
-local spacing = 5
+local maxNumActives = 4
+local spacing = 4
 local padding = 2
 local iconSize = height - padding * 2
 local backdrop = {
