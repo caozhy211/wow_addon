@@ -1714,7 +1714,7 @@ eventFrame:RegisterEvent("PLAYER_LOGIN")
 eventFrame:SetScript("OnEvent", function(_, event)
     eventFrame:UnregisterEvent(event)
     PlayerPowerBarAlt:ClearAllPoints()
-    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "TOPRIGHT", (-298 - 429 + WIDTH1 * 0.5 * scale) / scale,
-            (-HEIGHT2 - HEIGHT1 * 0.5 * scale) / scale)
+    PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "TOPRIGHT", (-298 - WIDTH1 / 2 * scale) / scale,
+            (-HEIGHT2 - HEIGHT1 / 2 * scale) / scale)
     PlayerPowerBarAlt:SetMovable(false)
 end)
