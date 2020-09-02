@@ -4,7 +4,7 @@
 ## Author: czy211
 ## Version: 4.0.0
 ## SavedVariables: WlkChatFilter
-## OptionalDeps: Blizzard_DebugTools, Blizzard_APIDocumentation, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
+## OptionalDeps: Blizzard_DebugTools, Blizzard_APIDocumentation, Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildBankUI, Blizzard_VoidStorageUI, Blizzard_ArchaeologyUI
 ## SavedVariablesPerCharacter: WlkCombatData
 
 ActionBarFrame.lua

@@ -58,3 +58,9 @@ end
 for i = 1, MAX_BOSS_FRAMES do
     HideFrame(_G["Boss" .. i .. "TargetFrame"])
 end
+
+HideFrame(LootFrame)
+
+ArcheologyDigsiteProgressBar.AnimOutAndTriggerToast:SetScript("OnFinished", function()
+    ArcheologyDigsiteProgressBar:Hide()
+end)
