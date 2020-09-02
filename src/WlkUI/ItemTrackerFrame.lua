@@ -39,7 +39,7 @@ local function TrackerButtonOnUpdate(self, elapsed)
     local itemId = self.itemId
     local hasRange = ItemHasRange(itemId)
     local inRange = IsItemInRange(itemId, "target")
-    if not hasRange or (hasRange and (inRange == nil or inRange == 1)) then
+    if not hasRange or (hasRange and (inRange == nil or inRange == 1 or inRange == true)) then
         local isUsable, notEnoughMana = IsUsableItem(itemId)
         if isUsable then
             r, g, b = 1, 1, 1
