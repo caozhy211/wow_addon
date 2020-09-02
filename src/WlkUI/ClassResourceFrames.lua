@@ -496,7 +496,8 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
             eventFrame:UnregisterEvent(event)
             UpdateClassResourceFrames()
         end
-    elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player") then
+    elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player")
+            and unit == "player" then
         unit = "vehicle"
         C_Timer.After(0.1, UpdateClassResourceFrames)
     elseif event == "UNIT_EXITING_VEHICLE" and unit == "vehicle" then

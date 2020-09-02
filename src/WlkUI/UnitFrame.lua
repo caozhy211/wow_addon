@@ -850,6 +850,7 @@ end
 
 ---@param unitFrame Button
 local function UnitFrameSwitchUnit(unitFrame)
+    unitFrame.switched = not unitFrame.switched
     local temp = unitFrame.unit
     unitFrame.unit = unitFrame.unit2
     unitFrame.unit2 = temp
@@ -883,14 +884,13 @@ local function UnitFrameOnEvent(unitFrame, event, ...)
     if event == "PLAYER_ENTERING_WORLD" or event == "PLAYER_TARGET_CHANGED" or event == "UNIT_TARGETABLE_CHANGED"
             or event == "UNIT_PET" or event == "UNIT_TARGET" or event == "PLAYER_FOCUS_CHANGED" then
         UpdateUnitFrame(unitFrame)
-    elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player") then
+    elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player")
+            and not unitFrame.switched then
         UnitFrameSwitchUnit(unitFrame)
-        unitFrame.switched = true
         UpdateUnitFrame(unitFrame)
     elseif event == "UNIT_EXITING_VEHICLE" then
         if unitFrame.switched then
             UnitFrameSwitchUnit(unitFrame)
-            unitFrame.switched = false
             UpdateUnitFrame(unitFrame)
         else
             UpdateUnitFrameHealthBarColor(unitFrame)
