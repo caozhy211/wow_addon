@@ -36,7 +36,7 @@ local numRewards = 5
 local showTime = 5
 
 ---@type Button[]
-local releasedAlert = {}
+local freeAlerts = {}
 ---@type Button[]
 local activeAlerts = {}
 ---@type Button[]
@@ -137,7 +137,7 @@ local function ReleaseAlert(alert)
     end
 
     wipe(alert.data)
-    releasedAlert[#releasedAlert + 1] = alert
+    freeAlerts[#freeAlerts + 1] = alert
     tDeleteItem(activeAlerts, alert)
     tDeleteItem(queuedAlerts, alert)
 
@@ -482,7 +482,7 @@ local function GetAlert(event, type, value)
     local isNew
     if not alert then
         isNew = true
-        alert = tremove(releasedAlert, 1)
+        alert = tremove(freeAlerts, 1)
         if not alert then
             alert = CreateAlert()
         end
@@ -1156,7 +1156,7 @@ local function CreateLootSpecialItemAlert(event, link, quantity, lessAwesome, is
 
                 ShowAlert(alert)
             else
-                releasedAlert(alert)
+                ReleaseAlert(alert)
             end
         else
             alert.data.count = alert.data.count + quantity
