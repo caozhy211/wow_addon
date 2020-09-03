@@ -28,7 +28,7 @@ local function TableMatch(tbl, ...)
     for i = 1, select("#", ...) do
         local str = select(i, ...)
         for _, value in ipairs(tbl) do
-            if strfind(str, value, 1, true) then
+            if strmatch(str, value) then
                 return true
             end
         end
