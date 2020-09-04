@@ -1,5 +1,10 @@
 local addonName = ...
-local filter = {}
+local filter = {
+    "|Hachievement.-|h.-|h.-免费",
+    "|Hspell.-|h.-|h.-免费",
+    "|Hachievement.-|h.-|h.-没要求",
+    "|Hspell.-|h.-|h.-没要求",
+}
 
 ---@type Frame
 local eventFrame = CreateFrame("Frame")
