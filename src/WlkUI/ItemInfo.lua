@@ -398,16 +398,18 @@ local function AddInfoToQuestRewardButton(self)
         local id = button:GetID()
         if button.type == "choice" then
             local link = questLog and GetQuestLogItemLink("choice", id) or GetQuestItemLink("choice", id)
-            local numItems = questLog and select(3, GetQuestLogChoiceInfo(id))
-                    or select(3, GetQuestItemInfo("choice", id))
-            local sellPrice = link and select(11, GetItemInfo(link)) or 0
-            local price = sellPrice * numItems
-            if price > highestPrice then
-                highestPrice = price
-                wipe(highestPriceButtons)
-                highestPriceButtons[1] = button
-            elseif price == highestPrice then
-                highestPriceButtons[#highestPriceButtons + 1] = button
+            local sellPrice = link and select(11, GetItemInfo(link))
+            if sellPrice and sellPrice > 0 then
+                local numItems = questLog and select(3, GetQuestLogChoiceInfo(id))
+                        or select(3, GetQuestItemInfo("choice", id))
+                local price = sellPrice * numItems
+                if price > highestPrice then
+                    highestPrice = price
+                    wipe(highestPriceButtons)
+                    highestPriceButtons[1] = button
+                elseif price == highestPrice then
+                    highestPriceButtons[#highestPriceButtons + 1] = button
+                end
             end
         end
         if button.objectType == "item" then
