@@ -141,14 +141,12 @@ end)
 
 local scenarioName
 local activeQuests = {}
+local TITLE_R, TITLE_G, TITLE_B = 1, 0.82, 0
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WlkNameplateUnitScanner", UIParent, "GameTooltipTemplate")
 
-local function IsTitleText(r, g, b)
-    local titleR = 1
-    local titleG = 0.82
-    local titleB = 0
-    return abs(r - titleR) < 0.005 and abs(g - titleG) < 0.005 and abs(b - titleB) < 0.005
+local function IsQuestTitleColor(r, g, b)
+    return abs(r - TITLE_R) < 0.005 and abs(g - TITLE_G) < 0.005 and abs(b - TITLE_B) < 0.005
 end
 
 local function IsQuestUnit(unit)
@@ -157,14 +155,14 @@ local function IsQuestUnit(unit)
     scanner:SetUnit(unit)
     for i = 3, scanner:NumLines() do
         ---@type FontString
-        local line = _G[scanner:GetName() .. "TextLeft" .. i]
-        local text = line:GetText()
-        local r, g, b = line:GetTextColor()
-        if IsTitleText(r, g, b) then
+        local label = _G[scanner:GetName() .. "TextLeft" .. i]
+        local text = label:GetText()
+        local r, g, b = label:GetTextColor()
+        if IsQuestTitleColor(r, g, b) then
             if text == scenarioName or text == UnitName("player") or activeQuests[text] then
                 checkProgress = true
             else
-                break
+                return
             end
         elseif checkProgress then
             local current, total = strmatch(text, "(%d+)/(%d+)")
@@ -174,9 +172,11 @@ local function IsQuestUnit(unit)
             elseif percent and percent ~= "100" then
                 progress = percent .. "%"
             end
+            if progress then
+                return progress
+            end
         end
     end
-    return progress
 end
 
 local function UpdateQuestIcon(nameplate)
