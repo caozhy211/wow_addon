@@ -784,7 +784,6 @@ local function UpdateDataBar(bar, index, data)
     bar.rightLabel:SetText(data.valueText)
 end
 
---- 更新数据条的可见性
 local function UpdateBarVisibility()
     local minIndex = 1 + barOffset
     local maxIndex = maxBars + barOffset
@@ -799,7 +798,6 @@ local function UpdateBarVisibility()
     end
 end
 
---- 更新显示
 local function UpdateDisplay()
     if selectedView ~= combatView then
         tSort(logFrame.data, SortDataByValue)
@@ -830,7 +828,6 @@ end
 local BOSS_ICON = "Interface/Icons/achievment_Boss_ultraxion"
 local NON_BOSS_ICON = "Interface/Icons/Icon_PetFamily_Critter"
 
---- 更新数据
 local function UpdateData(force)
     if force then
         updateFlags = true
@@ -876,6 +873,7 @@ local function SetCharacterActiveTime(combatData)
     end
 end
 
+local maxNumCombatData = 15
 ---@type TickerPrototype
 local updateTicker, checkTicker
 
@@ -908,6 +906,18 @@ local function CombatEnd()
         current.name = name
 
         tinsert(combatDataList, 1, current)
+    end
+    if #combatDataList > maxNumCombatData then
+        local combatData
+        for i = #combatDataList, 2, -1 do
+            if not combatDataList[i].gotBoss then
+                combatData = tremove(combatDataList, i)
+                break
+            end
+        end
+        if not combatData then
+            tremove(combatDataList, #combatDataList)
+        end
     end
     current = nil
     ClearLogFrame()
