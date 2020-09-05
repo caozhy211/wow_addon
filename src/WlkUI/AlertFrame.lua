@@ -1030,12 +1030,15 @@ local function CreateLootCurrencyAlert(event, link, quantity)
     end
 end
 
+---@type ColorMixin
+local RED_FONT_COLOR = RED_FONT_COLOR
+local YOU_LOSE_S = RED_FONT_COLOR:WrapTextInColorCode("你失去")
+
 local function CreateMoneyAlert(event, quantity)
     local alert, isNew, isQueued = GetAlert(nil, "event", event)
     if isNew then
         alert:SetBackdropBorderColor(0.9, 0.75, 0.26)
-        alert.title:SetText(quantity > 0 and YOU_RECEIVED_LABEL
-                or (RED_FONT_COLOR_CODE .. "你失去" .. FONT_COLOR_CODE_CLOSE))
+        alert.title:SetText(quantity > 0 and YOU_RECEIVED_LABEL or YOU_LOSE_S)
         local texture = "Interface/Icons/INV_Misc_Coin_02"
         if abs(quantity) < 100 then
             texture = "Interface/Icons/INV_Misc_Coin_06"
@@ -1063,7 +1066,7 @@ local function CreateMoneyAlert(event, quantity)
         if alert.data.count > 0 then
             alert.title:SetText(YOU_RECEIVED_LABEL)
         elseif alert.data.count < 0 then
-            alert.title:SetText(RED_FONT_COLOR_CODE .. "你失去" .. FONT_COLOR_CODE_CLOSE)
+            alert.title:SetText(YOU_LOSE_S)
         end
         if isQueued then
             SetAnimatedDigit(alert.text, alert.data.count)
@@ -1290,6 +1293,8 @@ local function OnEventEntitlementDelivered(event, entitlementType, texture, name
     CreateStoreAlert(event, entitlementType, texture, name, payloadId, link)
 end
 
+local TRANSMOG_REMOVED_S = RED_FONT_COLOR:WrapTextInColorCode("已從外觀收藏中移除")
+
 local function CreateTransmogAlert(event, sourceId, isAdded, attempt)
     local _, visualId, _, icon, _, _, link = C_TransmogCollection.GetAppearanceSourceInfo(sourceId)
     local name
@@ -1305,7 +1310,7 @@ local function CreateTransmogAlert(event, sourceId, isAdded, attempt)
     local alert, isNew, isQueued = GetAlert(nil, "sourceId", sourceId)
     if isNew then
         alert:SetBackdropBorderColor(1, 0.5, 1)
-        alert.title:SetText(isAdded and "外觀已加入" or (RED_FONT_COLOR_CODE .. "外觀已移除" .. FONT_COLOR_CODE_CLOSE))
+        alert.title:SetText(isAdded and "已加入你的外觀收藏" or TRANSMOG_REMOVED_S)
         alert.text:SetText(name)
         alert.icon:SetTexture(icon)
 
@@ -1316,7 +1321,7 @@ local function CreateTransmogAlert(event, sourceId, isAdded, attempt)
 
         ShowAlert(alert)
     else
-        alert.title:SetText(isAdded and "外觀已加入" or (RED_FONT_COLOR_CODE .. "外觀已移除" .. FONT_COLOR_CODE_CLOSE))
+        alert.title:SetText(isAdded and "已加入你的外觀收藏" or TRANSMOG_REMOVED_S)
         if not isQueued then
             alert.animOut:Stop()
             if not MouseIsOver(alert) then
