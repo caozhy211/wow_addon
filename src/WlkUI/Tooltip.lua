@@ -118,6 +118,8 @@ local X2_EXCEPTIONS = {
 
 local SPEC_WARRIOR_FURY = 72
 
+local ITEM_LEVEL_REGEX = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
+
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WlkTooltipInspectMouseoverScanner", UIParent, "GameTooltipTemplate")
 
@@ -141,35 +143,31 @@ local function GetInspectUnitItemLevel()
             scanner:SetInventoryItem("mouseover", i)
             local link = GetInventoryItemLink("mouseover", i) or select(2, scanner:GetItem())
             if link then
-                local name, _, quality, _, _, _, _, _, equipLocation, _, _, classId, subclassId = GetItemInfo(link)
-                if not name then
+                local _, _, quality, _, _, _, _, _, equipLoc, texture, _, classId, subclassId = GetItemInfo(link)
+                if not texture then
                     fail = true
                 else
                     local itemLevel = GetDetailedItemLevelInfo(link)
                     if quality == LE_ITEM_QUALITY_HEIRLOOM then
-                        for j = 2, scanner:NumLines() do
+                        for j = 2, min(5, scanner:NumLines()) do
                             ---@type FontString
                             local label = _G[scanner:GetName() .. "TextLeft" .. j]
-                            local text = label:GetText()
-                            if text then
-                                text = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                                        or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%((%%d+)%%)"))
-                                if text then
-                                    itemLevel = tonumber(text)
-                                    break
-                                end
+                            local level = strmatch(label:GetText(), ITEM_LEVEL_REGEX)
+                            if level then
+                                itemLevel = tonumber(level)
+                                break
                             end
                         end
                     end
                     if i == INVSLOT_MAINHAND then
                         mainLevel = itemLevel
-                        mainEquipLoc = equipLocation
+                        mainEquipLoc = equipLoc
                         mainQuality = quality
                         mainClassId = classId
                         mainSubclassId = subclassId
                     elseif i == INVSLOT_OFFHAND then
                         offLevel = itemLevel
-                        offEquipLoc = equipLocation
+                        offEquipLoc = equipLoc
                     else
                         sum = sum + itemLevel
                     end

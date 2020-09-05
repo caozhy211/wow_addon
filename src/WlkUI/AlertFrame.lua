@@ -866,6 +866,8 @@ local function SanitizeLink(link)
     return tConcat(linkTable, ":"), link, linkTable[1], tonumber(linkTable[2]), name
 end
 
+local ITEM_LEVEL_REGEX = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
+
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WlkAlertFrameItemScanner", UIParent, "GameTooltipTemplate")
 
@@ -875,16 +877,12 @@ local function GetItemLevel(event, link)
         if event == "SHOW_LOOT_TOAST" or quality == LE_ITEM_QUALITY_HEIRLOOM then
             scanner:SetOwner(UIParent, "ANCHOR_NONE")
             scanner:SetHyperlink(link)
-            for i = 2, 5 do
+            for i = 2, min(5, scanner:NumLines()) do
                 ---@type FontString
                 local label = _G[scanner:GetName() .. "TextLeft" .. i]
-                local text = label:GetText()
-                if text then
-                    local level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                            or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%((%%d+)%%)"))
-                    if level then
-                        return tonumber(level)
-                    end
+                local level = strmatch(label:GetText(), ITEM_LEVEL_REGEX)
+                if level then
+                    return tonumber(level)
                 end
             end
         else

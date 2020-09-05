@@ -74,6 +74,9 @@ local SHORT_SUBCLASS = {
     },
 }
 
+local ITEM_LEVEL_REGEX = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
+local ITEM_LEVEL_ALT_REGEX = gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%((%%d+)%%)")
+
 ---@type GameTooltip
 local scanner = CreateFrame("GameTooltip", "WlkItemInfoScanner", UIParent, "GameTooltipTemplate")
 
@@ -96,14 +99,13 @@ local function GetItemInfoText(link, levelOnly, short, scanFunc, ...)
         else
             scanner:SetHyperlink(link)
         end
-        for i = 2, min(9, scanner:NumLines()) do
+        for i = 2, min(10, scanner:NumLines()) do
             ---@type FontString
             local label = _G[scanner:GetName() .. "TextLeft" .. i]
             local text = label:GetText()
             if text then
                 if not level then
-                    level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                            or strmatch(text, gsub(ITEM_LEVEL_ALT, "%%d%(%%d%)", "%%d+%%((%%d+)%%)"))
+                    level = strmatch(text, ITEM_LEVEL_ALT_REGEX) or strmatch(text, ITEM_LEVEL_REGEX)
                     if level and levelOnly then
                         return level
                     end
@@ -507,27 +509,28 @@ local function AddInfoToItemLink(link)
     if linkCaches[link] then
         return linkCaches[link]
     end
-    wipe(replacementTable)
-    replacementTable[#replacementTable + 1] = "%1"
     local level, bind, subclass, invType = GetItemInfoText(link)
-    if level then
-        replacementTable[#replacementTable + 1] = level
-    end
-    if bind then
-        replacementTable[#replacementTable + 1] = "(裝綁)"
-    end
-    if subclass and invType then
-        replacementTable[#replacementTable + 1] = format("(%s/%s)", subclass, invType)
-    elseif subclass or invType then
-        replacementTable[#replacementTable + 1] = "(" .. (subclass or invType) .. ")"
-    end
     if level or bind or subclass or invType then
-        replacementTable[#replacementTable + 1] = ": "
+        wipe(replacementTable)
+        replacementTable[#replacementTable + 1] = "%1"
+        if level then
+            replacementTable[#replacementTable + 1] = level
+        end
+        if bind then
+            replacementTable[#replacementTable + 1] = "(裝綁)"
+        end
+        if subclass and invType then
+            replacementTable[#replacementTable + 1] = format("(%s/%s)", subclass, invType)
+        elseif subclass or invType then
+            replacementTable[#replacementTable + 1] = "(" .. (subclass or invType) .. ")"
+        end
+        replacementTable[#replacementTable + 1] = "："
+        replacementTable[#replacementTable + 1] = "%2"
+        replacementTable[#replacementTable + 1] = GetSocketInfoText(link)
+        linkCaches[link] = gsub(link, "(|h%[)(.-%]|h)", tConcat(replacementTable))
+        return linkCaches[link]
     end
-    replacementTable[#replacementTable + 1] = "%2"
-    replacementTable[#replacementTable + 1] = GetSocketInfoText(link)
-    linkCaches[link] = gsub(link, "(|h%[)(.-%]|h)", tConcat(replacementTable))
-    return linkCaches[link]
+    return link
 end
 
 local function FilterChatMessage(_, _, message, ...)
