@@ -3,8 +3,9 @@ MainMenuBarArtFrameBackground:Hide()
 ---@type Texture[]
 local textures = {
     MainMenuBarArtFrame.LeftEndCap, MainMenuBarArtFrame.RightEndCap, OverrideActionBarEndCapL, OverrideActionBarEndCapR,
-    OverrideActionBarBorder, SlidingActionBarTexture0, SlidingActionBarTexture1, PossessButton1NormalTexture,
-    PossessButton2NormalTexture, PossessBackground1, PossessBackground2,
+    OverrideActionBarBorder, OverrideActionBar.Divider2, OverrideActionBar.Divider3, SlidingActionBarTexture0,
+    SlidingActionBarTexture1, PossessButton1NormalTexture, PossessButton2NormalTexture, PossessBackground1,
+    PossessBackground2,
 }
 
 for _, texture in ipairs(textures) do
