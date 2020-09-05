@@ -1624,25 +1624,25 @@ for i = 1, MAX_BOSS_FRAMES do
     ---@type Button
     local bossFrame = CreateFrame("Button", "WlkBoss" .. i .. "Frame", UIParent, "SecureUnitButtonTemplate")
     bossFrame:SetSize(429 - 4 - 24 - 192, 48)
-    bossFrame:SetPoint("BOTTOMRIGHT", -298 - 24 - 2, 316 + 2 + (i - 1) * (48 + 2 * 2 + 24 * 2 + 2 + 3 + 5))
+    bossFrame:SetPoint("BOTTOMRIGHT", -298 - 24 - 2 - 192, 316 + 2 + (i - 1) * (48 + 2 * 2 + 24 * 2 + 2 + 3 + 5))
     bossFrame.unit = "boss" .. i
     bossFrame.showSelectionHighlight = 1
     bossFrame.showPowerBarAlt = 1
     bossFrame.position = "RIGHT"
     bossFrame.debuffFrame = CreateUnitFrameAuraFrame(bossFrame, "Debuff", "toRightTop", 16, 16)
-    bossFrame.debuffFrame:SetPoint("BOTTOMRIGHT", bossFrame, "TOPRIGHT", 2 + 24, 2 + 2)
+    bossFrame.debuffFrame:SetPoint("BOTTOMLEFT", bossFrame, "TOPLEFT", -2, 2 + 2)
     bossFrame.buffFrame = CreateUnitFrameAuraFrame(bossFrame, "Buff", "toRightTop", 16, 16)
-    bossFrame.buffFrame:SetPoint("BOTTOMRIGHT", bossFrame.debuffFrame, "TOPRIGHT", 0, 3)
+    bossFrame.buffFrame:SetPoint("BOTTOMLEFT", bossFrame.debuffFrame, "TOPLEFT", 0, 3)
     if i == 1 then
         bossFrame:RegisterEvent("INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     end
     bossFrame:RegisterUnitEvent("UNIT_TARGETABLE_CHANGED", "boss" .. i)
     bossFrame:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
     InitializeUnitFrame(bossFrame)
-    bossFrame.powerBarAlt:SetPoint("BOTTOMRIGHT", bossFrame, "BOTTOMLEFT", -2, 0)
+    bossFrame.powerBarAlt:SetPoint("BOTTOMLEFT", bossFrame, "BOTTOMRIGHT", 2 + 24, 0)
     CreateUnitFrameSpellBar(bossFrame, "INSTANCE_ENCOUNTER_ENGAGE_UNIT")
     bossFrame.spellBar:SetSize(192 - 4 - 26, 30 - 4)
-    bossFrame.spellBar:SetPoint("TOPRIGHT", bossFrame, "TOPLEFT", -2 - 2, 0)
+    bossFrame.spellBar:SetPoint("TOPLEFT", bossFrame, "TOPRIGHT", 2 + 24 + 2 + 26, 0)
     InitializeUnitFrameSpellBar(bossFrame.spellBar)
 end
 
