@@ -1327,37 +1327,6 @@ local function UnitFrameSpellBarOnEvent(self, event, ...)
     CastingBarFrame_OnEvent(self, event, arg1, select(2, ...))
 end
 
-local function GetUnitCastingInfo(bar)
-    local unit = bar.unit
-    local startTime, endTime, isTradeSkill, castId, _
-    if bar.channeling then
-        _, _, _, startTime, endTime, isTradeSkill, _, castId = UnitChannelInfo(unit)
-    elseif bar.casting then
-        _, _, _, startTime, endTime, isTradeSkill, _, _, castId = UnitCastingInfo(unit)
-    end
-    if startTime and endTime then
-        return startTime / 1000, endTime / 1000, isTradeSkill, castId
-    end
-end
-
-local castingStartTime, castingDelayTime
-
-local function HookUnitFrameSpellBarOnEvent(self, event, ...)
-    local unit = ...
-    if unit ~= self.unit then
-        return
-    end
-    if event == "UNIT_SPELLCAST_START" then
-        castingStartTime = GetUnitCastingInfo(self)
-        castingDelayTime = 0
-    elseif event == "UNIT_SPELLCAST_DELAYED" then
-        local startTime = GetUnitCastingInfo(self)
-        if startTime and self.casting then
-            castingDelayTime = (castingDelayTime or 0) + (startTime - (castingStartTime or startTime))
-        end
-    end
-end
-
 local function FormatTime(seconds)
     if seconds < 10 then
         return format("%.1f", seconds)
@@ -1376,17 +1345,10 @@ local function HookUnitFrameSpellBarOnUpdate(self, elapsed)
 
     ---@type FontString
     local timeLabel = self.timeLabel
-    ---@type FontString
-    local delayTimeLabel = self.delayTimeLabel
     if self.casting then
         timeLabel:SetText(FormatTime(self.maxValue - self.value) .. "/" .. FormatTime(self.maxValue))
     elseif self.channeling then
         timeLabel:SetText(FormatTime(self.value) .. "/" .. FormatTime(self.maxValue))
-    end
-    if castingDelayTime and castingDelayTime >= 0.1 and self.casting then
-        delayTimeLabel:SetFormattedText("+%.2f", castingDelayTime)
-    else
-        delayTimeLabel:SetText("")
     end
 end
 
@@ -1421,11 +1383,6 @@ local function InitializeUnitFrameSpellBar(bar)
     local timeLabel = bar:CreateFontString(bar:GetName() .. "TimeLabel", "ARTWORK", font)
     bar.timeLabel = timeLabel
     timeLabel:SetPoint("RIGHT")
-    ---@type FontString
-    local delayTimeLabel = bar:CreateFontString(bar:GetName() .. "DelayTimeLabel", "ARTWORK", font)
-    bar.delayTimeLabel = delayTimeLabel
-    delayTimeLabel:SetPoint("RIGHT", timeLabel, "LEFT", -1, 0)
-    delayTimeLabel:SetTextColor(1, 0, 0)
 
     CreateFrameBorder(bar, HIGHLIGHT_FONT_COLOR, 2)
     local borderWidth = bar.borderTop:GetWidth()
@@ -1438,7 +1395,6 @@ local function InitializeUnitFrameSpellBar(bar)
     hooksecurefunc(bar.BorderShield, "Show", HookSpellBarBorderShieldShow)
     hooksecurefunc(bar.BorderShield, "Hide", HookSpellBarBorderShieldHide)
 
-    bar:HookScript("OnEvent", HookUnitFrameSpellBarOnEvent)
     bar:HookScript("OnUpdate", HookUnitFrameSpellBarOnUpdate)
 end
 
