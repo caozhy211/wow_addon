@@ -873,7 +873,7 @@ local function SetCharacterActiveTime(combatData)
     end
 end
 
-local maxNumCombatData = 15
+local maxNumCombatData = 10
 ---@type TickerPrototype
 local updateTicker, checkTicker
 
@@ -908,16 +908,7 @@ local function CombatEnd()
         tinsert(combatDataList, 1, current)
     end
     if #combatDataList > maxNumCombatData then
-        local combatData
-        for i = #combatDataList, 2, -1 do
-            if not combatDataList[i].gotBoss then
-                combatData = tremove(combatDataList, i)
-                break
-            end
-        end
-        if not combatData then
-            tremove(combatDataList, #combatDataList)
-        end
+        tremove(combatDataList, #combatDataList)
     end
     current = nil
     ClearLogFrame()
