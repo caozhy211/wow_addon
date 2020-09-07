@@ -9,6 +9,7 @@
 
 ActionBarFrame.lua
 AlertFrame.lua
+CastingBarFrame.lua
 ChatFrame.lua
 ChatMenuFrame.lua
 ClassResourceFrames.lua
