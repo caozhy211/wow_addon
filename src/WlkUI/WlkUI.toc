@@ -21,6 +21,7 @@ GridFrame.lua
 ItemInfo.lua
 ItemTrackerFrame.lua
 Layout.lua
+MarkerFrame.lua
 MerchantFrame.lua
 Minimap.lua
 MirrorTimer.lua
