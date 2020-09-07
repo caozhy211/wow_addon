@@ -26,6 +26,7 @@ MerchantFrame.lua
 Minimap.lua
 MirrorTimer.lua
 Nameplate.lua
+PerformanceFrames.lua
 PVPTalentFrame.lua
 StatInfoFrame.lua
 Settings.lua
