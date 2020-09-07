@@ -123,3 +123,7 @@ end
 
 HideFrame(LootFrame)
 HideFrame(AlertFrame)
+HideFrame(TargetFrame)
+HideFrame(FocusFrame)
+
+PlayerFrame:Hide()
