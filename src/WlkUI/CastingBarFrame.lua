@@ -1,12 +1,15 @@
-local lastStartTime, delayTime, sendTime
 local width = 330
 local height = 30
 local divWidth = 2
+local lastStartTime, delayTime, sendTime
+local divEndTime, divDuration, numDivs, intervalTime
+local merging, currentCount, totalCount
+local gcdWidth = 240
+local gcdHeight = 3
+local backdrop = { bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark", }
 ---@type Texture[]
 local dividers = {}
 local divTimes = {}
-local divEndTime, divDuration, numDivs, intervalTime
-local merging, currentCount, totalCount
 local numSpellDivs = {
     -- 术士
     [234153] = 5, -- 吸取生命
@@ -54,6 +57,10 @@ local latencyLabel = CastingBarFrame:CreateFontString("WlkCastingBarFrameLatency
         "NumberFont_Shadow_Tiny")
 ---@type FontString
 local countLabel = CastingBarFrame:CreateFontString("WlkCastingBarFrameCountLabel", "ARTWORK", "ChatFontSmall")
+---@type Frame
+local gcdFrame = CreateFrame("Frame", "WlkGlobalCooldownFrame", UIParent)
+---@type Texture
+local spark = gcdFrame:CreateTexture("WlkGlobalCooldownSpark")
 
 local function GetPlayerCastingInfo()
     local startTime, endTime, isTradeSkill, castId, _
@@ -223,5 +230,47 @@ CastingBarFrame:HookScript("OnEvent", function(self, event, ...)
             countLabel:SetText("")
         end
         UpdateDividers()
+    end
+end)
+
+gcdFrame:SetSize(gcdWidth, gcdHeight)
+gcdFrame:SetPoint("BOTTOM", 0, 223)
+gcdFrame:SetBackdrop(backdrop)
+gcdFrame:Hide()
+
+spark:SetSize(32, 8)
+spark:SetTexture("Interface/CastingBar/UI-CastingBar-Spark")
+spark:SetBlendMode("ADD")
+
+gcdFrame:RegisterUnitEvent("UNIT_SPELLCAST_START", "player", "vehicle")
+gcdFrame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player", "vehicle")
+gcdFrame:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", "player", "vehicle")
+
+gcdFrame:SetScript("OnEvent", function(self, event, ...)
+    if event == "UNIT_SPELLCAST_START" or event == "UNIT_SPELLCAST_SUCCEEDED" then
+        local _, _, spellId = ...
+        local start, duration = GetSpellCooldown(spellId)
+        if duration and duration > 0 and duration <= 1.5 and start and GetTime() - start <= 0.4 then
+            self.start = start
+            self.duration = duration
+            gcdFrame:Show()
+        end
+    elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
+        gcdFrame:Hide()
+    end
+end)
+
+gcdFrame:SetScript("OnUpdate", function(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < 0.01 then
+        return
+    end
+    self.elapsed = 0
+
+    local percent = (GetTime() - self.start) / self.duration
+    if percent > 1 then
+        gcdFrame:Hide()
+    else
+        spark:SetPoint("CENTER", gcdFrame, "LEFT", percent * gcdWidth, 0)
     end
 end)
