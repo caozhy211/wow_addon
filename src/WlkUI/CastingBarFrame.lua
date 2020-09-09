@@ -222,14 +222,15 @@ CastingBarFrame:HookScript("OnEvent", function(self, event, ...)
         divDuration = nil
         UpdateDividers()
     elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
+        delayLabel:SetText("")
         latency:Hide()
         latencyLabel:SetText("")
         divDuration = nil
+        UpdateDividers()
         if merging then
             merging = nil
             countLabel:SetText("")
         end
-        UpdateDividers()
     end
 end)
 
