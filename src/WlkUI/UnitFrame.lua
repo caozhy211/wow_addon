@@ -1221,7 +1221,7 @@ local function InitializeUnitFrame(unitFrame)
         ---@type FontString
         local groupLabel = unitFrame:CreateFontString(name .. "GroupLabel", "ARTWORK", font)
         unitFrame.groupLabel = groupLabel
-        groupLabel:SetPoint("TOPLEFT", nameLabel, "BOTTOMLEFT", 1, 0)
+        groupLabel:SetPoint("TOPLEFT", nameLabel, "TOPRIGHT", 1, 0)
 
         unitFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
     end
