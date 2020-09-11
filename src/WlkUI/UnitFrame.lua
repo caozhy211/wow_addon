@@ -1412,11 +1412,13 @@ local function CreateUnitFrameSpellBar(unitFrame, event)
     bar:SetScript("OnEvent", UnitFrameSpellBarOnEvent)
 end
 
+local frameLevel = PetActionBarFrame:GetFrameLevel() + 1
+
 ---@type Button
 local petFrame = CreateFrame("Button", "WlkPetFrame", UIParent, "SecureUnitButtonTemplate")
-petFrame:SetFrameStrata("HIGH")
 petFrame:SetSize(768 - 540 - 21, 42)
 petFrame:SetPoint("BOTTOMLEFT", 540 + 21, 100)
+petFrame:SetFrameLevel(frameLevel)
 petFrame.unit = "pet"
 petFrame.unit2 = "player"
 petFrame.unitEvents = CopyTable(unitEvents)
@@ -1432,9 +1434,9 @@ petFrame.classificationIndicator:SetPoint("TOPRIGHT", petFrame, "TOPLEFT")
 
 ---@type Button
 local totFrame = CreateFrame("Button", "WlkTotFrame", UIParent, "SecureUnitButtonTemplate")
-totFrame:SetFrameStrata("HIGH")
 totFrame:SetSize(petFrame:GetSize())
 totFrame:SetPoint("BOTTOMRIGHT", -540 - 21, 100)
+totFrame:SetFrameLevel(frameLevel)
 totFrame.unit = "targetTarget"
 totFrame.isTotFrame = true
 totFrame.position = "RIGHT"
