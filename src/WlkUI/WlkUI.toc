@@ -1,37 +1,34 @@
-## Interface: 80300
-## Title: |cff8686ecWlkUI
-## Notes: 自定义界面插件
+## Interface: 90001
+## Title: |cff8686ecWlkUI|r
+## Notes: 界面插件
 ## Author: czy211
-## Version: 3.0.0
-## RequiredDeps: Blizzard_BindingUI, Blizzard_TalkingHeadUI, Blizzard_GuildUI, Blizzard_GuildBankUI, Blizzard_ArenaUI
-## SavedVariables: WLK_UnitAuraFilter, WLK_AdFilter
-## SavedVariablesPerCharacter: WLK_DamageDB
+## Version: 4.0.0
+## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
+## SavedVariablesPerCharacter: WlkCombatData
+## SavedVariables: WlkFilterKeywords, WlkSpellTicks
 
-ActionBar.lua
-AdFilter.lua
-CastingBar.lua
-CharacterStats.lua
-ChatCommands.lua
+ActionBarFrames.lua
+AlertFrame.lua
+AuraButtons.lua
+CastingBarFrame.lua
 ChatFrame.lua
+ChatMenuFrame.lua
 Cooldown.lua
-Coordinate.lua
-CopyText.lua
-DamageMeter.lua
-FastFocus.lua
-Grid.lua
-Hidden.lua
-ItemInfo.lua
-Marker.lua
-Merchant.lua
+DamageLogFrame.lua
+ExportFrame.lua
+Filter.lua
+GridFrame.lua
+ItemButton.lua
+ItemTrackerFrame.lua
+MarkerFrame.lua
+MerchantFrame.lua
 Minimap.lua
 MirrorTimer.lua
-NamePlates.lua
-Notification.lua
-ObjectiveItem.lua
-Performance.lua
-Position.lua
-PowerResource.lua
-PVPTalent.lua
-Settings.lua
+Nameplate.lua
+PerformanceFrames.lua
+PowerFrames.lua
+PvPTalentFrame.lua
+SettingsButtons.lua
+StatInfoFrame.lua
 Tooltip.lua
-UnitFrame.lua
+UnitFrames.lua

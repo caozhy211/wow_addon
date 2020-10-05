@@ -1,115 +1,98 @@
---- 获取计时器的设置参数
----@return string, number, number 剩余时间，缩放系数，更新时间间隔
-local function GetSettingParameters(timeRemaining)
-    local timeText, updateInterval, scale
-    if timeRemaining < 5 then
-        timeText = RED_FONT_COLOR_CODE .. floor(timeRemaining) .. FONT_COLOR_CODE_CLOSE
-        scale = 1.5
-        updateInterval = timeRemaining - floor(timeRemaining)
-    elseif timeRemaining < 100 then
-        timeText = YELLOW_FONT_COLOR_CODE .. floor(timeRemaining) .. FONT_COLOR_CODE_CLOSE
-        scale = 1.2
-        updateInterval = timeRemaining - floor(timeRemaining)
-    elseif timeRemaining < 3600 then
-        timeText = ceil(timeRemaining / 60) .. "m"
-        scale = 1
-        updateInterval = timeRemaining <= 120 and (timeRemaining - 100) or (timeRemaining % 60)
-    elseif timeRemaining < 86400 then
-        timeText = ceil(timeRemaining / 3600) .. "h"
-        scale = 1
-        updateInterval = timeRemaining % 3600
+local NAMEPLATE_BUFF_HEIGHT = 14
+
+---@class WlkCooldown:Cooldown
+local mt = getmetatable(CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")).__index
+
+local function getTimerInfo(seconds)
+    local color = HIGHLIGHT_FONT_COLOR
+    local scale = 0.8
+    local text, updateInterval
+    if seconds < 100 then
+        color = seconds < 5 and RED_FONT_COLOR or NORMAL_FONT_COLOR
+        scale = seconds < 5 and 1.2 or 1
+        text = floor(seconds)
+        updateInterval = seconds - floor(seconds)
+    elseif seconds < SECONDS_PER_HOUR then
+        text = ceil(SecondsToMinutes(seconds)) .. "m"
+        updateInterval = seconds <= 120 and (seconds - 100) or (seconds % SECONDS_PER_MIN)
+    elseif seconds < SECONDS_PER_DAY then
+        text = ceil(seconds / SECONDS_PER_HOUR) .. "h"
+        updateInterval = seconds % SECONDS_PER_HOUR
     else
-        timeText = ceil(timeRemaining / 86400) .. "d"
-        scale = 1
-        updateInterval = timeRemaining % 86400
+        text = ceil(seconds / SECONDS_PER_DAY) .. "d"
+        updateInterval = seconds % SECONDS_PER_DAY
     end
-    return timeText, scale, updateInterval
+    return text, scale, updateInterval, color.r, color.g, color.b
 end
 
---- 创建冷却计时器
----@param cooldown Cooldown
-local function CreateTimer(cooldown)
-    ---@type Frame
-    local timer = CreateFrame("Frame", nil, cooldown)
-    timer:SetAllPoints()
-
-    ---@type FontString
-    local label = timer:CreateFontString()
-    label:SetPoint("CENTER")
-
-    timer.updateInterval = 0.01
-
-    ---@param self Frame
-    timer:SetScript("OnUpdate", function(self, elapsed)
-        self.elapsed = (self.elapsed or 0) + elapsed
-        if self.elapsed < self.updateInterval then
-            return
-        end
-        self.elapsed = 0
-
-        local timeRemaining = self.duration - (GetTime() - self.start)
-        if timeRemaining > 0 then
-            local height = cooldown:GetHeight()
-            if height > 0 then
-                local timeText, scale, updateInterval = GetSettingParameters(timeRemaining)
-                label:SetFont("Fonts/blei00d.TTF", height * 0.5 * scale, "OUTLINE")
-                label:SetText(timeText)
-                self.updateInterval = updateInterval
-            end
-        else
-            self:Hide()
-        end
-    end)
-
-    timer:SetScript("OnShow", function(self)
-        -- 计时器显示时需要立即更新
-        self.updateInterval = 0.01
-    end)
-
-    cooldown.timerFrame = timer
-    return timer
-end
-
---- 获取框架名称，如果没有名称则获取其父框架的名称，直到返回正确的框架名称
----@param frame Frame
-local function GetFrameName(frame)
-    local name = frame:GetName()
-    while not name do
-        frame = frame:GetParent()
-        name = frame:GetName()
-    end
-    return name
-end
-
-local metatable = getmetatable(CreateFrame("Cooldown", nil, nil, "CooldownFrameTemplate")).__index
---- 调用 SetCooldown 方法后在冷却上显示计时
-hooksecurefunc(metatable, "SetCooldown", function(self, start, duration)
-    local name = GetFrameName(self)
-    -- Compact 和 LossOfControl 的冷却不显示计时
-    if strfind(name, "^Compact") or strfind(name, "^LossOfControl") then
+---@param self WlkCooldownTimer
+local function timerOnUpdate(self, elapsed)
+    self.elapsed = (self.elapsed or 0) + elapsed
+    if self.elapsed < self.updateInterval then
         return
     end
+    self.elapsed = 0
 
-    ---@type Frame
-    local timer = self.timerFrame
-    if duration > 1.5 then
-        -- 持续时间大于全局冷却时间，则显示计时
+    local timeLeft = self.duration - (GetTime() - self.start)
+    if timeLeft > 0 then
+        local text, scale, updateInterval, r, g, b = getTimerInfo(timeLeft)
+        self.label:SetFont(STANDARD_TEXT_FONT, self.label.height * scale, "OUTLINE")
+        self.label:SetText(text)
+        self.label:SetTextColor(r, g, b)
+        self.updateInterval = updateInterval
+    else
+        self:Hide()
+    end
+end
+
+---@param self WlkCooldown
+local function cooldownOnHide(self)
+    local timer = self.wlkTimer
+    if timer and timer:IsShown() then
+        timer:Hide()
+    end
+end
+
+---@param frame Frame
+local function getFrameHeight(frame)
+    local height = frame:GetHeight()
+    while height <= 0 do
+        frame = frame:GetParent()
+        height = frame:GetHeight()
+    end
+    return height
+end
+
+---@param self WlkCooldown
+hooksecurefunc(mt, "SetCooldown", function(self, start, duration)
+    local height = getFrameHeight(self)
+    ---@class WlkCooldownTimer:Frame
+    local timer = self.wlkTimer
+    if duration > 1.5 and height - NAMEPLATE_BUFF_HEIGHT > -0.005 then
         if not timer then
-            timer = CreateTimer(self)
-        end
+            timer = CreateFrame("Frame", nil, self)
 
-        timer.start = start
-        timer.duration = duration
-        -- 使用 start 和 duration 作为冷却计时器的标识 id，当 id 发生变化时，需要立即更新
-        local id = format("%s-%s", floor(start * 1000), floor(duration * 1000))
-        if id ~= timer.id then
-            timer.id = id
-            -- 立即更新
-            timer.updateInterval = 0.01
+            timer:SetAllPoints()
+            timer:SetScript("OnUpdate", timerOnUpdate)
+
+            self:HookScript("OnHide", cooldownOnHide)
+
+            timer.label = timer:CreateFontString()
+            timer.label:SetPoint("CENTER")
+
+            self.wlkTimer = timer
         end
-        timer:Show()
-    elseif timer then
-        -- 持续时间小于等于全局冷却时间不显示计时
+        if timer.start ~= start or timer.duration ~= duration then
+            timer.start = start
+            timer.duration = duration
+            timer.updateInterval = 0.01
+            timer.label.height = height / 2
+        end
+        if not timer:IsShown() then
+            timer.updateInterval = 0.01
+            timer:Show()
+        end
+    elseif timer and timer:IsShown() then
         timer:Hide()
     end
 end)

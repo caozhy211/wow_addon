@@ -1,366 +1,317 @@
---- 设置鼠标提示位置跟随鼠标
+---@type ColorMixin
+local HIGHLIGHT_FONT_COLOR = HIGHLIGHT_FONT_COLOR
+---@type ColorMixin
+local RED_FONT_COLOR = RED_FONT_COLOR
+
+local X2_INVTYPES = { INVTYPE_2HWEAPON = true, INVTYPE_RANGEDRIGHT = true, INVTYPE_RANGED = true, }
+local X2_EXCEPTIONS = { [LE_ITEM_CLASS_WEAPON] = LE_ITEM_WEAPON_WAND, }
+local SPEC_WARRIOR_FURY = 72
+local ITEM_LEVEL_REGEX = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
+---@type TickerPrototype
+local updateTicker
+local spellIdShown
+local guildR, guildG, guildB = 0.25, 1, 0.25
+local inspecting, inspectItemLevel, inspectSpec
+
+local barLabel = GameTooltipStatusBar:CreateFontString("WlkGameTooltipLabel", "ARTWORK", "NumberFont_Shadow_Small")
+---@type Frame
+local listener = CreateFrame("Frame")
+---@type GameTooltip
+local scanner = CreateFrame("GameTooltip", "WlkTooltipInspectScanner", UIParent, "GameTooltipTemplate")
+
 ---@param tooltip GameTooltip
-local function AnchorGameTooltipCursor(tooltip)
-    local scale = tooltip:GetEffectiveScale()
-    local cx, cy = GetCursorPosition()
-    local x = floor(cx / scale)
-    local y = floor(cy / scale)
+local function setTooltipAnchor(tooltip)
+    local x, y = GetScaledCursorPosition()
     tooltip:ClearAllPoints()
-    tooltip:SetPoint("BOTTOMLEFT", UIParent, "BOTTOMLEFT", x + 30, y + 10)
+    tooltip:SetPoint("BOTTOMLEFT", UIParent, x + 30, y + 10)
 end
 
----@type TickerPrototype
-local tooltipUpdateTicker
+local function abbreviateNumber(value)
+    if value >= 1e8 then
+        return format("%.2f%s", value / 1e8, SECOND_NUMBER_CAP)
+    elseif value >= 1e4 then
+        return format("%.1f%s", value / 1e4, FIRST_NUMBER_CAP)
+    end
+    return value
+end
+
+---@param tooltip GameTooltip
+local function showItemId(tooltip)
+    local _, link = tooltip:GetItem()
+    local itemId = link and GetItemInfoFromHyperlink(link)
+    if itemId then
+        tooltip:AddLine(" ")
+        tooltip:AddLine("ID: " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(itemId))
+        tooltip:Show()
+    end
+end
+
+---@param tooltip GameTooltip
+local function showAuraId(func, tooltip, ...)
+    local id = select(10, func(...))
+    if id then
+        tooltip:AddLine(" ")
+        tooltip:AddLine("ID: " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(id))
+        tooltip:Show()
+    end
+end
+
+local function getInspectSpec()
+    local specName, texturePath, _
+    if UnitIsUnit("player", "mouseover") then
+        _, specName, _, texturePath = GetSpecializationInfo(GetSpecialization())
+    else
+        _, specName, _, texturePath = GetSpecializationInfoByID(GetInspectSpecialization("mouseover"))
+    end
+    if specName and texturePath then
+        return format("|T%s:0|t %s", texturePath, specName)
+    end
+end
+
+local function getInspectItemLevel()
+    if UnitIsUnit("player", "mouseover") then
+        local _, itemLevel = GetAverageItemLevel()
+        return STAT_AVERAGE_ITEM_LEVEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(itemLevel))
+    end
+    local fail
+    local spec = GetInspectSpecialization("mouseover")
+    if not spec or spec == 0 then
+        fail = true
+    end
+    local sum = 0
+    local mainLevel = 0
+    local offLevel = 0
+    local mainQuality, mainEquipLoc, offEquipLoc, mainClassId, mainSubclassId
+    for i = INVSLOT_HEAD, INVSLOT_OFFHAND do
+        if i ~= INVSLOT_BODY then
+            scanner:SetOwner(UIParent, "ANCHOR_NONE")
+            scanner:SetInventoryItem("mouseover", i)
+            local link = GetInventoryItemLink("mouseover", i) or select(2, scanner:GetItem())
+            if link then
+                local _, _, quality, _, _, _, _, _, equipLoc, texture, _, classId, subclassId = GetItemInfo(link)
+                if not texture then
+                    fail = true
+                else
+                    local itemLevel = GetDetailedItemLevelInfo(link)
+                    if quality == Enum.ItemQuality.Heirloom then
+                        local scannerName = scanner:GetName()
+                        for j = 2, min(5, scanner:NumLines()) do
+                            ---@type FontString
+                            local label = _G[scannerName .. "TextLeft" .. j]
+                            local level = strmatch(label:GetText(), ITEM_LEVEL_REGEX)
+                            if level then
+                                itemLevel = tonumber(level)
+                                break
+                            end
+                        end
+                    end
+                    if i == INVSLOT_MAINHAND then
+                        mainLevel = itemLevel
+                        mainEquipLoc = equipLoc
+                        mainQuality = quality
+                        mainClassId = classId
+                        mainSubclassId = subclassId
+                    elseif i == INVSLOT_OFFHAND then
+                        offLevel = itemLevel
+                        offEquipLoc = equipLoc
+                    else
+                        sum = sum + itemLevel
+                    end
+                end
+            end
+        end
+    end
+    if fail then
+        return
+    end
+    if mainQuality == Enum.ItemQuality.Artifact or (not offEquipLoc and X2_INVTYPES[mainEquipLoc]
+            and X2_EXCEPTIONS[mainClassId] ~= mainSubclassId and spec ~= SPEC_WARRIOR_FURY) then
+        sum = sum + max(mainLevel, offLevel) * 2
+    else
+        sum = sum + mainLevel + offLevel
+    end
+    return STAT_AVERAGE_ITEM_LEVEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(sum / 16))
+end
 
 ---@param tooltip GameTooltip
 hooksecurefunc("GameTooltip_SetDefaultAnchor", function(tooltip, parent)
     tooltip:SetOwner(parent, "ANCHOR_CURSOR")
-    AnchorGameTooltipCursor(tooltip)
-    tooltipUpdateTicker = C_Timer.NewTicker(0.01, function()
-        if tooltipUpdateTicker then
-            if not tooltip:IsShown() or tooltip:GetAnchorType() ~= "ANCHOR_CURSOR" then
-                tooltipUpdateTicker:Cancel()
-                tooltipUpdateTicker = nil
-            end
-            AnchorGameTooltipCursor(tooltip)
+    setTooltipAnchor(tooltip)
+    updateTicker = C_Timer.NewTicker(0.03, function()
+        if tooltip:IsShown() and tooltip:GetAnchorType() == "ANCHOR_CURSOR" then
+            setTooltipAnchor(tooltip)
+        else
+            updateTicker:Cancel()
         end
     end)
 end)
 
---- 格式化数字
-local function FormatNumber(number)
-    if number >= 1e8 then
-        return format("%.2f" .. SECOND_NUMBER_CAP, number / 1e8)
-    elseif number >= 1e4 then
-        return format("%.1f" .. SECOND_NUMBER, number / 1e4)
-    end
-    return number
-end
+hooksecurefunc("PetBattleAbilityButton_OnEnter", function(self)
+    PetBattleAbilityTooltip_Show("BOTTOMLEFT", self, "TOPRIGHT")
+end)
 
----@type StatusBar
-local gameTooltipStatusBar = GameTooltipStatusBar
+barLabel:SetPoint("CENTER")
 
----@type FontString
-local gameTooltipStatusBarLabel = gameTooltipStatusBar:CreateFontString(nil, "ARTWORK", "Game11Font_o1")
-gameTooltipStatusBarLabel:SetPoint("CENTER")
-
---- 鼠标提示的血条显示数值
----@param self StatusBar
-gameTooltipStatusBar:HookScript("OnValueChanged", function(self, value)
-    local _, maxValue = self:GetMinMaxValues()
+GameTooltipStatusBar:SetStatusBarTexture("Interface/Tooltips/UI-Tooltip-Background")
+GameTooltipStatusBar:HookScript("OnValueChanged", function(_, value)
+    local _, maxValue = GameTooltipStatusBar:GetMinMaxValues()
     if maxValue > 0 then
-        gameTooltipStatusBarLabel:SetFormattedText("(%d%%) %s/%s", value / maxValue * 100, FormatNumber(value),
-                FormatNumber(maxValue))
+        barLabel:SetFormattedText("%s/%s(%s)", abbreviateNumber(value), abbreviateNumber(maxValue),
+                FormatPercentage(PercentageBetween(value, 0, maxValue)))
     else
-        gameTooltipStatusBarLabel:SetText("")
+        barLabel:SetText("")
     end
 end)
 
----@type GameTooltip
-local scanner = CreateFrame("GameTooltip", "WLK_InventoryScanner", UIParent, "GameTooltipTemplate")
+GameTooltip:HookScript("OnTooltipSetItem", showItemId)
 
-local inspectUnit, inspectGUID
+ItemRefTooltip:HookScript("OnTooltipSetItem", showItemId)
 
---- 获取当前观察单位的装等
-local function GetUnitAverageItemLevel()
-    if UnitIsUnit(inspectUnit, "player") then
-        local _, avgItemLevelEquipped = GetAverageItemLevel()
-        return floor(avgItemLevelEquipped)
-    end
-    local totalItemLevel = 0
-    local waiting
-    local mEquipSlot, oEquipSlot
-    local mLevel, oLevel = 0, 0
-    for i = INVSLOT_FIRST_EQUIPPED, INVSLOT_OFFHAND do
-        -- 不计算衬衫的等级
-        if i ~= INVSLOT_BODY then
-            scanner:SetOwner(UIParent, "ANCHOR_NONE")
-            scanner:SetInventoryItem(inspectUnit, i)
-            local link = GetInventoryItemLink(inspectUnit, i) or select(2, scanner:GetItem())
-            if link then
-                local name, _, quality, _, _, _, _, _, equipLoc = GetItemInfo(link)
-                if not waiting and not name then
-                    -- 服务器未返回数据
-                    waiting = true
-                else
-                    local level
-                    if quality ~= LE_ITEM_QUALITY_HEIRLOOM then
-                        -- 非传家宝直接使用 GetDetailedItemLevelInfo 获取物品等级
-                        level = GetDetailedItemLevelInfo(link)
-                    else
-                        -- 传家宝使用鼠标提示获取物品等级
-                        for j = 2, 3 do
-                            ---@type FontString
-                            local line = _G[scanner:GetName() .. "TextLeft" .. j]
-                            if line then
-                                local text = line:GetText()
-                                if not level and text then
-                                    level = strmatch(text, gsub(ITEM_LEVEL, "%%d", "(%%d+)"))
-                                    if level then
-                                        level = tonumber(level)
-                                        break
-                                    end
-                                end
-                            end
-                        end
-                    end
-                    level = level or 0
-                    if i == INVSLOT_MAINHAND then
-                        mLevel = level
-                        mEquipSlot = equipLoc
-                    elseif i == INVSLOT_OFFHAND then
-                        oLevel = level
-                        oEquipSlot = equipLoc
-                    else
-                        totalItemLevel = totalItemLevel + level
-                    end
-                end
-            end
-        end
-    end
-    if not waiting then
-        if mEquipSlot == "INVTYPE_RANGED" or mEquipSlot == "INVTYPE_RANGEDRIGHT"
-                or mEquipSlot == "INVTYPE_2HWEAPON" or oEquipSlot == "INVTYPE_2HWEAPON" then
-            totalItemLevel = totalItemLevel + max(mLevel, oLevel) * 2
-        else
-            totalItemLevel = totalItemLevel + mLevel + oLevel
-        end
-        return floor(totalItemLevel / 16)
-    end
-    return "..."
-end
+ShoppingTooltip1:HookScript("OnTooltipSetItem", showItemId)
 
---- 获取当前观察单位的专精
-local function GetUnitSpecialization()
-    if UnitIsUnit(inspectUnit, "player") then
-        local specIndex = GetSpecialization()
-        local _, specName, _, icon = GetSpecializationInfo(specIndex)
-        return "|T" .. icon .. ":0|t " .. specName
-    end
-    local specID = GetInspectSpecialization(inspectUnit)
-    if specID == 0 then
-        -- 服务器未返回数据
-        return "..."
-    end
-    local _, specName, _, icon = GetSpecializationInfoByID(specID)
-    return "|T" .. icon .. ":0|t " .. specName
-end
+ShoppingTooltip2:HookScript("OnTooltipSetItem", showItemId)
 
---- 鼠标提示显示装等和专精
-local function ShowItemLevelAndSpec(iLevel, specName)
+hooksecurefunc(GameTooltip, "SetUnitAura", function(self, ...)
+    showAuraId(UnitAura, self, ...)
+end)
+
+hooksecurefunc(GameTooltip, "SetUnitBuff", function(self, ...)
+    showAuraId(UnitBuff, self, ...)
+end)
+
+hooksecurefunc(GameTooltip, "SetUnitDebuff", function(self, ...)
+    showAuraId(UnitDebuff, self, ...)
+end)
+
+hooksecurefunc(NamePlateTooltip, "SetUnitAura", function(self, ...)
+    showAuraId(UnitAura, self, ...)
+end)
+
+GameTooltip:HookScript("OnTooltipSetSpell", function()
+    local _, spellId = GameTooltip:GetSpell()
+    if spellId and not spellIdShown then
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddLine("ID: " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(spellId))
+        GameTooltip:Show()
+        spellIdShown = true
+    end
+end)
+GameTooltip:HookScript("OnTooltipCleared", function()
+    spellIdShown = nil
+end)
+GameTooltip:HookScript("OnTooltipSetUnit", function()
+    inspecting = nil
+    inspectItemLevel = nil
+    inspectSpec = nil
     local _, unit = GameTooltip:GetUnit()
-    if unit and UnitGUID(unit) == inspectGUID then
-        iLevel = HIGHLIGHT_FONT_COLOR_CODE .. iLevel .. FONT_COLOR_CODE_CLOSE
-        ---@type FontString
-        local index
-        -- 在鼠标提示内容中找到装等专精标签在第几行
-        for i = GameTooltip:NumLines(), 2, -1 do
-            ---@type FontString
-            local line = _G["GameTooltipTextLeft" .. i]
-            if line then
-                local text = line:GetText()
-                if text and strfind(text, "^" .. STAT_AVERAGE_ITEM_LEVEL .. ":") then
-                    index = i
-                    break
-                end
-            end
-        end
-        if index then
-            -- 鼠标提示中已经有装等专精标签，更新标签内容
-            ---@type FontString
-            local levelLabel = _G["GameTooltipTextLeft" .. index]
-            levelLabel:SetText(STAT_AVERAGE_ITEM_LEVEL .. ": " .. iLevel)
-            ---@type FontString
-            local specLabel = _G["GameTooltipTextRight" .. index]
-            specLabel:SetText(specName)
-        else
-            -- 没有装等专精标签，则添加标签
-            GameTooltip:AddDoubleLine(STAT_AVERAGE_ITEM_LEVEL .. ": " .. iLevel, specName)
-            GameTooltip:Show()
-        end
-    end
-end
-
----@type Frame
-local eventListener = CreateFrame("Frame")
-
-eventListener:RegisterEvent("INSPECT_READY")
-
-eventListener:SetScript("OnEvent", function(...)
-    local _, _, guid = ...
-    if guid == inspectGUID then
-        -- 获取装等和专精并添加到鼠标提示
-        local iLevel = GetUnitAverageItemLevel()
-        local specName = GetUnitSpecialization()
-        ShowItemLevelAndSpec(iLevel, specName)
-        if iLevel == "..." or specName == "..." then
-            -- 如果装等或专精返回 “...”，表示服务器未返回数据，需要重新观察单位并获取数据
-            ClearInspectPlayer()
-            NotifyInspect(inspectUnit)
-        end
-    end
-end)
-
---- 鼠标停留在单位上时，修改玩家单位鼠标提示文字颜色，并观察单位
----@param self GameTooltip
-GameTooltip:HookScript("OnTooltipSetUnit", function(self)
-    local _, unit = self:GetUnit()
     if UnitIsPlayer(unit) then
-        -- 修改公会颜色
-        local guildInfo = GetGuildInfo(unit)
-        if guildInfo then
-            ---@type FontString
-            local guildLine = _G["GameTooltipTextLeft2"]
-            guildLine:SetTextColor(Chat_GetChannelColor(ChatTypeInfo["GUILD"]))
+        local index = 2
+        ---@type FontString
+        local line
+        if GetGuildInfo(unit) then
+            line = _G["GameTooltipTextLeft" .. index]
+            line:SetTextColor(guildR, guildG, guildB)
+            index = index + 1
         end
-        -- 修改职业颜色
-        local classLineIndex = guildInfo and 3 or 2
-        ---@type FontString
-        local classLine = _G["GameTooltipTextLeft" .. classLineIndex]
-        local _, class = UnitClass(unit)
-        classLine:SetTextColor(GetClassColor(class))
-        -- 修改阵营颜色
-        ---@type FontString
-        local factionLine = _G["GameTooltipTextLeft" .. (classLineIndex + 1)]
+        line = _G["GameTooltipTextLeft" .. index]
+        line:SetTextColor(GetClassColor(select(2, UnitClass(unit))))
+        index = index + 1
         local factionColor = GetFactionColor(UnitFactionGroup(unit))
         if factionColor then
-            factionLine:SetTextColor(GetTableColor(factionColor))
+            line = _G["GameTooltipTextLeft" .. index]
+            line:SetTextColor(GetTableColor(factionColor))
         end
-    end
-
-    -- 观察单位以获取装等和专精
-    if unit and CanInspect(unit) then
-        inspectUnit = unit
-        inspectGUID = UnitGUID(unit)
-        ClearInspectPlayer()
-        NotifyInspect(inspectUnit)
     end
 end)
 
---- 显示物品 ID
----@param tooltip GameTooltip
-local function ShowItemID(tooltip)
-    local _, link = tooltip:GetItem()
-    local id = link and GetItemInfoFromHyperlink(link)
-    if id then
-        tooltip:AddLine(" ")
-        tooltip:AddLine(ITEMS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
-        tooltip:Show()
-    end
-end
-
---- 检查法术 ID 是否已经显示
----@param tooltip GameTooltip
-local function SpellIDIsShown(tooltip)
-    for i = 1, tooltip:NumLines() do
-        ---@type FontString
-        local line = _G[tooltip:GetName() .. "TextLeft" .. i]
-        if line then
-            local text = line:GetText()
-            if strfind(text, SPELLS .. " " .. ID .. ":") then
-                return true
-            end
-        end
-    end
-end
-
---- 显示法术 ID
----@param tooltip GameTooltip
-local function ShowSpellID(tooltip)
-    local _, id = tooltip:GetSpell()
-    -- 防止天赋技能显示两次 SpellID
-    if id and not SpellIDIsShown(tooltip) then
-        tooltip:AddLine(" ")
-        tooltip:AddLine(SPELLS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
-        tooltip:Show()
-    end
-end
-
-GameTooltip:HookScript("OnTooltipSetItem", ShowItemID)
-GameTooltip:HookScript("OnTooltipSetSpell", ShowSpellID)
----@type GameTooltip
-local itemRefTooltip = ItemRefTooltip
-itemRefTooltip:HookScript("OnTooltipSetItem", ShowItemID)
-itemRefTooltip:HookScript("OnTooltipSetSpell", ShowSpellID)
----@type GameTooltip
-local shoppingTooltip1 = ShoppingTooltip1
-shoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
-shoppingTooltip1:HookScript("OnTooltipSetSpell", ShowSpellID)
----@type GameTooltip
-local shoppingTooltip2 = ShoppingTooltip2
-shoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
-shoppingTooltip2:HookScript("OnTooltipSetSpell", ShowSpellID)
----@type GameTooltip
-local itemRefShoppingTooltip1 = ItemRefShoppingTooltip1
-itemRefShoppingTooltip1:HookScript("OnTooltipSetItem", ShowItemID)
-itemRefShoppingTooltip1:HookScript("OnTooltipSetSpell", ShowSpellID)
----@type GameTooltip
-local itemRefShoppingTooltip2 = ItemRefShoppingTooltip2
-itemRefShoppingTooltip2:HookScript("OnTooltipSetItem", ShowItemID)
-itemRefShoppingTooltip2:HookScript("OnTooltipSetSpell", ShowSpellID)
-
---- 显示光环 ID
----@param self GameTooltip
-hooksecurefunc(GameTooltip, "SetUnitAura", function(self, ...)
-    local id = select(10, UnitAura(...))
-    if id then
-        self:AddLine(" ")
-        self:AddLine(AURAS .. " " .. ID .. ": " .. HIGHLIGHT_FONT_COLOR_CODE .. id .. FONT_COLOR_CODE_CLOSE)
-        self:Show()
-    end
-end)
-
---- 显示鼠标悬停单位的目标
----@param self GameTooltip
-GameTooltip:HookScript("OnUpdate", function(self, elapsed)
-    if not UnitExists("mouseover") then
-        return
-    end
-
+listener:SetScript("OnUpdate", function(self, elapsed)
     self.elapsed = (self.elapsed or 0) + elapsed
-    if self.elapsed < TOOLTIP_UPDATE_TIME then
+    if self.elapsed < 0.5 then
         return
     end
     self.elapsed = 0
 
-    local unit = "mouseovertarget"
     ---@type FontString
-    local targetLine
-    -- 获取目标行标签
-    for i = self:NumLines(), 2, -1 do
+    local targetLabel
+    for i = 2, GameTooltip:NumLines() do
         ---@type FontString
-        local line = _G["GameTooltipTextLeft" .. i]
-        if strfind(line:GetText() or "", "^" .. TARGET .. ":") then
-            targetLine = line
+        local label = _G["GameTooltipTextLeft" .. i]
+        local text = label:GetText()
+        if text and strmatch(text, TARGET .. ": ") then
+            targetLabel = label
             break
         end
     end
-    local target
-    if UnitExists(unit) then
-        if UnitIsUnit(unit, "player") then
-            -- 目标是你
-            target = RED_FONT_COLOR_CODE .. ">>" .. YOU .. "<<" .. FONT_COLOR_CODE_CLOSE
+    if UnitExists("mouseovertarget") and GameTooltip:GetUnit() then
+        local text
+        if UnitIsUnit("mouseovertarget", "player") then
+            text = RED_FONT_COLOR:WrapTextInColorCode(">>" .. YOU .. "<<")
         else
-            target = UnitName(unit)
-            if UnitIsPlayer(unit) then
-                -- 目标是玩家，则使用职业颜色着色
-                local _, class = UnitClass(unit)
-                target = WrapTextInColorCode(target, select(4, GetClassColor(class)))
+            local name = UnitName("mouseovertarget")
+            if UnitIsPlayer("mouseovertarget") then
+                text = GetClassColoredTextForUnit("mouseovertarget", name)
             else
-                target = HIGHLIGHT_FONT_COLOR_CODE .. target .. FONT_COLOR_CODE_CLOSE
+                text = HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(name)
             end
         end
+        if targetLabel then
+            targetLabel:SetText(TARGET .. ": " .. text)
+        else
+            GameTooltip:AddLine(TARGET .. ": " .. text)
+        end
+        GameTooltip:Show()
+    elseif targetLabel then
+        targetLabel:SetText("")
+        GameTooltip:Show()
     end
 
-    if targetLine and not target then
-        targetLine:SetText("")
-        self:Show()
-    elseif target and not targetLine then
-        -- 目标行标签不存在，则添加目标行标签
-        self:AddLine(TARGET .. ": " .. target)
-        self:Show()
-    elseif target and targetLine then
-        -- 目标行标签已存在，则更新
-        targetLine:SetText(TARGET .. ": " .. target)
+    if (not inspectItemLevel or not inspectSpec) and not inspecting and IsControlKeyDown() and UnitExists("mouseover")
+            and CanInspect("mouseover") then
+        NotifyInspect("mouseover")
+        listener:RegisterEvent("INSPECT_READY")
+        local inspectLabel
+        for i = 4, GameTooltip:NumLines() do
+            ---@type FontString
+            local label = _G["GameTooltipTextLeft" .. i]
+            if strmatch(label:GetText(), STAT_AVERAGE_ITEM_LEVEL) then
+                inspectLabel = true
+                break
+            end
+        end
+        if not inspectLabel then
+            GameTooltip:AddDoubleLine(STAT_AVERAGE_ITEM_LEVEL .. ": "
+                    .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode("..."), "...", nil, nil, nil, 1, 1, 1)
+            GameTooltip:Show()
+        end
+    end
+end)
+listener:SetScript("OnEvent", function(_, event, ...)
+    if event == "INSPECT_READY" then
+        listener:UnregisterEvent(event)
+        inspecting = true
+        if UnitExists("mouseover") and UnitGUID("mouseover") == ... then
+            local itemLevel = getInspectItemLevel()
+            local spec = getInspectSpec()
+            if itemLevel or spec then
+                for i = 4, GameTooltip:NumLines() do
+                    ---@type FontString
+                    local label = _G["GameTooltipTextLeft" .. i]
+                    if strmatch(label:GetText(), STAT_AVERAGE_ITEM_LEVEL) then
+                        if itemLevel then
+                            label:SetText(itemLevel)
+                        end
+                        if spec then
+                            label = _G["GameTooltipTextRight" .. i]
+                            label:SetText(spec)
+                        end
+                        GameTooltip:Show()
+                        break
+                    end
+                end
+            end
+            inspectItemLevel = itemLevel
+            inspectSpec = spec
+        end
+        inspecting = false
     end
 end)

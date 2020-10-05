@@ -1,33 +1,21 @@
----@type Texture
-local borderTop = MinimapBorderTop
-borderTop:Hide()
----@type Texture
-local border = MinimapBorder
-border:Hide()
----@type Button
-local worldMapButton = MiniMapWorldMapButton
-worldMapButton:Hide()
----@type Button
-local zoomInButton = MinimapZoomIn
-zoomInButton:Hide()
----@type Button
-local zoomOutButton = MinimapZoomOut
-zoomOutButton:Hide()
+MinimapBorder:Hide()
 
---- 使用方形小地图
-Minimap:SetMaskTexture("Interface/ChatFrame/CHATFRAMEBACKGROUND")
---- 使用职业颜色着色小地图边框
-Minimap:SetBackdrop({
-    edgeFile = "Interface/Buttons/WHITE8X8",
-    edgeSize = 1,
-})
-local _, class = UnitClass("player")
-Minimap:SetBackdropBorderColor(GetClassColor(class))
+MinimapBorderTop:Hide()
 
---- 使用滚轮缩放小地图
+MiniMapWorldMapButton:Hide()
+
+MinimapZoomIn:Hide()
+
+MinimapZoomOut:Hide()
+
+Mixin(Minimap, BackdropTemplateMixin)
+
+Minimap:SetMaskTexture("Interface/Buttons/WHITE8X8")
+Minimap:SetBackdrop({ edgeFile = "Interface/Buttons/WHITE8X8", edgeSize = 2, })
+Minimap:SetBackdropBorderColor(GetClassColor(select(2, UnitClass("player"))))
 Minimap:EnableMouseWheel(true)
-Minimap:SetScript("OnMouseWheel", function(_, value)
-    if value > 0 then
+Minimap:SetScript("OnMouseWheel", function(_, delta)
+    if delta > 0 then
         Minimap_ZoomIn()
     else
         Minimap_ZoomOut()
