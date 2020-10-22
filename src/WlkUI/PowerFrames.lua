@@ -437,14 +437,15 @@ end
 listener:RegisterEvent("PLAYER_LOGIN")
 listener:RegisterEvent("PLAYER_ENTERING_WORLD")
 listener:RegisterUnitEvent("UNIT_DISPLAYPOWER", "player")
+listener:RegisterUnitEvent("UNIT_MAXPOWER", "player")
 listener:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
 listener:RegisterUnitEvent("UNIT_EXITING_VEHICLE", "player")
-listener:SetScript("OnEvent", function(_, event, ...)
+listener:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
         PlayerPowerBarAlt:ClearAllPoints()
         PlayerPowerBarAlt:SetPoint("CENTER", UIParent, "BOTTOM", (180 + size / 2) / scale, (300 + size / 2) / scale)
         PlayerPowerBarAlt:SetMovable(false)
-    elseif event == "UNIT_DISPLAYPOWER" or event == "PLAYER_ENTERING_WORLD" then
+    elseif event == "UNIT_DISPLAYPOWER" or event == "UNIT_MAXPOWER" or event == "PLAYER_ENTERING_WORLD" then
         updatePowerFramesVisibility()
     elseif event == "UNIT_ENTERED_VEHICLE" and UnitInVehicle("player") and UnitHasVehicleUI("player")
             and unit == "player" then
