@@ -2,7 +2,7 @@
 ## Title: |cff8686ecWlkUI|r
 ## Notes: 界面插件
 ## Author: czy211
-## Version: 4.0.0
+## Version: 4.0.1
 ## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
 ## SavedVariablesPerCharacter: WlkCombatData
 ## SavedVariables: WlkFilterKeywords, WlkSpellTicks
