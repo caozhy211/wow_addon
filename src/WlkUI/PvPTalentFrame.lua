@@ -93,7 +93,9 @@ local function updateButtonsVisibility(warModeButton)
         warModeEnabled = C_PvP.IsWarModeDesired()
     end
     local _, instanceType = IsInInstance()
-    if instanceType == "pvp" or instanceType == "arena" or GetZonePVPInfo() == "combat" or warModeEnabled then
+    local pvpType = GetZonePVPInfo()
+    if instanceType == "pvp" or instanceType == "arena" or pvpType == "combat" or pvpType == "arena"
+            or warModeEnabled then
         showButtons()
     else
         hideButtons()
