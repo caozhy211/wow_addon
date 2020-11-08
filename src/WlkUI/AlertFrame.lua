@@ -53,11 +53,12 @@ local LOOT_ITEM_PUSHED_PATTERN = gsub(LOOT_ITEM_PUSHED_SELF, "%%s", "(.+)")
 local LOOT_ITEM_CREATED_PATTERN = gsub(LOOT_ITEM_CREATED_SELF, "%%s", "(.+)")
 local CURRENCY_GAINED_MULTIPLE_PATTERN = gsub(gsub(CURRENCY_GAINED_MULTIPLE, "%%s", "(.+)"), "%%d", "(%%d+)")
 local CURRENCY_GAINED_PATTERN = gsub(CURRENCY_GAINED, "%%s", "(.+)")
+local scannerName = "WlkAlertItemScanner"
 
 ---@type Frame
 local alertFrame = CreateFrame("Frame", "WlkAlertFrame", UIParent)
 ---@type GameTooltip
-local scanner = CreateFrame("GameTooltip", "WlkAlertItemScanner", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", scannerName, UIParent, "GameTooltipTemplate")
 
 ---@param self WlkAlertButton
 local function alertButtonOnEnter(self)
@@ -802,7 +803,6 @@ local function getItemLevel(event, link)
         if event == "SHOW_LOOT_TOAST" or quality == Enum.ItemQuality.Heirloom then
             scanner:SetOwner(UIParent, "ANCHOR_NONE")
             scanner:SetHyperlink(link)
-            local scannerName = scanner:GetName()
             for i = 2, min(5, scanner:NumLines()) do
                 ---@type FontString
                 local label = _G[scannerName .. "TextLeft" .. i]

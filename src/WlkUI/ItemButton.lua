@@ -56,9 +56,10 @@ local chatFiltersEvents = {
     "CHAT_MSG_OFFICER", "CHAT_MSG_PARTY", "CHAT_MSG_PARTY_LEADER", "CHAT_MSG_RAID", "CHAT_MSG_RAID_LEADER",
     "CHAT_MSG_SAY", "CHAT_MSG_WHISPER", "CHAT_MSG_YELL",
 }
+local scannerName = "WlkItemButtonScanner"
 
 ---@type GameTooltip
-local scanner = CreateFrame("GameTooltip", "WlkItemButtonScanner", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", scannerName, UIParent, "GameTooltipTemplate")
 ---@type Frame
 local listener = CreateFrame("Frame")
 
@@ -94,7 +95,6 @@ local function getItemInfo(link, levelOnly, short, scanFunc, ...)
     else
         scanner:SetHyperlink(link)
     end
-    local scannerName = scanner:GetName()
     for i = 2, min(10, scanner:NumLines()) do
         ---@type FontString
         local label = _G[scannerName .. "TextLeft" .. i]

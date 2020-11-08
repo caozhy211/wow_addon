@@ -12,12 +12,13 @@ local updateTicker
 local spellIdShown
 local guildR, guildG, guildB = 0.25, 1, 0.25
 local inspecting, inspectItemLevel, inspectSpec
+local scannerName = "WlkTooltipInspectScanner"
 
 local barLabel = GameTooltipStatusBar:CreateFontString("WlkGameTooltipLabel", "ARTWORK", "NumberFont_Shadow_Small")
 ---@type Frame
 local listener = CreateFrame("Frame")
 ---@type GameTooltip
-local scanner = CreateFrame("GameTooltip", "WlkTooltipInspectScanner", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", scannerName, UIParent, "GameTooltipTemplate")
 
 ---@param tooltip GameTooltip
 local function setTooltipAnchor(tooltip)
@@ -94,7 +95,6 @@ local function getInspectItemLevel()
                 else
                     local itemLevel = GetDetailedItemLevelInfo(link)
                     if quality == Enum.ItemQuality.Heirloom then
-                        local scannerName = scanner:GetName()
                         for j = 2, min(5, scanner:NumLines()) do
                             ---@type FontString
                             local label = _G[scannerName .. "TextLeft" .. j]

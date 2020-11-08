@@ -11,11 +11,12 @@ local buttons = {}
 local locale = GetLocale()
 ---@type table<number, WlkItemTrackerButton>
 local buttonIndexes = {}
+local scannerName = "WlkItemTrackerScanner"
 
 ---@type Frame
 local tracker = CreateFrame("Frame", "WlkItemTrackerFrame", BuffFrame)
 ---@type GameTooltip
-local scanner = CreateFrame("GameTooltip", "WlkItemTrackerScanner", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", scannerName, UIParent, "GameTooltipTemplate")
 
 ---@param self WlkItemTrackerButton
 local function buttonOnUpdate(self, elapsed)
@@ -134,7 +135,6 @@ local function isUsableItem(link, scanFunc, ...)
     end
     scanner:SetOwner(UIParent, "ANCHOR_NONE")
     scanner[scanFunc](scanner, ...)
-    local scannerName = scanner:GetName()
     for i = 2, scanner:NumLines() do
         ---@type FontString
         local label = _G[scannerName .. "TextLeft" .. i]

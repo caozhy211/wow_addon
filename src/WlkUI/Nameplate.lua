@@ -1,11 +1,12 @@
 local TITLE_R, TITLE_G, TITLE_B = 1, 0.82, 0
 local scenarioName
 local acceptedQuests = {}
+local scannerName = "WlkNameplateUnitScanner"
 
 ---@type Frame
 local listener = CreateFrame("Frame")
 ---@type GameTooltip
-local scanner = CreateFrame("GameTooltip", "WlkNameplateUnitScanner", UIParent, "GameTooltipTemplate")
+local scanner = CreateFrame("GameTooltip", scannerName, UIParent, "GameTooltipTemplate")
 
 ---@param frame Button
 local function isNotForbiddenNameplateUnitFrame(frame)
@@ -68,7 +69,6 @@ local function getQuestProgress(unit)
         local progress
         scanner:SetOwner(UIParent, "ANCHOR_NONE")
         scanner:SetUnit(unit)
-        local scannerName = scanner:GetName()
         for i = 3, scanner:NumLines() do
             ---@type FontString
             local label = _G[scannerName .. "TextLeft" .. i]
