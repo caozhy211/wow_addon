@@ -273,7 +273,8 @@ listener:SetScript("OnUpdate", function(self, elapsed)
         for i = 4, GameTooltip:NumLines() do
             ---@type FontString
             local label = _G["GameTooltipTextLeft" .. i]
-            if strmatch(label:GetText(), STAT_AVERAGE_ITEM_LEVEL) then
+            local text = label:GetText()
+            if text and strmatch(text, STAT_AVERAGE_ITEM_LEVEL) then
                 inspectLabel = true
                 break
             end
