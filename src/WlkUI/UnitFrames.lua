@@ -205,29 +205,35 @@ local function updateMaxHealth(unitFrame)
     UnitFrameHealPredictionBars_Update(unitFrame)
 end
 
+local function unitExists(unit)
+    return UnitExists(unit) or ShowBossFrameWhenUninteractable(unit)
+end
+
 ---@param unitFrame WlkUnitFrame
 local function updateHealthColor(unitFrame)
-    local healthBar = unitFrame.healthbar
     local unit = unitFrame.unit
-    local r, g, b
-    if not UnitIsConnected(unit) then
-        r, g, b = 0.5, 0.5, 0.5
-    elseif unitFrame.unit == "vehicle" then
-        r, g, b = 0, 0.5, 0.5
-    else
-        if UnitIsPlayer(unit) then
-            r, g, b = GetClassColor(select(2, UnitClass(unit)))
-        elseif not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) then
-            r, g, b = 0.9, 0.9, 0.9
-        elseif CompactUnitFrame_IsOnThreatListWithPlayer(unit) then
-            r, g, b = 1, 0, 0
-        elseif UnitIsPlayer(unit) and UnitIsFriend("player", unit) then
-            r, g, b = 0.667, 0.667, 1
+    if unitExists(unit) then
+        local healthBar = unitFrame.healthbar
+        local r, g, b
+        if not UnitIsConnected(unit) then
+            r, g, b = 0.5, 0.5, 0.5
+        elseif unitFrame.unit == "vehicle" then
+            r, g, b = 0, 0.5, 0.5
         else
-            r, g, b = UnitSelectionColor(unit, true)
+            if UnitIsPlayer(unit) then
+                r, g, b = GetClassColor(select(2, UnitClass(unit)))
+            elseif not UnitPlayerControlled(unit) and UnitIsTapDenied(unit) then
+                r, g, b = 0.9, 0.9, 0.9
+            elseif CompactUnitFrame_IsOnThreatListWithPlayer(unit) then
+                r, g, b = 1, 0, 0
+            elseif UnitIsPlayer(unit) and UnitIsFriend("player", unit) then
+                r, g, b = 0.667, 0.667, 1
+            else
+                r, g, b = UnitSelectionColor(unit, true)
+            end
         end
+        healthBar:SetStatusBarColor(r, g, b)
     end
-    healthBar:SetStatusBarColor(r, g, b)
 end
 
 ---@param unitFrame WlkUnitFrame
@@ -1006,15 +1012,11 @@ local function switchUnit(unitFrame)
     FrameUtil.RegisterFrameForUnitEvents(unitFrame, unitFrame.unitEvents, unitFrame.unit)
 end
 
-local function unitExists(unit)
-    return UnitExists(unit) or ShowBossFrameWhenUninteractable(unit)
-end
-
 local function updateUnitFrame(unitFrame)
     for _, func in ipairs(unitFrame.updateFunctions) do
         func(unitFrame)
     end
-    if unitFrame.totFrame and UnitExists(unitFrame.totFrame.unit) then
+    if unitFrame.totFrame and unitExists(unitFrame.totFrame.unit) then
         updatePortrait(unitFrame.totFrame)
         updateUnitFrame(unitFrame.totFrame)
     end
