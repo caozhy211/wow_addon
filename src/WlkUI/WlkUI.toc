@@ -28,7 +28,7 @@ Nameplate.lua
 PerformanceFrames.lua
 PowerFrames.lua
 PvPTalentFrame.lua
-SettingsButtons.lua
+Settings.lua
 StatInfoFrame.lua
 Tooltip.lua
 UnitFrames.lua
