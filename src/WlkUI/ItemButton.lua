@@ -344,8 +344,10 @@ hooksecurefunc("BankFrameItemButton_Update", function(button)
     end
     ---@type Frame
     local container = button:GetParent()
-    local link = GetContainerItemLink(container:GetID(), button:GetID())
-    showInfoOnItemButton(button, link, "SetInventoryItem", "player", ButtonInventorySlot(button))
+    local bagId = container:GetID()
+    local slotId = bagId == REAGENTBANK_CONTAINER and ReagentButtonInventorySlot(button) or ButtonInventorySlot(button)
+    local link = GetContainerItemLink(bagId, button:GetID())
+    showInfoOnItemButton(button, link, "SetInventoryItem", "player", slotId)
 end)
 
 hooksecurefunc("MerchantFrameItem_UpdateQuality", function(self, link)
