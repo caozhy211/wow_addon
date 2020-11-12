@@ -95,7 +95,7 @@ local function updateButtonsVisibility(warModeButton)
     local _, instanceType = IsInInstance()
     local pvpType = GetZonePVPInfo()
     if instanceType == "pvp" or instanceType == "arena" or pvpType == "combat" or pvpType == "arena"
-            or warModeEnabled then
+            or (warModeEnabled and instanceType == "none") then
         showButtons()
     else
         hideButtons()
