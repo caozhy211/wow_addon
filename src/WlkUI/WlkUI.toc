@@ -1,8 +1,8 @@
-## Interface: 90001
+## Interface: 90002
 ## Title: |cff8686ecWlkUI|r
 ## Notes: 界面插件
 ## Author: czy211
-## Version: 4.0.2
+## Version: 4.1.0
 ## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
 ## SavedVariablesPerCharacter: WlkCombatData
 ## SavedVariables: WlkFilterKeywords, WlkSpellTicks
