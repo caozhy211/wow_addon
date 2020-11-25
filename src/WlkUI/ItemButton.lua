@@ -234,9 +234,11 @@ local function showInfoOnQuestRewardButton(self)
         if button.objectType == "item" then
             local link = questLog and GetQuestLogItemLink(button.type, id) or GetQuestItemLink(button.type, id)
             showInfoOnItemButton(button, link)
-            button.tlLabel:SetPoint("TOPLEFT", button.IconBorder, -6, 1)
-            button.trLabel:SetPoint("TOPRIGHT", button.IconBorder, 6, 1)
-            button.brLabel:SetPoint("BOTTOMRIGHT", button.IconBorder, 6, -1)
+            if button.tlLabel then
+                button.tlLabel:SetPoint("TOPLEFT", button.IconBorder, -6, 1)
+                button.trLabel:SetPoint("TOPRIGHT", button.IconBorder, 6, 1)
+                button.brLabel:SetPoint("BOTTOMRIGHT", button.IconBorder, 6, -1)
+            end
         else
             showInfoOnItemButton(button)
         end

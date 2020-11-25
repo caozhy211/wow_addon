@@ -138,7 +138,8 @@ local function isUsableItem(link, scanFunc, ...)
     for i = 2, scanner:NumLines() do
         ---@type FontString
         local label = _G[scannerName .. "TextLeft" .. i]
-        if strmatch(label:GetText(), "^" .. USE .. (locale == "zhCN" and "：" or ": ")) then
+        local text = label:GetText()
+        if text and strmatch(text, "^" .. USE .. (locale == "zhCN" and "：" or ": ")) then
             return true
         end
     end

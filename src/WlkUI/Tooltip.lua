@@ -98,7 +98,8 @@ local function getInspectItemLevel()
                         for j = 2, min(5, scanner:NumLines()) do
                             ---@type FontString
                             local label = _G[scannerName .. "TextLeft" .. j]
-                            local level = strmatch(label:GetText(), ITEM_LEVEL_REGEX)
+                            local text = label:GetText()
+                            local level = text and strmatch(text, ITEM_LEVEL_REGEX)
                             if level then
                                 itemLevel = tonumber(level)
                                 break
@@ -297,7 +298,8 @@ listener:SetScript("OnEvent", function(_, event, ...)
                 for i = 4, GameTooltip:NumLines() do
                     ---@type FontString
                     local label = _G["GameTooltipTextLeft" .. i]
-                    if strmatch(label:GetText(), STAT_AVERAGE_ITEM_LEVEL) then
+                    local text = label:GetText()
+                    if text and strmatch(text, STAT_AVERAGE_ITEM_LEVEL) then
                         if itemLevel then
                             label:SetText(itemLevel)
                         end

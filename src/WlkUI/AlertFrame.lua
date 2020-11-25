@@ -806,7 +806,8 @@ local function getItemLevel(event, link)
             for i = 2, min(5, scanner:NumLines()) do
                 ---@type FontString
                 local label = _G[scannerName .. "TextLeft" .. i]
-                local level = strmatch(label:GetText(), ITEM_LEVEL_REGEX)
+                local text = label:GetText()
+                local level = text and strmatch(text, ITEM_LEVEL_REGEX)
                 if level then
                     return tonumber(level)
                 end
