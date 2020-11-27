@@ -215,29 +215,30 @@ local function showInfoOnQuestRewardButton(self)
             break
         end
         local id = button:GetID()
-        if button.type == "choice" then
-            local link = questLog and GetQuestLogItemLink("choice", id) or GetQuestItemLink("choice", id)
-            local price = link and select(11, GetItemInfo(link))
-            if price and price > 0 then
-                local count = questLog and select(3, GetQuestLogChoiceInfo(id))
-                        or select(3, GetQuestItemInfo("choice", id))
-                local value = price * count
-                if value > highestValue then
-                    highestValue = value
-                    wipe(highestValueButtons)
-                    highestValueButtons[1] = button
-                elseif value == highestValue then
-                    tinsert(highestValueButtons, button)
-                end
-            end
-        end
         if button.objectType == "item" then
             local link = questLog and GetQuestLogItemLink(button.type, id) or GetQuestItemLink(button.type, id)
+
             showInfoOnItemButton(button, link)
             if button.tlLabel then
                 button.tlLabel:SetPoint("TOPLEFT", button.IconBorder, -6, 1)
                 button.trLabel:SetPoint("TOPRIGHT", button.IconBorder, 6, 1)
                 button.brLabel:SetPoint("BOTTOMRIGHT", button.IconBorder, 6, -1)
+            end
+            
+            if button.type == "choice" then
+                local price = link and select(11, GetItemInfo(link))
+                if price and price > 0 then
+                    local count = questLog and select(3, GetQuestLogChoiceInfo(id))
+                            or select(3, GetQuestItemInfo("choice", id))
+                    local value = price * count
+                    if value > highestValue then
+                        highestValue = value
+                        wipe(highestValueButtons)
+                        highestValueButtons[1] = button
+                    elseif value == highestValue then
+                        tinsert(highestValueButtons, button)
+                    end
+                end
             end
         else
             showInfoOnItemButton(button)
@@ -503,6 +504,12 @@ end)
 
 hooksecurefunc(MapQuestInfoRewardsFrame, "Show", showInfoOnQuestRewardButton)
 hooksecurefunc(QuestInfoRewardsFrame, "Show", showInfoOnQuestRewardButton)
+--MapQuestInfoRewardsFrame:HookScript("OnHide", function()
+--    print("MapQuestInfoRewardsFrame Hide")
+--end)
+--QuestInfoRewardsFrame:HookScript("OnHide", function()
+--    print("QuestInfoRewardsFrame Hide")
+--end)
 
 for _, event in ipairs(chatFiltersEvents) do
     ChatFrame_AddMessageEventFilter(event, filterChatMessage)
