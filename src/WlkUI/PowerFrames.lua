@@ -284,13 +284,9 @@ local function updatePowerFramesVisibility()
             pointsFrame.powerToken = "SOUL_SHARDS"
             setPowerFramesShown(true, false, true)
         elseif class == "PALADIN" then
-            if spec == SPEC_PALADIN_RETRIBUTION then
-                pointsFrame.powerType = Enum.PowerType.HolyPower
-                pointsFrame.powerToken = "HOLY_POWER"
-                setPowerFramesShown(true, false, true)
-            else
-                setPowerFramesShown(false, true, false)
-            end
+            pointsFrame.powerType = Enum.PowerType.HolyPower
+            pointsFrame.powerToken = "HOLY_POWER"
+            setPowerFramesShown(true, false, true)
         elseif class == "MAGE" then
             if spec == SPEC_MAGE_ARCANE then
                 pointsFrame.powerType = Enum.PowerType.ArcaneCharges
