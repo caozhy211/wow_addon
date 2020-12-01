@@ -52,12 +52,10 @@ hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
         for i = 1, BUFF_MAX_DISPLAY do
             ---@type WlkPlayerAuraButton
             local button = BuffFrame.BuffButton[i]
-            if button and button.SetPoint ~= nop then
+            if button then
                 button:ClearAllPoints()
                 button:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -122 - (i - 1) % numBuffsPerRow * offset1,
                         301 + floor((i - 1) / numBuffsPerRow) * offset1)
-
-                button.SetPoint = nop
             end
         end
     end
@@ -66,13 +64,9 @@ end)
 hooksecurefunc("DebuffButton_UpdateAnchors", function(buttonName, index)
     ---@type WlkPlayerAuraButton
     local button = BuffFrame[buttonName][index]
-    if button.SetPoint ~= nop then
-        button:ClearAllPoints()
-        button:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -181 - (index - 1) % numDebuffsPerRow * offset1,
-                211 + floor((index - 1) / numDebuffsPerRow) * offset1)
-
-        button.SetPoint = nop
-    end
+    button:ClearAllPoints()
+    button:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -181 - (index - 1) % numDebuffsPerRow * offset1,
+            211 + floor((index - 1) / numDebuffsPerRow) * offset1)
 end)
 
 for i = 1, NUM_TEMP_ENCHANT_FRAMES do
