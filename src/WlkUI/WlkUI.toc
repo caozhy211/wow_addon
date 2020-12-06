@@ -4,7 +4,7 @@
 ## Author: czy211
 ## Version: 4.1.0
 ## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
-## SavedVariablesPerCharacter: WlkCombatData
+## SavedVariablesPerCharacter: WlkCombatData, WlkAuras
 ## SavedVariables: WlkFilterKeywords, WlkSpellTicks
 
 ActionBarFrames.lua
