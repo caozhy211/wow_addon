@@ -148,8 +148,8 @@ debuffFrame:SetScript("OnEvent", function(_, event)
         end
         local index = 0
         AuraUtil.ForEachAura("target", "HARMFUL|INCLUDE_NAME_PLATE_ONLY", DEBUFF_MAX_DISPLAY, function(...)
-            local _, _, count, _, duration, expirationTime, _, _, _, id = ...
-            if id then
+            local _, _, count, _, duration, expirationTime, caster, _, _, id, _, _, casterIsPlayer, showAll = ...
+            if id and TargetFrame_ShouldShowDebuffs("target", caster, showAll, casterIsPlayer) then
                 index = index + 1
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
