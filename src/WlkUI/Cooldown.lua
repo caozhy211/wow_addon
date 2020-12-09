@@ -46,9 +46,20 @@ local function timerOnUpdate(self, elapsed)
 end
 
 ---@param self WlkCooldown
+local function cooldownOnShow(self)
+    local timer = self.wlkTimer
+    if timer and timer.duration - (GetTime() - timer.start) > 0 then
+        -- 延迟显示，如果立即显示，把冷却中的技能从动作栏移出再放回时，会显示之前的冷却时间
+        C_Timer.After(0.01, function()
+            timer:Show()
+        end)
+    end
+end
+
+---@param self WlkCooldown
 local function cooldownOnHide(self)
     local timer = self.wlkTimer
-    if timer and timer:IsShown() then
+    if timer then
         timer:Hide()
     end
 end
@@ -76,6 +87,7 @@ hooksecurefunc(mt, "SetCooldown", function(self, start, duration)
             timer:SetScript("OnUpdate", timerOnUpdate)
 
             self:HookScript("OnHide", cooldownOnHide)
+            self:HookScript("OnShow", cooldownOnShow)
 
             timer.label = timer:CreateFontString()
             timer.label:SetPoint("CENTER")
