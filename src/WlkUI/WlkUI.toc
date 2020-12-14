@@ -3,7 +3,7 @@
 ## Notes: 界面插件
 ## Author: czy211
 ## Version: 4.1.0
-## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI
+## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI, Blizzard_ArenaUI
 ## SavedVariablesPerCharacter: WlkAuras
 ## SavedVariables: WlkFilterKeywords, WlkSpellTicks
 

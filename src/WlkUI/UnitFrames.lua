@@ -1766,10 +1766,16 @@ PlayerFrame:Hide()
 
 hideFrame(TargetFrame)
 hideFrame(FocusFrame)
+hideFrame(ArenaEnemyFrames)
+hideFrame(ArenaPrepFrames)
 for i = 1, MAX_BOSS_FRAMES do
     hideFrame(_G["Boss" .. i .. "TargetFrame"])
+    hideFrame(_G["ArenaEnemyFrame" .. i])
 end
 
-CastingBarFrame.SetPoint = nop
+ArenaEnemyFrames = nil
+ArenaPrepFrames = nil
 
+CastingBarFrame.SetPoint = nop
 PetCastingBarFrame.SetPoint = nop
+

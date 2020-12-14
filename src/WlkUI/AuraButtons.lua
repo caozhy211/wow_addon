@@ -266,16 +266,12 @@ hooksecurefunc("AuraButton_Update", function(buttonName, index, _, _, _, _, dura
 end)
 
 hooksecurefunc("BuffFrame_UpdateAllBuffAnchors", function()
-    if BuffFrame.BuffButton then
-        for i = 1, BUFF_MAX_DISPLAY do
-            ---@type WlkPlayerAuraButton
-            local button = BuffFrame.BuffButton[i]
-            if button then
-                button:ClearAllPoints()
-                button:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -122 - (i - 1) % numBuffsPerRow * offset1,
-                        301 + floor((i - 1) / numBuffsPerRow) * offset1)
-            end
-        end
+    for i = 1, BUFF_ACTUAL_DISPLAY do
+        ---@type WlkPlayerAuraButton
+        local button = BuffFrame.BuffButton[i]
+        button:ClearAllPoints()
+        button:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -122 - (i - 1) % numBuffsPerRow * offset1,
+                301 + floor((i - 1) / numBuffsPerRow) * offset1)
     end
 end)
 

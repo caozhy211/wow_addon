@@ -208,7 +208,6 @@ local cVars = {
     cameraDistanceMaxZoomFactor = "2.6",
     floatingCombatTextFloatMode = "3",
     floatingCombatTextCombatState = "1",
-    showArenaEnemyFrames = "0",
     overrideArchive = "0",
 }
 local defaultTracking = {
