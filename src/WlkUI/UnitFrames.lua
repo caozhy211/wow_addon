@@ -882,28 +882,22 @@ end
 local function arenaPrepFrameOnEvent(self, event)
     if event == "PLAYER_ENTERING_WORLD" or event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" then
         local numOpps = GetNumArenaOpponentSpecs()
-        if numOpps and numOpps > 0 then
-            if self.id <= numOpps then
-                local specId, gender = GetArenaOpponentSpec(self.id)
-                if specId > 0 then
-                    local _, name, _, icon, _, class = GetSpecializationInfoByID(specId, gender)
-                    if class then
-                        self.classIcon:SetTexture("Interface/Glues/CharacterCreate/UI-CharacterCreate-Classes")
-                        local l, r, t, b = unpack(CLASS_ICON_TCOORDS[class])
-                        local adj = 0.02
-                        self.classIcon:SetTexCoord(l + adj, r - adj, t + adj, b - adj)
-                        self:SetBackdropColor(GetClassColor(class))
-                    end
-                    self.specIcon:SetTexture(icon)
-                    self.specIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                    self.specLabel:SetText(name)
-                    self:Show()
-                else
-                    self:Hide()
+        if numOpps and numOpps > 0 and self.id <= numOpps then
+            local specId, gender = GetArenaOpponentSpec(self.id)
+            if specId > 0 then
+                local _, name, _, icon, _, class = GetSpecializationInfoByID(specId, gender)
+                if class then
+                    self.classIcon:SetTexture("Interface/Glues/CharacterCreate/UI-CharacterCreate-Classes")
+                    local l, r, t, b = unpack(CLASS_ICON_TCOORDS[class])
+                    local adj = 0.02
+                    self.classIcon:SetTexCoord(l + adj, r - adj, t + adj, b - adj)
+                    self:SetBackdropColor(GetClassColor(class))
                 end
+                self.specIcon:SetTexture(icon)
+                self.specIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+                self.specLabel:SetText(name)
+                self:Show()
             end
-        else
-            self:Hide()
         end
     end
 end
@@ -1644,6 +1638,7 @@ local function createUnitFrame(config)
         local specIcon = frame:CreateTexture()
         local specLabel = frame:CreateFontString(nil, "ARTWORK", "SystemFont_Shadow_Huge1")
 
+        frame:Hide()
         frame:SetSize(298, height1)
         frame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 364, yOffset)
         frame:SetBackdrop({ bgFile = "Interface/RaidFrame/Raid-Bar-Hp-Fill", })
