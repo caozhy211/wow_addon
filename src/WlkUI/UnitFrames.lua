@@ -1754,9 +1754,11 @@ for i = 1, MAX_ARENA_FRAMES do
 end
 
 CastingBarFrame:SetSize(castingBarWidth, castingBarHeight)
+CastingBarFrame:ClearAllPoints()
 CastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
 
 PetCastingBarFrame:SetSize(castingBarWidth, castingBarHeight)
+PetCastingBarFrame:ClearAllPoints()
 PetCastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
 
 setCastBar(CastingBarFrame)
