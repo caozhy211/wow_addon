@@ -1674,6 +1674,7 @@ local function createUnitFrame(config)
         local width, point, relativePoint, xOffset, yOffset, event = unpack(config.castBar)
         ---@class WlkCastBar:CastingBarFrameTemplate
         local bar = CreateFrame("StatusBar", nil, unitFrame, "CastingBarFrameTemplate")
+        bar:Hide()
 
         bar:SetSize(width, castBarHeight)
         bar:SetPoint(point, unitFrame, relativePoint, xOffset, yOffset)
