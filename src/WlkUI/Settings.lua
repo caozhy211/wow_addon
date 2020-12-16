@@ -486,72 +486,14 @@ customsButton:SetScript("OnEvent", function(_, event, ...)
         ObjectiveTrackerFrame:SetPoint("BOTTOMRIGHT", UIParent, -29, 88)
         ObjectiveTrackerFrame:SetMovable(false)
 
-        if LoadAddOn("Skada") then
-            Skada.FormatNumber = function(_, value)
-                if value >= 1e8 then
-                    return format("%.2f%s", value / 1e8, SECOND_NUMBER_CAP)
-                elseif value >= 1e4 then
-                    return format("%.2f%s", value / 1e4, FIRST_NUMBER_CAP)
-                end
-                return floor(value)
-            end
-
-            local window = Skada:GetWindows()[1]
-            ---@type Frame
-            local barGroup = window.bargroup
-            ---@type Frame
-            local title = barGroup.button
-            local timer = title:CreateFontString(nil, "OVERLAY", "SystemFont_Shadow_Med3")
-            local ticker
-            local startTime
-
-            barGroup:ClearAllPoints()
-            barGroup:SetPoint("BOTTOMLEFT")
-
-            window.db.barwidth = 453
-            window.db.barheight = 19
-            window.db.background.height = 96
-            window.db.barslocked = true
-            window.db.smoothing = true
-
-            Skada.db.profile.reset.join = 1
-
-            timer:SetPoint("CENTER")
-            timer:SetText(Skada.char.sets[1] and SecondsToClock(Skada.char.sets[1].time) or "")
-            hooksecurefunc(Skada, "StartCombat", function()
-                startTime = Skada.current.starttime
-                timer:SetText("")
-                ---@type TickerPrototype
-                ticker = C_Timer.NewTicker(1, function()
-                    if Skada.current then
-                        timer:SetText(SecondsToClock(time() - Skada.current.starttime))
-                    end
-                end)
-            end)
-            hooksecurefunc(Skada, "EndSegment", function()
-                if ticker then
-                    ticker:Cancel()
-                    ticker = nil
-                end
-                timer:SetText(startTime and SecondsToClock(time() - startTime) or "")
-            end)
-            hooksecurefunc(window, "UpdateDisplay", function()
-                if window.selectedset == "current" and window.selectedmode then
-                    timer:Show()
-                else
-                    timer:Hide()
-                end
-            end)
-            hooksecurefunc(Skada, "Reset", function()
-                timer:Hide()
-            end)
-        end
-
-        if LoadAddOn("DBM-Core") and LoadAddOn("DBM-VPYike") then
+        if LoadAddOn("DBM-Core") and LoadAddOn("DBM-VPYike") and LoadAddOn("DBM-StatusBarTimers") then
             DBM_AllSavedOptions.Default.ChosenVoicePack = "Yike"
             DBM_AllSavedOptions.Default.CountdownVoice = "VP:Yike"
             DBM_AllSavedOptions.Default.CountdownVoice2 = "VP:Yike"
             DBM_AllSavedOptions.Default.CountdownVoice3 = "VP:Yike"
+            DBM_AllSavedOptions.Default.DontShowInfoFrame = true
+            DBM_AllSavedOptions.Default.DontShowRangeFrame = true
+            DBT_AllPersistentOptions.Default.DBM.Alpha = 0
         end
     elseif event == "PLAYER_REGEN_ENABLED" then
         customsButton:UnregisterEvent(event)
