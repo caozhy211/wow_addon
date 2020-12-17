@@ -196,7 +196,7 @@ local function registerEventBagUpdate()
 end
 
 local function updateAllItems()
-    for i = INVSLOT_HEAD, INVSLOT_OFFHAND do
+    for i = INVSLOT_OFFHAND, INVSLOT_HEAD, -1 do
         updateInventoryItems(i)
     end
     updateBagItems()
