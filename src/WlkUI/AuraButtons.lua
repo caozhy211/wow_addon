@@ -12,7 +12,8 @@ local numberOfAuras = 8
 local width = size3 * 4
 local height = size3 * 2
 local addonName = ...
-local auras = { expirationTimes = {}, }
+local auras = { cooldowns = {}, expirationTimes = {}, }
+local spec
 
 ---@type Frame
 local buffFrame = CreateFrame("Frame", "WlkBuffFrame", UIParent)
@@ -23,31 +24,45 @@ local listener = CreateFrame("Frame")
 
 SLASH_ADD_BUFF1 = "/ab"
 SLASH_ADD_DEBUFF1 = "/ad"
+SLASH_ADD_COOLDOWN1 = "/ac"
 
 SlashCmdList["ADD_BUFF"] = function(arg)
-    local index, id, cooldown = strsplit(" ", arg, 3)
+    local index, id = strsplit(" ", arg, 2)
+    index = tonumber(index)
+    id = tonumber(id)
     ---@type WlkAuraButton
     local button = _G["WlkBuff" .. index]
     if button then
-        local spec = GetSpecialization()
-        auras[spec].buffs[tonumber(index)] = tonumber(id)
-        auras[spec].cooldowns[tonumber(index)] = cooldown and tonumber(cooldown)
-        button.id = tonumber(id)
+        if id then
+            tinsert(auras[spec].buffs[index], id)
+        else
+            wipe(auras[spec].buffs[index])
+        end
         button.icon:SetTexture(GetSpellTexture(id))
-        button.duration = cooldown and tonumber(cooldown)
     end
 end
 
 SlashCmdList["ADD_DEBUFF"] = function(arg)
     local index, id = strsplit(" ", arg, 2)
+    index = tonumber(index)
+    id = tonumber(id)
     ---@type WlkAuraButton
     local button = _G["WlkDebuff" .. index]
     if button then
-        local spec = GetSpecialization()
-        auras[spec].debuffs[tonumber(index)] = tonumber(id)
-        button.id = tonumber(id)
+        if id then
+            tinsert(auras[spec].debuffs[index], id)
+        else
+            wipe(auras[spec].debuffs[index])
+        end
         button.icon:SetTexture(GetSpellTexture(id))
     end
+end
+
+SlashCmdList["ADD_COOLDOWN"] = function(arg)
+    local id, cooldown = strsplit(" ", arg, 2)
+    id = tonumber(id)
+    cooldown = tonumber(cooldown)
+    auras.cooldowns[id] = cooldown
 end
 
 buffFrame:SetSize(width, height)
@@ -57,21 +72,24 @@ buffFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 buffFrame:RegisterEvent("UNIT_AURA")
 buffFrame:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" then
+        spec = GetSpecialization()
+        if not auras[spec] then
+            auras[spec] = {
+                buffs = { {}, {}, {}, {}, {}, {}, {}, {}, },
+                debuffs = { {}, {}, {}, {}, {}, {}, {}, {}, },
+            }
+        end
         for i = 1, numberOfAuras do
-            local spec = GetSpecialization()
-            if not auras[spec] then
-                auras[spec] = { buffs = {}, debuffs = {}, cooldowns = {}, }
-            end
-            local id = auras[spec].buffs[i]
             ---@type WlkAuraButton
             local button = _G["WlkBuff" .. i]
-            button.id = id
-            button.icon:SetTexture(GetSpellTexture(id))
-            button.duration = auras[spec].cooldowns[i]
-            local expirationTime = auras.expirationTimes[id]
-            if button.duration and expirationTime and GetTime() <= expirationTime then
-                CooldownFrame_Set(button.cooldown, expirationTime - button.duration, button.duration,
-                        button.duration > 0, true)
+            button.icon:SetTexture(GetSpellTexture(auras[spec].buffs[i][1]))
+            for _, id in ipairs(auras[spec].buffs[i]) do
+                local cooldown = auras.cooldowns[id]
+                local expirationTime = auras.expirationTimes[id]
+                if cooldown and expirationTime and GetTime() <= expirationTime then
+                    CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+                    break
+                end
             end
         end
     elseif event == "UNIT_AURA" then
@@ -80,15 +98,14 @@ buffFrame:SetScript("OnEvent", function(_, event)
         end
         local index = 0
         AuraUtil.ForEachAura("player", "HELPFUL", BUFF_MAX_DISPLAY, function(...)
-            local _, _, count, _, duration, expirationTime, _, _, _, id = ...
+            local _, icon, count, _, duration, expirationTime, _, _, _, id = ...
             if id then
                 index = index + 1
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
                     local button = _G["WlkBuff" .. i]
-                    if button.id then
-                    end
-                    if id == button.id then
+                    if tContains(auras[spec].buffs[i], id) then
+                        button.icon:SetTexture(icon)
                         if count > 1 then
                             button.Count:SetText(count)
                             button.Count:Show()
@@ -96,8 +113,8 @@ buffFrame:SetScript("OnEvent", function(_, event)
                             button.Count:Hide()
                         end
                         CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
-                        if button.duration and abs(button:GetAlpha() - 0.5) < 0.005 then
-                            auras.expirationTimes[id] = expirationTime - duration + button.duration
+                        if auras.cooldowns[id] and abs(button:GetAlpha() - 0.5) < 0.005 then
+                            auras.expirationTimes[id] = expirationTime - duration + auras.cooldowns[id]
                         end
                         button:SetAlpha(1)
                         button.show = true
@@ -112,11 +129,17 @@ buffFrame:SetScript("OnEvent", function(_, event)
             if not button.show then
                 button:SetAlpha(0.5)
                 button.Count:Hide()
-                local expirationTime = auras.expirationTimes[button.id]
-                if button.duration and expirationTime and GetTime() <= expirationTime then
-                    CooldownFrame_Set(button.cooldown, expirationTime - button.duration, button.duration,
-                            button.duration > 0, true)
-                else
+                local cooling
+                for _, id in ipairs(auras[spec].buffs[i]) do
+                    local cooldown = auras.cooldowns[id]
+                    local expirationTime = auras.expirationTimes[id]
+                    if cooldown and expirationTime and GetTime() <= expirationTime then
+                        CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+                        cooling = true
+                        break
+                    end
+                end
+                if not cooling then
                     CooldownFrame_Clear(button.cooldown)
                 end
             end
@@ -132,15 +155,17 @@ debuffFrame:RegisterEvent("UNIT_AURA")
 debuffFrame:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" then
         for i = 1, numberOfAuras do
-            local spec = GetSpecialization()
-            if not auras[spec] then
-                auras[spec] = { buffs = {}, debuffs = {}, }
-            end
-            local id = auras[spec].debuffs[i]
             ---@type WlkAuraButton
             local button = _G["WlkDebuff" .. i]
-            button.id = id
-            button.icon:SetTexture(GetSpellTexture(id))
+            button.icon:SetTexture(GetSpellTexture(auras[spec].debuffs[i][1]))
+            for _, id in ipairs(auras[spec].debuffs[i]) do
+                local cooldown = auras.cooldowns[id]
+                local expirationTime = auras.expirationTimes[id]
+                if cooldown and expirationTime and GetTime() <= expirationTime then
+                    CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+                    break
+                end
+            end
         end
     elseif event == "UNIT_AURA" then
         for i = 1, numberOfAuras do
@@ -148,13 +173,14 @@ debuffFrame:SetScript("OnEvent", function(_, event)
         end
         local index = 0
         AuraUtil.ForEachAura("target", "HARMFUL|INCLUDE_NAME_PLATE_ONLY", DEBUFF_MAX_DISPLAY, function(...)
-            local _, _, count, _, duration, expirationTime, caster, _, _, id, _, _, casterIsPlayer, showAll = ...
+            local _, icon, count, _, duration, expirationTime, caster, _, _, id, _, _, casterIsPlayer, showAll = ...
             if id and TargetFrame_ShouldShowDebuffs("target", caster, showAll, casterIsPlayer) then
                 index = index + 1
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
                     local button = _G["WlkDebuff" .. i]
-                    if id == button.id then
+                    if tContains(auras[spec].debuffs[i], id) then
+                        button.icon:SetTexture(icon)
                         if count > 1 then
                             button.Count:SetText(count)
                             button.Count:Show()
@@ -162,6 +188,9 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                             button.Count:Hide()
                         end
                         CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
+                        if auras.cooldowns[id] and abs(button:GetAlpha() - 0.5) < 0.005 then
+                            auras.expirationTimes[id] = expirationTime - duration + auras.cooldowns[id]
+                        end
                         button:SetAlpha(1)
                         button.show = true
                     end
@@ -175,7 +204,19 @@ debuffFrame:SetScript("OnEvent", function(_, event)
             if not button.show then
                 button:SetAlpha(0.5)
                 button.Count:Hide()
-                CooldownFrame_Clear(button.cooldown)
+                local cooling
+                for _, id in ipairs(auras[spec].debuffs[i]) do
+                    local cooldown = auras.cooldowns[id]
+                    local expirationTime = auras.expirationTimes[id]
+                    if cooldown and expirationTime and GetTime() <= expirationTime then
+                        CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+                        cooling = true
+                        break
+                    end
+                end
+                if not cooling then
+                    CooldownFrame_Clear(button.cooldown)
+                end
             end
         end
     end
