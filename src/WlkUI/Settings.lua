@@ -112,9 +112,9 @@ local cVars = {
     -- 小动物与小宠物
     UnitNameNonCombatCreatureName = "",
     -- 友方玩家
-    UnitNameFriendlyPlayerName = "",
+    UnitNameFriendlyPlayerName = "0",
     -- 友方玩家-仆从
-    UnitNameFriendlyMinionName = "",
+    UnitNameFriendlyMinionName = "0",
     -- NPC 名称[任务 NPC: 1,0,0,0,0; 敌对与任务 NPC: 1,1,0,0,1; 敌对, 任务与可互动的 NPC: 1,1,1,0,1(预设); 
     -- 所有 NPC: 0,0,0,1,1; 无: 0,0,0,0,1]
     UnitNameFriendlySpecialNPCName = "",
@@ -123,9 +123,9 @@ local cVars = {
     UnitNameNPC = "",
     ShowQuestUnitCircles = "",
     -- 敌方玩家
-    UnitNameEnemyPlayerName = "",
+    UnitNameEnemyPlayerName = "0",
     -- 敌方玩家-仆从
-    UnitNameEnemyMinionName = "",
+    UnitNameEnemyMinionName = "0",
     -- 显示个人资源
     nameplateShowSelf = "0",
     -- 显示个人资源-显示目标的特殊资源
