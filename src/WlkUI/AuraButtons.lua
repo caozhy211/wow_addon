@@ -27,7 +27,7 @@ SLASH_ADD_DEBUFF1 = "/ad"
 SlashCmdList["ADD_BUFF"] = function(arg)
     local index, id, cooldown = strsplit(" ", arg, 3)
     ---@type WlkAuraButton
-    local button = _G["WlkBuffButton" .. index]
+    local button = _G["WlkBuff" .. index]
     if button then
         local spec = GetSpecialization()
         auras[spec].buffs[tonumber(index)] = tonumber(id)
@@ -41,7 +41,7 @@ end
 SlashCmdList["ADD_DEBUFF"] = function(arg)
     local index, id = strsplit(" ", arg, 2)
     ---@type WlkAuraButton
-    local button = _G["WlkDebuffButton" .. index]
+    local button = _G["WlkDebuff" .. index]
     if button then
         local spec = GetSpecialization()
         auras[spec].debuffs[tonumber(index)] = tonumber(id)
@@ -64,7 +64,7 @@ buffFrame:SetScript("OnEvent", function(_, event)
             end
             local id = auras[spec].buffs[i]
             ---@type WlkAuraButton
-            local button = _G["WlkBuffButton" .. i]
+            local button = _G["WlkBuff" .. i]
             button.id = id
             button.icon:SetTexture(GetSpellTexture(id))
             button.duration = auras[spec].cooldowns[i]
@@ -76,7 +76,7 @@ buffFrame:SetScript("OnEvent", function(_, event)
         end
     elseif event == "UNIT_AURA" then
         for i = 1, numberOfAuras do
-            _G["WlkBuffButton" .. i].show = nil
+            _G["WlkBuff" .. i].show = nil
         end
         local index = 0
         AuraUtil.ForEachAura("player", "HELPFUL", BUFF_MAX_DISPLAY, function(...)
@@ -85,7 +85,7 @@ buffFrame:SetScript("OnEvent", function(_, event)
                 index = index + 1
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
-                    local button = _G["WlkBuffButton" .. i]
+                    local button = _G["WlkBuff" .. i]
                     if button.id then
                     end
                     if id == button.id then
@@ -108,7 +108,7 @@ buffFrame:SetScript("OnEvent", function(_, event)
         end)
         for i = 1, numberOfAuras do
             ---@type WlkAuraButton
-            local button = _G["WlkBuffButton" .. i]
+            local button = _G["WlkBuff" .. i]
             if not button.show then
                 button:SetAlpha(0.5)
                 button.Count:Hide()
@@ -138,13 +138,13 @@ debuffFrame:SetScript("OnEvent", function(_, event)
             end
             local id = auras[spec].debuffs[i]
             ---@type WlkAuraButton
-            local button = _G["WlkDebuffButton" .. i]
+            local button = _G["WlkDebuff" .. i]
             button.id = id
             button.icon:SetTexture(GetSpellTexture(id))
         end
     elseif event == "UNIT_AURA" then
         for i = 1, numberOfAuras do
-            _G["WlkDebuffButton" .. i].show = nil
+            _G["WlkDebuff" .. i].show = nil
         end
         local index = 0
         AuraUtil.ForEachAura("target", "HARMFUL|INCLUDE_NAME_PLATE_ONLY", DEBUFF_MAX_DISPLAY, function(...)
@@ -153,7 +153,7 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                 index = index + 1
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
-                    local button = _G["WlkDebuffButton" .. i]
+                    local button = _G["WlkDebuff" .. i]
                     if id == button.id then
                         if count > 1 then
                             button.Count:SetText(count)
@@ -171,7 +171,7 @@ debuffFrame:SetScript("OnEvent", function(_, event)
         end)
         for i = 1, numberOfAuras do
             ---@type WlkAuraButton
-            local button = _G["WlkDebuffButton" .. i]
+            local button = _G["WlkDebuff" .. i]
             if not button.show then
                 button:SetAlpha(0.5)
                 button.Count:Hide()
@@ -183,7 +183,7 @@ end)
 
 for i = 1, numberOfAuras do
     ---@type ActionButtonTemplate
-    local button = CreateFrame("Button", "WlkBuffButton" .. i, buffFrame, "ActionButtonTemplate")
+    local button = CreateFrame("Button", "WlkBuff" .. i, buffFrame, "ActionButtonTemplate")
     button:SetSize(size3, size3)
     if i < 5 then
         button:SetPoint("BOTTOMRIGHT", -size3 * (i - 1), 0)
@@ -199,7 +199,7 @@ end
 
 for i = 1, numberOfAuras do
     ---@type ActionButtonTemplate
-    local button = CreateFrame("Button", "WlkDebuffButton" .. i, debuffFrame, "ActionButtonTemplate")
+    local button = CreateFrame("Button", "WlkDebuff" .. i, debuffFrame, "ActionButtonTemplate")
     button:SetSize(size3, size3)
     if i < 5 then
         button:SetPoint("BOTTOMLEFT", size3 * (i - 1), 0)
