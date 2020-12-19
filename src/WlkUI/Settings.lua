@@ -486,6 +486,34 @@ customsButton:SetScript("OnEvent", function(_, event, ...)
         ObjectiveTrackerFrame:SetPoint("BOTTOMRIGHT", UIParent, -29, 88)
         ObjectiveTrackerFrame:SetMovable(false)
 
+        if LoadAddOn("Details") then
+            local t = {
+                pos_table = true,
+                point = "BOTTOMLEFT",
+                x = 0,
+                y = 14,
+                w = 453,
+                h = 85,
+            }
+            local instance = Details:GetInstance(1)
+            instance:RestorePositionFromPositionTable(t)
+            instance:SetBarFollowPlayer(true)
+            instance:SetBarSettings(20)
+            instance:ShowStatusBar()
+            _detalhes.disable_lock_ungroup_buttons = true
+            _detalhes.disable_stretch_button = true
+            _detalhes.ps_abbreviation = 8
+            hooksecurefunc(_detalhes, "OpenWelcomeWindow", function()
+                DetailsWelcomeWindow:Hide()
+                hooksecurefunc(_detalhes, "WelcomeSetLoc", function()
+                    instance:RestorePositionFromPositionTable(t)
+                end)
+            end)
+            hooksecurefunc(Details, "OpenNewsWindow", function()
+                DetailsNewsWindow:Hide()
+            end)
+        end
+
         if LoadAddOn("DBM-Core") and LoadAddOn("DBM-VPYike") and LoadAddOn("DBM-StatusBarTimers") then
             DBM_AllSavedOptions.Default.ChosenVoicePack = "Yike"
             DBM_AllSavedOptions.Default.CountdownVoice = "VP:Yike"
