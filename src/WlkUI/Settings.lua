@@ -197,6 +197,8 @@ local cVars = {
     textLocale = "zhTW",
     -- 语音
     audioLocale = "enUS",
+    -- 进阶战斗记录
+    advancedCombatLogging = "1",
 
     xpBarText = "1",
     scriptErrors = "1",
