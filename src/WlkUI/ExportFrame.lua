@@ -34,6 +34,16 @@ local function showExportFrame(text)
     editBox:SetCursorPosition(0)
 end
 
+local function canChangeMessage(arg, id)
+    if id and arg == "" then
+        return id
+    end
+end
+
+local function isProtectedMessage(message)
+    return message and (message ~= gsub(message, "(:?|?)|K(.-)|k", canChangeMessage))
+end
+
 SLASH_NUMERIC_CONSTANTS1 = "/nc"
 SLASH_EXPORT_CHAT1 = "/ec"
 
@@ -68,7 +78,9 @@ SlashCmdList["EXPORT_CHAT"] = function()
     wipe(chatMessages)
     for i = 1, SELECTED_CHAT_FRAME:GetNumMessages() do
         local message = SELECTED_CHAT_FRAME:GetMessageInfo(i)
-        tinsert(chatMessages, message)
+        if not isProtectedMessage(message) then
+            tinsert(chatMessages, message)
+        end
     end
     showExportFrame(table.concat(chatMessages, "\n"))
 end
