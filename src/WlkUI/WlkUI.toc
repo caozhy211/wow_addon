@@ -31,4 +31,5 @@ Settings.lua
 StatInfoFrame.lua
 Tooltip.lua
 UnitFrames.lua
+WeeklyRewardsFrame.lua
 WorldMap.lua
