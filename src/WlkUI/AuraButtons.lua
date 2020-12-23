@@ -86,7 +86,9 @@ buffFrame:SetScript("OnEvent", function(_, event)
             for _, id in ipairs(auras[spec].buffs[i]) do
                 local cooldown = auras.cooldowns[id]
                 local expirationTime = auras.expirationTimes[id]
-                if cooldown and expirationTime and GetTime() <= expirationTime then
+                local currentTime = GetTime()
+                if cooldown and expirationTime and currentTime >= expirationTime - cooldown
+                        and currentTime <= expirationTime then
                     CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
                     break
                 end
@@ -133,7 +135,9 @@ buffFrame:SetScript("OnEvent", function(_, event)
                 for _, id in ipairs(auras[spec].buffs[i]) do
                     local cooldown = auras.cooldowns[id]
                     local expirationTime = auras.expirationTimes[id]
-                    if cooldown and expirationTime and GetTime() <= expirationTime then
+                    local currentTime = GetTime()
+                    if cooldown and expirationTime and currentTime >= expirationTime - cooldown
+                            and currentTime <= expirationTime then
                         CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
                         cooling = true
                         break
@@ -161,7 +165,9 @@ debuffFrame:SetScript("OnEvent", function(_, event)
             for _, id in ipairs(auras[spec].debuffs[i]) do
                 local cooldown = auras.cooldowns[id]
                 local expirationTime = auras.expirationTimes[id]
-                if cooldown and expirationTime and GetTime() <= expirationTime then
+                local currentTime = GetTime()
+                if cooldown and expirationTime and currentTime >= expirationTime - cooldown
+                        and currentTime <= expirationTime then
                     CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
                     break
                 end
@@ -208,7 +214,9 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                 for _, id in ipairs(auras[spec].debuffs[i]) do
                     local cooldown = auras.cooldowns[id]
                     local expirationTime = auras.expirationTimes[id]
-                    if cooldown and expirationTime and GetTime() <= expirationTime then
+                    local currentTime = GetTime()
+                    if cooldown and expirationTime and currentTime >= expirationTime - cooldown
+                            and currentTime <= expirationTime then
                         CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
                         cooling = true
                         break
