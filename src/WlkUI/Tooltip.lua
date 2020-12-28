@@ -218,10 +218,10 @@ GameTooltip:HookScript("OnTooltipSetUnit", function()
         line = _G["GameTooltipTextLeft" .. index]
         line:SetTextColor(GetClassColor(select(2, UnitClass(unit))))
         index = index + 1
-        local factionColor = GetFactionColor(UnitFactionGroup(unit))
-        if factionColor then
-            line = _G["GameTooltipTextLeft" .. index]
-            line:SetTextColor(GetTableColor(factionColor))
+        line = _G["GameTooltipTextLeft" .. index]
+        local text = line:GetText()
+        if text and (text == FACTION_HORDE or text == FACTION_ALLIANCE) then
+            line:SetTextColor(GetTableColor(GetFactionColor(UnitFactionGroup(unit))))
         end
     end
 end)
