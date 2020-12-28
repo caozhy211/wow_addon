@@ -1749,13 +1749,23 @@ for i = 1, MAX_ARENA_FRAMES do
     createUnitFrame(arenaConfig)
 end
 
+unitFrameParent:RegisterEvent("PLAYER_LOGIN")
+unitFrameParent:SetScript("OnEvent", function(_, event)
+    if event == "PLAYER_LOGIN" then
+        CastingBarFrame:ClearAllPoints()
+        CastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
+
+        PetCastingBarFrame:ClearAllPoints()
+        PetCastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
+
+        CastingBarFrame.SetPoint = nop
+        PetCastingBarFrame.SetPoint = nop
+    end
+end)
+
 CastingBarFrame:SetSize(castingBarWidth, castingBarHeight)
-CastingBarFrame:ClearAllPoints()
-CastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
 
 PetCastingBarFrame:SetSize(castingBarWidth, castingBarHeight)
-PetCastingBarFrame:ClearAllPoints()
-PetCastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
 
 setCastBar(CastingBarFrame)
 setCastBar(PetCastingBarFrame)
@@ -1773,7 +1783,3 @@ end
 
 ArenaEnemyFrames = nil
 ArenaPrepFrames = nil
-
-CastingBarFrame.SetPoint = nop
-PetCastingBarFrame.SetPoint = nop
-
