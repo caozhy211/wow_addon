@@ -9,7 +9,10 @@ listener:SetScript("OnEvent", function(_, event, ...)
         if ... == "Blizzard_PVPUI" then
             pvpLoaded = true
             if LoadAddOn("Blizzard_WeeklyRewards") then
-                PVPQueueFrame.HonorInset.CasualPanel.WeeklyChest:HookScript("OnMouseDown", function()
+                PVPQueueFrame.HonorInset.CasualPanel.WeeklyChest:SetScript("OnMouseDown", function()
+                    WeeklyRewardsFrame:Show()
+                end)
+                PVPQueueFrame.HonorInset.RatedPanel.WeeklyChest:SetScript("OnMouseDown", function()
                     WeeklyRewardsFrame:Show()
                 end)
             end
