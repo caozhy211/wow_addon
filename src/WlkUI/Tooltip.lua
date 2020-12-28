@@ -11,7 +11,7 @@ local ITEM_LEVEL_REGEX = gsub(ITEM_LEVEL, "%%d", "(%%d+)")
 local updateTicker
 local spellIdShown
 local guildR, guildG, guildB = 0.25, 1, 0.25
-local inspecting, inspectItemLevel, inspectSpec
+local inspectUnit, inspecting, inspectItemLevel, inspectSpec
 local scannerName = "WlkTooltipInspectScanner"
 
 local barLabel = GameTooltipStatusBar:CreateFontString("WlkGameTooltipLabel", "ARTWORK", "NumberFont_Shadow_Small")
@@ -59,10 +59,10 @@ end
 
 local function getInspectSpec()
     local specName, texturePath, _
-    if UnitIsUnit("player", "mouseover") then
+    if UnitIsUnit("player", inspectUnit) then
         _, specName, _, texturePath = GetSpecializationInfo(GetSpecialization())
     else
-        _, specName, _, texturePath = GetSpecializationInfoByID(GetInspectSpecialization("mouseover"))
+        _, specName, _, texturePath = GetSpecializationInfoByID(GetInspectSpecialization(inspectUnit))
     end
     if specName and texturePath then
         return format("|T%s:0|t %s", texturePath, specName)
@@ -70,12 +70,12 @@ local function getInspectSpec()
 end
 
 local function getInspectItemLevel()
-    if UnitIsUnit("player", "mouseover") then
+    if UnitIsUnit("player", inspectUnit) then
         local _, itemLevel = GetAverageItemLevel()
         return STAT_AVERAGE_ITEM_LEVEL .. ": " .. HIGHLIGHT_FONT_COLOR:WrapTextInColorCode(floor(itemLevel))
     end
     local fail
-    local spec = GetInspectSpecialization("mouseover")
+    local spec = GetInspectSpecialization(inspectUnit)
     if not spec or spec == 0 then
         fail = true
     end
@@ -86,8 +86,8 @@ local function getInspectItemLevel()
     for i = INVSLOT_HEAD, INVSLOT_OFFHAND do
         if i ~= INVSLOT_BODY then
             scanner:SetOwner(UIParent, "ANCHOR_NONE")
-            scanner:SetInventoryItem("mouseover", i)
-            local link = GetInventoryItemLink("mouseover", i) or select(2, scanner:GetItem())
+            scanner:SetInventoryItem(inspectUnit, i)
+            local link = GetInventoryItemLink(inspectUnit, i) or select(2, scanner:GetItem())
             if link then
                 local _, _, quality, _, _, _, _, _, equipLoc, texture, _, classId, subclassId = GetItemInfo(link)
                 if not texture then
@@ -205,6 +205,7 @@ GameTooltip:HookScript("OnTooltipSetUnit", function()
     inspectItemLevel = nil
     inspectSpec = nil
     local _, unit = GameTooltip:GetUnit()
+    inspectUnit = unit
     if UnitIsPlayer(unit) then
         local index = 2
         ---@type FontString
@@ -266,9 +267,9 @@ listener:SetScript("OnUpdate", function(self, elapsed)
         GameTooltip:Show()
     end
 
-    if (not inspectItemLevel or not inspectSpec) and not inspecting and IsControlKeyDown() and UnitExists("mouseover")
-            and CanInspect("mouseover") then
-        NotifyInspect("mouseover")
+    if (not inspectItemLevel or not inspectSpec) and not inspecting and IsControlKeyDown() and UnitExists(inspectUnit)
+            and CanInspect(inspectUnit) then
+        NotifyInspect(inspectUnit)
         listener:RegisterEvent("INSPECT_READY")
         local inspectLabel
         for i = 4, GameTooltip:NumLines() do
@@ -291,7 +292,7 @@ listener:SetScript("OnEvent", function(_, event, ...)
     if event == "INSPECT_READY" then
         listener:UnregisterEvent(event)
         inspecting = true
-        if UnitExists("mouseover") and UnitGUID("mouseover") == ... then
+        if UnitExists(inspectUnit) and UnitGUID(inspectUnit) == ... then
             local itemLevel = getInspectItemLevel()
             local spec = getInspectSpec()
             if itemLevel or spec then
