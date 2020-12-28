@@ -19,12 +19,11 @@ local columns = ceil(MAX_RAID_GROUPS / rows)
 local maxRight = 298
 local maxBottom = 330
 local maxHeight = 1080 + OFFSET_Y3 - maxBottom
-local unitFrameWidth = (maxRight - OFFSET_X2 - frameSpacing * (columns - 1)) / columns
+local unitFrameWidth = (maxRight - OFFSET_X2 - 1 - frameSpacing * (columns - 1)) / columns
 local unitFrameHeight = (maxHeight - HEIGHT * rows - frameSpacing * (MEMBERS_PER_RAID_GROUP * rows + rows - 1))
         / (MEMBERS_PER_RAID_GROUP * rows)
 local groupFrameWidth = unitFrameWidth
 local groupFrameHeight = HEIGHT + MEMBERS_PER_RAID_GROUP * (unitFrameHeight + frameSpacing)
-local framesToUpdate = {}
 local useUiScaleValue = GetScreenHeight() - 1080 < -0.005 and "1" or ""
 local uiScaleValue = useUiScaleValue == "1" and GetScreenHeight() / 1080 or ""
 local cVars = {
@@ -281,43 +280,6 @@ local function isInCombatLockdown()
     end
 end
 
----@param frame Frame
-local function updateCompactRaidGroupLayout(frame)
-    if InCombatLockdown() then
-        tinsert(framesToUpdate, frame)
-        customsButton:RegisterEvent("PLAYER_REGEN_ENABLED")
-        return
-    end
-    for i = 1, MEMBERS_PER_RAID_GROUP do
-        ---@type Button
-        local unitFrame = _G[frame:GetName() .. "Member" .. i]
-        unitFrame:ClearAllPoints()
-        unitFrame:SetPoint("TOP", 0, (1 - i) * unitFrameHeight - i * frameSpacing - HEIGHT)
-    end
-    frame:SetSize(groupFrameWidth, groupFrameHeight)
-end
-
-local function updateCompactFrameContainerLayout()
-    if InCombatLockdown() then
-        customsButton:RegisterEvent("PLAYER_REGEN_ENABLED")
-        return
-    end
-    ---@type Frame
-    local frame = CompactPartyFrame
-    if frame then
-        frame:ClearAllPoints()
-        frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", maxRight, maxBottom)
-    end
-    for i = 1, NUM_RAID_GROUPS do
-        frame = _G["CompactRaidGroup" .. i]
-        if frame then
-            frame:ClearAllPoints()
-            frame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOMLEFT", maxRight - floor((i - 1) / rows)
-                    * (groupFrameWidth + frameSpacing), maxBottom + (i - 1) % rows * (groupFrameHeight + frameSpacing))
-        end
-    end
-end
-
 StaticPopupDialogs["APPLY_SETTINGS"] = {
     text = "反和諧和語言設定需要重新啟動遊戲才能夠生效。",
     subText = "其他設定需要重新載入遊戲才能夠生效。",
@@ -525,21 +487,27 @@ customsButton:SetScript("OnEvent", function(_, event, ...)
             DBM_AllSavedOptions.Default.DontShowRangeFrame = true
             DBT_AllPersistentOptions.Default.DBM.Alpha = 0
         end
-    elseif event == "PLAYER_REGEN_ENABLED" then
-        customsButton:UnregisterEvent(event)
-        for _, frame in ipairs(framesToUpdate) do
-            updateCompactRaidGroupLayout(frame)
-        end
-        wipe(framesToUpdate)
-        updateCompactFrameContainerLayout()
     end
 end)
 
 hideButtons()
 
-hooksecurefunc("CompactRaidGroup_UpdateLayout", updateCompactRaidGroupLayout)
-
-hooksecurefunc("CompactRaidFrameContainer_LayoutFrames", updateCompactFrameContainerLayout)
+hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
+    local i = tonumber(strmatch(frame:GetName(), "%w+(%d)")) or 1
+    ---@type Frame
+    local title = frame.title
+    title:ClearAllPoints()
+    title:SetPoint("TOP", CompactRaidFrameContainer, "BOTTOMLEFT",
+            1 + floor((rows * columns - i) / rows) * (groupFrameWidth + frameSpacing) + groupFrameWidth / 2,
+            maxBottom - 338 + (i - 1) % rows * frameSpacing + ((i - 1) % rows + 1) * groupFrameHeight)
+    for j = 1, MEMBERS_PER_RAID_GROUP do
+        ---@type Button
+        local unitFrame = _G[frame:GetName() .. "Member" .. j]
+        unitFrame:ClearAllPoints()
+        unitFrame:SetPoint("TOP", title, "BOTTOM", 0, -j * frameSpacing - (j - 1) * unitFrameHeight)
+    end
+    frame:SetSize(groupFrameWidth, groupFrameHeight)
+end)
 
 focusButton:SetAttribute("type1", "macro")
 focusButton:SetAttribute("macrotext", "/focus mouseover")
