@@ -199,6 +199,9 @@ local cVars = {
     -- 进阶战斗记录
     advancedCombatLogging = "1",
 
+    nameplateOtherAtBase = "2",
+    nameplateOverlapH = "0.5",
+    nameplateOverlapV = "0.8",
     xpBarText = "1",
     scriptErrors = "1",
     taintLog = "1",
