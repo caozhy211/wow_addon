@@ -106,7 +106,7 @@ local function showButton(texture, count, item, slot, bag)
 
             CooldownFrame_Set(button.cooldown, GetItemCooldown(item))
 
-            return i
+            break
         end
     end
 end
@@ -145,36 +145,23 @@ local function isUsableItem(link, scanFunc, ...)
     end
 end
 
-local function registerEventBagUpdate()
-    tracker:RegisterEvent("BAG_UPDATE")
+local function updateInventoryItems(slot)
+    local link = GetInventoryItemLink("player", slot)
+    if link and isUsableItem(link, "SetInventoryItem", "player", slot) then
+        local itemId = GetInventoryItemID("player", slot)
+        local button = buttonIndexes[itemId]
+        if button then
+            button.slot = slot
+        else
+            local texture = GetInventoryItemTexture("player", slot)
+            showButton(texture, 1, itemId, slot)
+        end
+    end
 end
 
-local function updateItems()
-    for _, button in pairs(buttonIndexes) do
-        hideButton(button)
-    end
-    local shown = 0
-    for i = INVSLOT_OFFHAND, INVSLOT_HEAD, -1 do
-        if shown >= maxButtons then
-            return
-        end
-        local link = GetInventoryItemLink("player", i)
-        if link and isUsableItem(link, "SetInventoryItem", "player", i) then
-            local itemId = GetInventoryItemID("player", i)
-            local button = buttonIndexes[itemId]
-            if button then
-                button.slot = i
-            else
-                local texture = GetInventoryItemTexture("player", i)
-                shown = showButton(texture, 1, itemId, i)
-            end
-        end
-    end
+local function updateBagItems()
     for i = 0, NUM_BAG_FRAMES do
         for j = 1, GetContainerNumSlots(i) do
-            if shown >= maxButtons then
-                return
-            end
             local texture, count, _, _, _, _, link, _, _, itemId = GetContainerItemInfo(i, j)
             if link then
                 local classId, _, bind = select(12, GetItemInfo(link))
@@ -186,12 +173,39 @@ local function updateItems()
                         button.slot = j
                         button.Count:SetText(count > 1 and count or "")
                     else
-                        shown = showButton(texture, count, itemId, j, i)
+                        showButton(texture, count, itemId, j, i)
                     end
                 end
             end
         end
     end
+end
+
+local function hideBagItemButtons()
+    for _, button in pairs(buttonIndexes) do
+        if button.bag and button.slot and button.item ~= GetContainerItemID(button.bag, button.slot) then
+            hideButton(button)
+        end
+    end
+end
+
+local function registerEventBagUpdate()
+    tracker:RegisterEvent("BAG_UPDATE")
+end
+
+local function onEventBagUpdate()
+    hideBagItemButtons()
+    updateBagItems()
+end
+
+local function updateAllItems()
+    for _, button in pairs(buttonIndexes) do
+        hideButton(button)
+    end
+    for i = INVSLOT_OFFHAND, INVSLOT_HEAD, -1 do
+        updateInventoryItems(i)
+    end
+    updateBagItems()
 end
 
 for i = 1, maxButtons do
@@ -229,10 +243,12 @@ tracker:SetScript("OnEvent", function(_, event, ...)
             SetBindingClick(bindKeys[i], buttons[i]:GetName())
             hideButton(buttons[i])
         end
-        C_Timer.NewTicker(0.1, updateItems, 2)
+        C_Timer.NewTicker(0.1, updateAllItems, 2)
         C_Timer.After(1, registerEventBagUpdate)
-    elseif event == "PLAYER_EQUIPMENT_CHANGED" or event == "BAG_UPDATE" then
-        C_Timer.NewTicker(0.1, updateItems, 2)
+    elseif event == "PLAYER_EQUIPMENT_CHANGED" then
+        C_Timer.NewTicker(0.1, updateAllItems, 2)
+    elseif event == "BAG_UPDATE" then
+        C_Timer.NewTicker(0.1, onEventBagUpdate, 2)
     elseif event == "BAG_UPDATE_COOLDOWN" then
         for _, button in pairs(buttonIndexes) do
             CooldownFrame_Set(button.cooldown, GetItemCooldown(button.item))
