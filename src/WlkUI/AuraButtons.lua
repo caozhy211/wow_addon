@@ -156,6 +156,7 @@ debuffFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 122, 484)
 debuffFrame:RegisterEvent("PLAYER_LOGIN")
 debuffFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 debuffFrame:RegisterEvent("UNIT_AURA")
+debuffFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 debuffFrame:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" then
         for i = 1, numberOfAuras do
@@ -173,7 +174,7 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                 end
             end
         end
-    elseif event == "UNIT_AURA" then
+    elseif event == "UNIT_AURA" or event == "PLAYER_TARGET_CHANGED" then
         for i = 1, numberOfAuras do
             _G["WlkDebuff" .. i].show = nil
         end
