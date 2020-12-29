@@ -53,24 +53,37 @@ local function formatMemory(value)
     return format("%.2fMB", value / 1000)
 end
 
+local function sortByMemory(a, b)
+    if not a or a.mem == nil then
+        return false
+    elseif not b or b.mem == nil then
+        return true
+    end
+    return a.mem > b.mem
+end
+
+local function findAddon(name)
+    for _, addon in ipairs(addons) do
+        if addon.name == name then
+            return addon
+        end
+    end
+end
+
 local function memoryBarOnEnter(self)
     GameTooltip:SetOwner(self, "ANCHOR_TOP")
     GameTooltip:ClearLines()
-    GameTooltip:AddDoubleLine("目前值", formatMemory(self.value), nil, nil, nil, 1, 1, 1)
-    GameTooltip:AddLine(" ")
-    GameTooltip:AddDoubleLine("最小值", formatMemory(self.minValue), nil, nil, nil, 1, 1, 1)
-    GameTooltip:AddDoubleLine("最大值", formatMemory(self.maxValue), nil, nil, nil, 1, 1, 1)
+    GameTooltip:AddLine(format("%s(%s~%s)", formatMemory(self.value), formatMemory(self.minValue),
+            formatMemory(self.maxValue)))
+    table.sort(addons, sortByMemory)
+    for _, addon in ipairs(addons) do
+        if addon.mem ~= 0 then
+            GameTooltip:AddLine(format("%s: %s(%s~%s)", addon.name, formatMemory(addon.mem), formatMemory(addon.minMem),
+                    formatMemory(addon.maxMem)), 1, 1, 1)
+        end
+    end
     GameTooltip:Show()
     self.UpdateTooltip = memoryBarOnEnter
-end
-
-local function sortByMemory(a, b)
-    if not a or a.value == nil then
-        return false
-    elseif not b or b.value == nil then
-        return true
-    end
-    return a.value > b.value
 end
 
 performanceFrame:SetPoint("TOPLEFT", UIParent, "BOTTOMRIGHT", OFFSET_X1, OFFSET_Y1)
@@ -116,51 +129,41 @@ memoryBar:SetScript("OnUpdate", function(self, elapsed)
     end
     self.elapsed = 0
 
-    local value = 0
-    local minValue = 0
-    local maxValue = 0
     UpdateAddOnMemoryUsage()
-    for _, addon in ipairs(addons) do
-        local memory = GetAddOnMemoryUsage(addon.name)
-        addon.memory = memory
-        if not addon.minMemory or memory < addon.minMemory then
-            addon.minMemory = memory
+    local totalMem = 0
+    local minTotalMem = 0
+    local maxTotalMem = 0
+    for i = 1, GetNumAddOns() do
+        local name = GetAddOnInfo(i)
+        local mem = GetAddOnMemoryUsage(i)
+        local addon = findAddon(name)
+        if not addon then
+            tinsert(addons, { name = name, mem = mem, })
+            addon = addons[#addons]
+        else
+            addon.mem = mem
         end
-        if not addon.maxMemory or memory > addon.maxMemory then
-            addon.maxMemory = memory
+        if not addon.minMem or mem < addon.minMem then
+            addon.minMem = mem
         end
-        value = value + addon.memory
-        minValue = minValue + addon.minMemory
-        maxValue = maxValue + addon.maxMemory
+        if not addon.maxMem or mem > addon.maxMem then
+            addon.maxMem = mem
+        end
+        totalMem = totalMem + mem
+        minTotalMem = minTotalMem + addon.minMem
+        maxTotalMem = maxTotalMem + addon.maxMem
     end
-    memoryBar:SetMinMaxValues(0, maxValue)
-    memoryBar:SetValue(value)
-    memoryLabel:SetText(formatMemory(value))
-    self.value = value
-    self.minValue = minValue
-    self.maxValue = maxValue
+    memoryBar:SetMinMaxValues(0, maxTotalMem)
+    memoryBar:SetValue(totalMem)
+    memoryLabel:SetText(formatMemory(totalMem))
+    self.value = totalMem
+    self.minValue = minTotalMem
+    self.maxValue = maxTotalMem
 end)
 memoryBar:SetScript("OnEnter", memoryBarOnEnter)
 memoryBar:SetScript("OnLeave", function(self)
     GameTooltip:Hide()
     self.UpdateTooltip = nil
-end)
-memoryBar:SetScript("OnMouseDown", function()
-    table.sort(addons, sortByMemory)
-    for i, addon in ipairs(addons) do
-        ChatFrame1:AddMessage(format("%d. %s: %s (%s~%s)", i, addon.name, formatMemory(addon.memory),
-                formatMemory(addon.minMemory), formatMemory(addon.maxMemory)), 1, 1, 0)
-    end
-end)
-memoryBar:RegisterEvent("PLAYER_LOGIN")
-memoryBar:SetScript("OnEvent", function(_, event)
-    if event == "PLAYER_LOGIN" then
-        for i = 1, GetNumAddOns() do
-            if IsAddOnLoaded(i) and not addons[i] then
-                tinsert(addons, { name = GetAddOnInfo(i), })
-            end
-        end
-    end
 end)
 
 memoryLabel:SetPoint("CENTER")
