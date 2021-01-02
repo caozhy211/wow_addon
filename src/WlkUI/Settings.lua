@@ -496,6 +496,9 @@ end)
 hideButtons()
 
 hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
+    if InCombatLockdown() then
+        return
+    end
     local i = tonumber(strmatch(frame:GetName(), "%w+(%d)")) or 1
     ---@type Frame
     local title = frame.title
@@ -508,6 +511,9 @@ hooksecurefunc("CompactRaidGroup_UpdateLayout", function(frame)
         local unitFrame = _G[frame:GetName() .. "Member" .. j]
         unitFrame:ClearAllPoints()
         unitFrame:SetPoint("TOP", title, "BOTTOM", 0, -j * frameSpacing - (j - 1) * unitFrameHeight)
+        if not (unitFrame:GetAttribute("shift-type1") == "focus") then
+            unitFrame:SetAttribute("shift-type1", "focus")
+        end
     end
     frame:SetSize(groupFrameWidth, groupFrameHeight)
 end)
