@@ -25,44 +25,118 @@ local listener = CreateFrame("Frame")
 SLASH_ADD_BUFF1 = "/ab"
 SLASH_ADD_DEBUFF1 = "/ad"
 SLASH_ADD_COOLDOWN1 = "/ac"
+SLASH_DELETE_COOLDOWN1 = "/dc"
 
 SlashCmdList["ADD_BUFF"] = function(arg)
-    local index, id = strsplit(" ", arg, 2)
+    local index, buffId, type, talentId = strsplit(" ", arg, 4)
     index = tonumber(index)
-    id = tonumber(id)
+    buffId = tonumber(buffId)
+    type = type or "spell"
+    talentId = type == "talent" and (tonumber(talentId) or buffId)
     ---@type WlkAuraButton
     local button = _G["WlkBuff" .. index]
     if button then
-        if id then
-            tinsert(auras[spec].buffs[index], id)
+        if buffId then
+            auras[spec].buffs[index][buffId] = { type = type, talentId = talentId, }
         else
             wipe(auras[spec].buffs[index])
         end
-        button.icon:SetTexture(GetSpellTexture(id))
+        if type == "spell" or (type == "talent" and IsSpellKnown(talentId)) then
+            button.icon:SetTexture(GetSpellTexture(buffId))
+        end
     end
 end
 
 SlashCmdList["ADD_DEBUFF"] = function(arg)
-    local index, id = strsplit(" ", arg, 2)
+    local index, debuffId, type, talentId = strsplit(" ", arg, 4)
     index = tonumber(index)
-    id = tonumber(id)
+    debuffId = tonumber(debuffId)
+    type = type or "spell"
+    talentId = type == "talent" and (tonumber(talentId) or debuffId)
     ---@type WlkAuraButton
     local button = _G["WlkDebuff" .. index]
     if button then
-        if id then
-            tinsert(auras[spec].debuffs[index], id)
+        if debuffId then
+            auras[spec].debuffs[index][debuffId] = { type = type, talentId = talentId, }
         else
             wipe(auras[spec].debuffs[index])
         end
-        button.icon:SetTexture(GetSpellTexture(id))
+        if type == "spell" or (type == "talent" and IsSpellKnown(talentId)) then
+            button.icon:SetTexture(GetSpellTexture(debuffId))
+        end
     end
 end
 
 SlashCmdList["ADD_COOLDOWN"] = function(arg)
-    local id, cooldown = strsplit(" ", arg, 2)
-    id = tonumber(id)
-    cooldown = tonumber(cooldown)
-    auras.cooldowns[id] = cooldown
+    local auraId, type, value = strsplit(" ", arg, 3)
+    auraId = tonumber(auraId)
+    type = type or "spell"
+    value = type == "spell" and auraId or tonumber(value)
+    auras.cooldowns[auraId] = { type = type, value = value, }
+    for i = 1, numberOfAuras do
+        ---@type WlkAuraButton
+        local button = _G["WlkBuff" .. i]
+        local id
+        for buffId, v in pairs(auras[spec].buffs[i]) do
+            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                id = buffId
+            end
+            if id and auras.cooldowns[id] and not button.show then
+                local cooldownType = auras.cooldowns[id].type
+                local cooldownValue = auras.cooldowns[id].value
+                if cooldownType == "internal" then
+                    local duration = cooldownValue
+                    local expirationTime = auras.expirationTimes[id]
+                    local currentTime = GetTime()
+                    if duration and expirationTime and currentTime >= expirationTime - duration
+                            and currentTime <= expirationTime then
+                        CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
+                    end
+                elseif cooldownType == "item" then
+                    CooldownFrame_Set(button.cooldown, GetInventoryItemCooldown("player", cooldownValue))
+                elseif cooldownType == "spell" then
+                    CooldownFrame_Set(button.cooldown, GetSpellCooldown(cooldownValue))
+                end
+                break
+            end
+        end
+    end
+    for i = 1, numberOfAuras do
+        ---@type WlkAuraButton
+        local button = _G["WlkDebuff" .. i]
+        local id
+        for debuffId, v in pairs(auras[spec].debuffs[i]) do
+            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                id = debuffId
+            end
+            if id and auras.cooldowns[id] and not button.show then
+                local cooldownType = auras.cooldowns[id].type
+                local cooldownValue = auras.cooldowns[id].value
+                if cooldownType == "internal" then
+                    local duration = cooldownValue
+                    local expirationTime = auras.expirationTimes[id]
+                    local currentTime = GetTime()
+                    if duration and expirationTime and currentTime >= expirationTime - duration
+                            and currentTime <= expirationTime then
+                        CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
+                    end
+                elseif cooldownType == "item" then
+                    CooldownFrame_Set(button.cooldown, GetInventoryItemCooldown("player", cooldownValue))
+                elseif cooldownType == "spell" then
+                    CooldownFrame_Set(button.cooldown, GetSpellCooldown(cooldownValue))
+                end
+                break
+            end
+        end
+    end
+end
+
+SlashCmdList["DELETE_COOLDOWN"] = function(arg)
+    local auraId = strsplit(" ", arg)
+    auraId = tonumber(auraId)
+    if auraId and auras.cooldowns[auraId] then
+        auras.cooldowns[auraId] = nil
+    end
 end
 
 buffFrame:SetSize(width, height)
@@ -82,16 +156,33 @@ buffFrame:SetScript("OnEvent", function(_, event)
         for i = 1, numberOfAuras do
             ---@type WlkAuraButton
             local button = _G["WlkBuff" .. i]
-            button.icon:SetTexture(GetSpellTexture(auras[spec].buffs[i][1]))
-            for _, id in ipairs(auras[spec].buffs[i]) do
-                local cooldown = auras.cooldowns[id]
-                local expirationTime = auras.expirationTimes[id]
-                local currentTime = GetTime()
-                if cooldown and expirationTime and currentTime >= expirationTime - cooldown
-                        and currentTime <= expirationTime then
-                    CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+            local id
+            for buffId, v in pairs(auras[spec].buffs[i]) do
+                if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                    id = buffId
+                    button.icon:SetTexture(GetSpellTexture(id))
+                end
+                if id and auras.cooldowns[id] and not button.show then
+                    local cooldownType = auras.cooldowns[id].type
+                    local cooldownValue = auras.cooldowns[id].value
+                    if cooldownType == "internal" then
+                        local duration = cooldownValue
+                        local expirationTime = auras.expirationTimes[id]
+                        local currentTime = GetTime()
+                        if duration and expirationTime and currentTime >= expirationTime - duration
+                                and currentTime <= expirationTime then
+                            CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
+                        end
+                    elseif cooldownType == "item" then
+                        CooldownFrame_Set(button.cooldown, GetInventoryItemCooldown("player", cooldownValue))
+                    elseif cooldownType == "spell" then
+                        CooldownFrame_Set(button.cooldown, GetSpellCooldown(cooldownValue))
+                    end
                     break
                 end
+            end
+            if not id then
+                button.icon:SetTexture(nil)
             end
         end
     elseif event == "UNIT_AURA" then
@@ -106,7 +197,7 @@ buffFrame:SetScript("OnEvent", function(_, event)
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
                     local button = _G["WlkBuff" .. i]
-                    if tContains(auras[spec].buffs[i], id) then
+                    if auras[spec].buffs[i][id] then
                         button.icon:SetTexture(icon)
                         if count > 1 then
                             button.Count:SetText(count)
@@ -115,8 +206,12 @@ buffFrame:SetScript("OnEvent", function(_, event)
                             button.Count:Hide()
                         end
                         CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
-                        if auras.cooldowns[id] and abs(button:GetAlpha() - 0.5) < 0.005 then
-                            auras.expirationTimes[id] = expirationTime - duration + auras.cooldowns[id]
+                        if auras.cooldowns[id] then
+                            local cooldownType = auras.cooldowns[id].type
+                            local cooldownValue = auras.cooldowns[id].value
+                            if cooldownType == "internal" and abs(button:GetAlpha() - 0.5) < 0.005 then
+                                auras.expirationTimes[id] = expirationTime - duration + cooldownValue
+                            end
                         end
                         button:SetAlpha(1)
                         button.show = true
@@ -131,15 +226,31 @@ buffFrame:SetScript("OnEvent", function(_, event)
             if not button.show then
                 button:SetAlpha(0.5)
                 button.Count:Hide()
-                local cooling
-                for _, id in ipairs(auras[spec].buffs[i]) do
-                    local cooldown = auras.cooldowns[id]
-                    local expirationTime = auras.expirationTimes[id]
-                    local currentTime = GetTime()
-                    if cooldown and expirationTime and currentTime >= expirationTime - cooldown
-                            and currentTime <= expirationTime then
-                        CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+                local id, cooling
+                for buffId, v in pairs(auras[spec].buffs[i]) do
+                    if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                        id = buffId
+                    end
+                    if id and auras.cooldowns[id] then
                         cooling = true
+                        local cooldownType = auras.cooldowns[id].type
+                        local cooldownValue = auras.cooldowns[id].value
+                        if cooldownType == "internal" then
+                            local duration = cooldownValue
+                            local expirationTime = auras.expirationTimes[id]
+                            local currentTime = GetTime()
+                            if expirationTime and currentTime >= expirationTime - duration
+                                    and currentTime <= expirationTime then
+                                CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0,
+                                        true)
+                            else
+                                CooldownFrame_Clear(button.cooldown)
+                            end
+                        elseif cooldownType == "item" then
+                            CooldownFrame_Set(button.cooldown, GetInventoryItemCooldown("player", cooldownValue))
+                        elseif cooldownType == "spell" then
+                            CooldownFrame_Set(button.cooldown, GetSpellCooldown(cooldownValue))
+                        end
                         break
                     end
                 end
@@ -162,16 +273,33 @@ debuffFrame:SetScript("OnEvent", function(_, event)
         for i = 1, numberOfAuras do
             ---@type WlkAuraButton
             local button = _G["WlkDebuff" .. i]
-            button.icon:SetTexture(GetSpellTexture(auras[spec].debuffs[i][1]))
-            for _, id in ipairs(auras[spec].debuffs[i]) do
-                local cooldown = auras.cooldowns[id]
-                local expirationTime = auras.expirationTimes[id]
-                local currentTime = GetTime()
-                if cooldown and expirationTime and currentTime >= expirationTime - cooldown
-                        and currentTime <= expirationTime then
-                    CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+            local id
+            for debuffId, v in pairs(auras[spec].debuffs[i]) do
+                if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                    id = debuffId
+                    button.icon:SetTexture(GetSpellTexture(id))
+                end
+                if id and auras.cooldowns[id] and not button.show then
+                    local cooldownType = auras.cooldowns[id].type
+                    local cooldownValue = auras.cooldowns[id].value
+                    if cooldownType == "internal" then
+                        local duration = cooldownValue
+                        local expirationTime = auras.expirationTimes[id]
+                        local currentTime = GetTime()
+                        if duration and expirationTime and currentTime >= expirationTime - duration
+                                and currentTime <= expirationTime then
+                            CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
+                        end
+                    elseif cooldownType == "item" then
+                        CooldownFrame_Set(button.cooldown, GetInventoryItemCooldown("player", cooldownValue))
+                    elseif cooldownType == "spell" then
+                        CooldownFrame_Set(button.cooldown, GetSpellCooldown(cooldownValue))
+                    end
                     break
                 end
+            end
+            if not id then
+                button.icon:SetTexture(nil)
             end
         end
     elseif event == "UNIT_AURA" or event == "PLAYER_TARGET_CHANGED" then
@@ -186,7 +314,7 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                 for i = 1, numberOfAuras do
                     ---@type WlkAuraButton
                     local button = _G["WlkDebuff" .. i]
-                    if tContains(auras[spec].debuffs[i], id) then
+                    if auras[spec].debuffs[i][id] then
                         button.icon:SetTexture(icon)
                         if count > 1 then
                             button.Count:SetText(count)
@@ -195,8 +323,12 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                             button.Count:Hide()
                         end
                         CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0, true)
-                        if auras.cooldowns[id] and abs(button:GetAlpha() - 0.5) < 0.005 then
-                            auras.expirationTimes[id] = expirationTime - duration + auras.cooldowns[id]
+                        if auras.cooldowns[id] then
+                            local cooldownType = auras.cooldowns[id].type
+                            local cooldownValue = auras.cooldowns[id].value
+                            if cooldownType == "internal" and abs(button:GetAlpha() - 0.5) < 0.005 then
+                                auras.expirationTimes[id] = expirationTime - duration + cooldownValue
+                            end
                         end
                         button:SetAlpha(1)
                         button.show = true
@@ -211,15 +343,31 @@ debuffFrame:SetScript("OnEvent", function(_, event)
             if not button.show then
                 button:SetAlpha(0.5)
                 button.Count:Hide()
-                local cooling
-                for _, id in ipairs(auras[spec].debuffs[i]) do
-                    local cooldown = auras.cooldowns[id]
-                    local expirationTime = auras.expirationTimes[id]
-                    local currentTime = GetTime()
-                    if cooldown and expirationTime and currentTime >= expirationTime - cooldown
-                            and currentTime <= expirationTime then
-                        CooldownFrame_Set(button.cooldown, expirationTime - cooldown, cooldown, cooldown > 0, true)
+                local id, cooling
+                for debuffId, v in pairs(auras[spec].debuffs[i]) do
+                    if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                        id = debuffId
+                    end
+                    if id and auras.cooldowns[id] then
                         cooling = true
+                        local cooldownType = auras.cooldowns[id].type
+                        local cooldownValue = auras.cooldowns[id].value
+                        if cooldownType == "internal" then
+                            local duration = cooldownValue
+                            local expirationTime = auras.expirationTimes[id]
+                            local currentTime = GetTime()
+                            if expirationTime and currentTime >= expirationTime - duration
+                                    and currentTime <= expirationTime then
+                                CooldownFrame_Set(button.cooldown, expirationTime - duration, duration, duration > 0,
+                                        true)
+                            else
+                                CooldownFrame_Clear(button.cooldown)
+                            end
+                        elseif cooldownType == "item" then
+                            CooldownFrame_Set(button.cooldown, GetInventoryItemCooldown("player", cooldownValue))
+                        elseif cooldownType == "spell" then
+                            CooldownFrame_Set(button.cooldown, GetSpellCooldown(cooldownValue))
+                        end
                         break
                     end
                 end
