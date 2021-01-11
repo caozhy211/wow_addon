@@ -98,7 +98,7 @@ hooksecurefunc(mt, "SetCooldown", function(self, start, duration)
             timer.start = start
             timer.duration = duration
             timer.updateInterval = 0.01
-            timer.label.height = height / 2
+            timer.label.height = max(height / 2, 10)
         end
         if not timer:IsShown() then
             timer.updateInterval = 0.01

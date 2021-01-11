@@ -2,7 +2,6 @@ local TITLE_R, TITLE_G, TITLE_B = 1, 0.82, 0
 local scenarioName
 local acceptedQuests = {}
 local scannerName = "WlkNameplateUnitScanner"
-local mt = getmetatable(CreateFrame("Frame", nil, nil, "NameplateBuffButtonTemplate")).__index
 
 ---@type Frame
 local listener = CreateFrame("Frame")
@@ -238,15 +237,7 @@ end)
 ---@param self Frame
 hooksecurefunc(NameplateBuffContainerMixin, "UpdateAnchor", function(self)
     if not self:IsForbidden() then
-        self:SetPoint("BOTTOM", self:GetParent().name, "TOP", 0, 8)
-    end
-end)
-
----@param self NameplateBuffButtonTemplate
-hooksecurefunc(mt, "SetMouseClickEnabled", function(self)
-    self:SetSize(30, 21)
-    if self.Icon then
-        self.Icon:SetSize(28, 19)
+        self:SetPoint("BOTTOM", self:GetParent().name, "TOP", 0, 3)
     end
 end)
 
@@ -255,6 +246,8 @@ hooksecurefunc(NameplateBuffContainerMixin, "UpdateBuffs", function(self)
         ---@type NameplateBuffButtonTemplate
         local buff = self.buffList[i]
         if buff and buff:IsShown() then
+            buff:SetSize(30, 16)
+            buff.Icon:SetSize(28, 14)
             if i > 4 then
                 buff:ClearAllPoints()
                 buff:SetPoint("BOTTOM", self.buffList[i - 4], "TOP", 0, 2)
