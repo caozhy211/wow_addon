@@ -30,9 +30,9 @@ local shortnames = {
 local function updateChatFrameEditBoxPosition()
     local frame = GENERAL_DOCKED_CHAT_FRAMES[#GENERAL_DOCKED_CHAT_FRAMES]
     local rightmostTab = _G[frame:GetName() .. "Tab"]
-    for i = 1, NUM_CHAT_WINDOWS do
+    for _, chatFrame in ipairs(GENERAL_DOCKED_CHAT_FRAMES) do
         ---@type EditBox
-        local editBox = _G["ChatFrame" .. i .. "EditBox"]
+        local editBox = _G[chatFrame:GetName() .. "EditBox"]
         editBox:ClearAllPoints()
         editBox:SetPoint("LEFT", rightmostTab, "RIGHT", -PADDING, OFFSET_Y1)
         editBox:SetPoint("RIGHT", ChatFrame1.Background, PADDING, 0)
