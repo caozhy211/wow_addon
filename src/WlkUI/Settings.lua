@@ -470,6 +470,7 @@ customsButton:SetScript("OnEvent", function(_, event, ...)
             _detalhes.disable_lock_ungroup_buttons = true
             _detalhes.disable_stretch_button = true
             _detalhes.ps_abbreviation = 8
+            _detalhes.use_battleground_server_parser = true
             hooksecurefunc(_detalhes, "OpenWelcomeWindow", function()
                 DetailsWelcomeWindow:Hide()
                 hooksecurefunc(_detalhes, "WelcomeSetLoc", function()
