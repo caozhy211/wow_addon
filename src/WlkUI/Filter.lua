@@ -6,7 +6,9 @@ local keywords = {
     "|Hspell.-|h.-|h.-免费",
     "|Hspell.-|h.-|h.-没要求",
 }
-local chatFilterEvents = { "CHAT_MSG_CHANNEL", "CHAT_MSG_SAY", "CHAT_MSG_WHISPER", "CHAT_MSG_YELL", }
+local chatFilterEvents = {
+    "CHAT_MSG_CHANNEL", "CHAT_MSG_SAY", "CHAT_MSG_WHISPER", "CHAT_MSG_YELL", "CHAT_MSG_TEXT_EMOTE",
+}
 
 ---@type Frame
 local listener = CreateFrame("Frame")
