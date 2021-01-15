@@ -504,12 +504,6 @@ end)
 
 hooksecurefunc(MapQuestInfoRewardsFrame, "Show", showInfoOnQuestRewardButton)
 hooksecurefunc(QuestInfoRewardsFrame, "Show", showInfoOnQuestRewardButton)
---MapQuestInfoRewardsFrame:HookScript("OnHide", function()
---    print("MapQuestInfoRewardsFrame Hide")
---end)
---QuestInfoRewardsFrame:HookScript("OnHide", function()
---    print("QuestInfoRewardsFrame Hide")
---end)
 
 for _, event in ipairs(chatFiltersEvents) do
     ChatFrame_AddMessageEventFilter(event, filterChatMessage)
