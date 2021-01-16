@@ -4,7 +4,7 @@ local TEXTURE_FILL_INDEX = 3
 local padding = 1
 local borderSize = 2
 local castBarHeight = 25
-local auraSize1 = 24
+local auraSize1 = 29
 local auraSize2 = 27
 local auraSpacing = 3
 local height1 = 42
@@ -12,9 +12,9 @@ local height2 = 54
 local height3 = 18
 local castingBarHeight = 32
 local castingBarWidth = 330 - castingBarHeight
-local bossSpacing1 = castBarHeight + borderSize * 2 + 1 + height3 + 1 + auraSize1 + 1 + borderSize
-local bossSpacing2 = height1 + borderSize + 2 + auraSize1 + 5
-local arenaSpacing1 = bossSpacing1 - height3 - 1
+local bossSpacing1 = castBarHeight + borderSize * 2 + height3 + borderSize
+local bossSpacing2 = height1 + borderSize + 2 + auraSize1 + 2
+local arenaSpacing1 = bossSpacing1 - height3
 local arenaSpacing2 = bossSpacing2
 local defaultEvents = { "PLAYER_ENTERING_WORLD", "PORTRAITS_UPDATED", "UNIT_FACTION", }
 local defaultUnitEvents = {
@@ -54,7 +54,7 @@ local playerConfig = {
     leader = 1,
     role = 1,
     group = true,
-    altPower = { 199, "TOPRIGHT", "BOTTOMRIGHT", -65, 0, },
+    altPower = { 198, "TOPRIGHT", "BOTTOMRIGHT", -66, 0, },
 }
 local petConfig = {
     name = "WlkPetFrame",
@@ -94,11 +94,11 @@ local targetConfig = {
     faction = 2,
     quest = true,
     petType = true,
-    threat = { x = 24, y = 0, },
+    threat = { "TOPLEFT", "BOTTOMLEFT", 24, 0, },
     leader = 2,
     role = 2,
     group = true,
-    altPower = { 199, "TOPLEFT", "BOTTOMLEFT", 65, 0, },
+    altPower = { 198, "TOPLEFT", "BOTTOMLEFT", 66, 0, },
     buff = { auraSize2, 32, 8, "BOTTOMLEFT", "TOPRIGHT", height2 / 2, -25, },
     debuff = { auraSize2, 16, 8, "BOTTOMLEFT", "TOPLEFT", 61, 3, },
     range = true,
@@ -114,9 +114,9 @@ local focusConfig = {
     power = true,
     classification = 2,
     raidTarget = 2,
-    threat = { x = -2, y = -31, },
+    threat = { "TOPLEFT", "BOTTOMLEFT", -2, -31, },
     group = true,
-    altPower = { 200, "TOPLEFT", "BOTTOMLEFT", 39, -31, },
+    altPower = { 199, "TOPLEFT", "BOTTOMLEFT", 40, -31, },
     buff = { auraSize2, 8, 8, "TOPLEFT", "BOTTOMLEFT", 0, -3, },
     debuff = { auraSize2, 8, 8, "BOTTOMLEFT", "TOPLEFT", 0, 5, },
     highlight = true,
@@ -1451,7 +1451,7 @@ local function createUnitFrame(config)
     if config.pvpTime then
         local label = unitFrame:CreateFontString(nil, "ARTWORK", "SystemFont_Shadow_Med3")
 
-        label:SetSize(41, height3)
+        label:SetSize(42, height3)
         label:SetPoint("TOPRIGHT", unitFrame, "BOTTOMRIGHT", -24, 0)
         label:SetTextColor(1, 0.8, 0)
 
@@ -1463,10 +1463,11 @@ local function createUnitFrame(config)
     end
 
     if config.threat then
+        local point, relativePoint, x, y = unpack(config.threat)
         local label = unitFrame:CreateFontString(nil, "ARTWORK", "SystemFont_Shadow_Med3")
 
-        label:SetSize(41, height3)
-        label:SetPoint("TOPLEFT", unitFrame, "BOTTOMLEFT", config.threat.x, config.threat.y)
+        label:SetSize(42, height3)
+        label:SetPoint(point, unitFrame, relativePoint, x, y)
 
         unitFrame:RegisterUnitEvent("UNIT_THREAT_SITUATION_UPDATE", config.unit)
         unitFrame:RegisterUnitEvent("UNIT_THREAT_LIST_UPDATE", config.unit)
@@ -1717,13 +1718,13 @@ for i = 1, MAX_BOSS_FRAMES do
         power = true,
         classification = 2,
         raidTarget = 2,
-        threat = { x = -2, y = -28, },
-        altPower = { 257, "TOPLEFT", "BOTTOMLEFT", 39, -28, },
-        buff = { auraSize1, 11, 11, "TOPLEFT", "BOTTOMLEFT", 0, -3, },
-        debuff = { auraSize1, 11, 11, "BOTTOMLEFT", "TOPLEFT", 0, 4, },
+        threat = { "BOTTOMLEFT", "TOPLEFT", 126, 2, },
+        altPower = { 298, "TOPLEFT", "BOTTOMLEFT", -2, -31, },
+        buff = { auraSize1, 4, 4, "BOTTOMLEFT", "TOPLEFT", 169, 4, },
+        debuff = { auraSize1, 4, 4, "BOTTOMLEFT", "TOPLEFT", 0, 4, },
         highlight = true,
         range = true,
-        castBar = { 269, "TOPLEFT", "BOTTOMLEFT", 25, -49, "INSTANCE_ENCOUNTER_ENGAGE_UNIT", },
+        castBar = { 269, "TOPLEFT", "BOTTOMLEFT", 25, -4, "INSTANCE_ENCOUNTER_ENGAGE_UNIT", },
     }
     createUnitFrame(bossConfig)
 end
@@ -1736,15 +1737,14 @@ for i = 1, MAX_ARENA_FRAMES do
         unit = "arena" .. i,
         events = { { "ARENA_OPPONENT_UPDATE", }, },
         power = true,
-        altPower = { 257, "TOPLEFT", "BOTTOMLEFT", 39 - 36, -28, },
-        buff = { auraSize1, 11, 11, "TOPLEFT", "BOTTOMLEFT", -36, -3, },
-        debuff = { auraSize1, 11, 11, "BOTTOMLEFT", "TOPLEFT", -36, 4, },
+        buff = { auraSize1, 4, 4, "BOTTOMLEFT", "TOPLEFT", 133, 4, },
+        debuff = { auraSize1, 4, 4, "BOTTOMLEFT", "TOPLEFT", -36, 4, },
         highlight = true,
         range = true,
         cc = true,
         arena = true,
         prep = true,
-        castBar = { 269, "TOPLEFT", "BOTTOMLEFT", 25 - 36, -49 + 19, "ARENA_OPPONENT_UPDATE", },
+        castBar = { 269, "TOPLEFT", "BOTTOMLEFT", 25 - 36, -4, "ARENA_OPPONENT_UPDATE", },
     }
     createUnitFrame(arenaConfig)
 end
