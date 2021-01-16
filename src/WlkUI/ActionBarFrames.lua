@@ -62,7 +62,6 @@ for _, prefix in ipairs(prefixes) do
         end
 
         button.NormalTexture:SetTexture(nil)
-        button.Name:Hide()
         button.FlyoutBorder:SetTexture(nil)
         button.FlyoutBorderShadow:SetTexture(nil)
         if floatingBG then
