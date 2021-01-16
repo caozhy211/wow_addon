@@ -33,6 +33,8 @@ local multiBarLeftSlideOutAnim = MultiBarLeft.slideOut:GetAnimations()
 ---@type Translation
 local multiBarRightSlideOutAnim = MultiBarRight.slideOut:GetAnimations()
 
+IconIntroTracker:UnregisterEvent("SPELL_PUSHED_TO_ACTIONBAR")
+
 MainMenuBar.ArtFrame.Background:Hide()
 
 for _, texture in ipairs(textures) do
