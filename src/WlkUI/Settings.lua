@@ -492,7 +492,7 @@ customsButton:SetScript("OnEvent", function(_, event, ...)
             DBT_AllPersistentOptions.Default.DBM.Height = 26
             DBT_AllPersistentOptions.Default.DBM.HugeTimerPoint = "CENTER"
             DBT_AllPersistentOptions.Default.DBM.HugeTimerX = 43
-            DBT_AllPersistentOptions.Default.DBM.HugeTimerY = -106.5
+            DBT_AllPersistentOptions.Default.DBM.HugeTimerY = -109.5
             DBT_AllPersistentOptions.Default.DBM.InlineIcons = false
             DBT_AllPersistentOptions.Default.DBM.Bar7CustomInline = false
             if LoadAddOn("DBM-VPYike") then
