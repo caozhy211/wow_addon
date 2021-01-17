@@ -1692,6 +1692,8 @@ end
 local function hideFrame(frame)
     frame:Hide()
     frame:UnregisterAllEvents()
+    --frame.ClearAllPoints = nop
+    --frame.SetPoint = nop
 end
 
 defaultUpdateFunctions = {
@@ -1781,5 +1783,7 @@ for i = 1, MAX_BOSS_FRAMES do
     hideFrame(_G["ArenaEnemyFrame" .. i])
 end
 
-ArenaEnemyFrames = nil
-ArenaPrepFrames = nil
+ArenaEnemyFrames.ClearAllPoints = nop
+ArenaEnemyFrames.SetPoint = nop
+ArenaPrepFrames.ClearAllPoints = nop
+ArenaPrepFrames.SetPoint = nop
