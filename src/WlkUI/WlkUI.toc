@@ -5,7 +5,7 @@
 ## Version: 4.1.0
 ## OptionalDeps: Blizzard_BindingUI, Blizzard_DebugTools, Blizzard_GuildBankUI, Blizzard_VoidStorageUI, Blizzard_ArenaUI
 ## SavedVariablesPerCharacter: WlkAuras
-## SavedVariables: WlkFilterKeywords, WlkSpellTicks
+## SavedVariables: WlkChatFilter, WlkSpellTicks
 
 ActionBarFrames.lua
 AlertFrame.lua

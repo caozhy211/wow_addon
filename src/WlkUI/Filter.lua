@@ -58,10 +58,10 @@ listener:RegisterEvent("ADDON_LOADED")
 listener:SetScript("OnEvent", function(_, event, ...)
     if event == "ADDON_LOADED" and ... == addonName then
         listener:UnregisterEvent(event)
-        if not WlkFilterKeywords then
-            WlkFilterKeywords = keywords
+        if not WlkChatFilter then
+            WlkChatFilter = keywords
         else
-            keywords = WlkFilterKeywords
+            keywords = WlkChatFilter
         end
     end
 end)
