@@ -23,6 +23,8 @@ local defaultUnitEvents = {
 }
 local defaultUpdateFunctions
 local playerFrame
+local class = select(2, UnitClass("player"))
+local spec
 local classSpells = {
     WARRIOR = { 355, },
     HUNTER = { 56641, 34477, 136, },
@@ -37,7 +39,17 @@ local classSpells = {
     DEMONHUNTER = { 185245, },
     DEATHKNIGHT = { 49576, 61999, },
 }
-local rangeSpells = classSpells[select(2, UnitClass("player"))]
+local rangeSpells = classSpells[class]
+local debuffFilter = {
+    WARLOCK = {
+        [1] = {
+            [980] = true,
+            [146739] = true,
+            [316099] = true,
+            [63106] = true,
+        },
+    },
+}
 local playerConfig = {
     name = "WlkPlayerFrame",
     width = 273,
@@ -687,9 +699,10 @@ local function updateDebuffs(unitFrame)
         local maxDebuffs = debuffFrame.maxButtons
         local id = 1
         AuraUtil.ForEachAura(unit, "HARMFUL|INCLUDE_NAME_PLATE_ONLY", maxDebuffs, function(...)
-            local _, icon, count, debuffType, duration, expirationTime, caster, _, _, _, _, _, casterIsPlayer,
+            local _, icon, count, debuffType, duration, expirationTime, caster, _, _, spellId, _, _, casterIsPlayer,
             nameplateShowAll = ...
-            if icon and TargetFrame_ShouldShowDebuffs(unit, caster, nameplateShowAll, casterIsPlayer) then
+            if icon and TargetFrame_ShouldShowDebuffs(unit, caster, nameplateShowAll, casterIsPlayer)
+                    and (not debuffFrame.filter or (debuffFrame.filter and debuffFilter[class][spec][spellId])) then
                 index = index + 1
                 ---@class WlkUnitDebuffButton:TargetDebuffFrameTemplate
                 local button = debuffFrame.Debuff and debuffFrame.Debuff[index]
@@ -885,13 +898,13 @@ local function arenaPrepFrameOnEvent(self, event)
         if numOpps and numOpps > 0 and self.id <= numOpps then
             local specId, gender = GetArenaOpponentSpec(self.id)
             if specId > 0 then
-                local _, name, _, icon, _, class = GetSpecializationInfoByID(specId, gender)
-                if class then
+                local _, name, _, icon, _, unitClass = GetSpecializationInfoByID(specId, gender)
+                if unitClass then
                     self.classIcon:SetTexture("Interface/Glues/CharacterCreate/UI-CharacterCreate-Classes")
-                    local l, r, t, b = unpack(CLASS_ICON_TCOORDS[class])
+                    local l, r, t, b = unpack(CLASS_ICON_TCOORDS[unitClass])
                     local adj = 0.02
                     self.classIcon:SetTexCoord(l + adj, r - adj, t + adj, b - adj)
-                    self:SetBackdropColor(GetClassColor(class))
+                    self:SetBackdropColor(GetClassColor(unitClass))
                 end
                 self.specIcon:SetTexture(icon)
                 self.specIcon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
@@ -1692,8 +1705,6 @@ end
 local function hideFrame(frame)
     frame:Hide()
     frame:UnregisterAllEvents()
-    --frame.ClearAllPoints = nop
-    --frame.SetPoint = nop
 end
 
 defaultUpdateFunctions = {
@@ -1752,8 +1763,16 @@ for i = 1, MAX_ARENA_FRAMES do
 end
 
 unitFrameParent:RegisterEvent("PLAYER_LOGIN")
+unitFrameParent:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
 unitFrameParent:SetScript("OnEvent", function(_, event)
     if event == "PLAYER_LOGIN" then
+        spec = GetSpecialization()
+        local filter = debuffFilter[class] and debuffFilter[class][spec]
+        for i = 1, MAX_BOSS_FRAMES do
+            _G["WlkBoss" .. i .. "Frame"].debuffFrame.filter = filter
+            _G["WlkArena" .. i .. "Frame"].debuffFrame.filter = filter
+        end
+
         CastingBarFrame:ClearAllPoints()
         CastingBarFrame:SetPoint("BOTTOM", castingBarHeight / 2, 236)
 
@@ -1762,6 +1781,13 @@ unitFrameParent:SetScript("OnEvent", function(_, event)
 
         CastingBarFrame.SetPoint = nop
         PetCastingBarFrame.SetPoint = nop
+    elseif event == "PLAYER_SPECIALIZATION_CHANGED" then
+        spec = GetSpecialization()
+        local filter = debuffFilter[class] and debuffFilter[class][spec]
+        for i = 1, MAX_BOSS_FRAMES do
+            _G["WlkBoss" .. i .. "Frame"].debuffFrame.filter = filter
+            _G["WlkArena" .. i .. "Frame"].debuffFrame.filter = filter
+        end
     end
 end)
 
