@@ -878,12 +878,14 @@ local function updateArenaIndicator(unitFrame)
             if specId and specId > 0 then
                 local _, specName = GetSpecializationInfoByID(specId)
                 unitFrame.arenaSpecLabel:SetText(specName)
+                unitFrame.arenaPvpIcon:Hide()
             end
         else
             local faction = UnitFactionGroup(unit)
             if faction and faction ~= "Neutral" and UnitIsPVP(unit) then
                 unitFrame.arenaPvpIcon:SetTexture("Interface/TargetingFrame/UI-PVP-" .. faction)
                 unitFrame.arenaPvpIcon:Show()
+                unitFrame.arenaSpecLabel:SetText("")
             else
                 unitFrame.arenaPvpIcon:Hide()
             end
