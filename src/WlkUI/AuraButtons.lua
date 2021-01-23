@@ -28,40 +28,40 @@ SLASH_ADD_COOLDOWN1 = "/ac"
 SLASH_DELETE_COOLDOWN1 = "/dc"
 
 SlashCmdList["ADD_BUFF"] = function(arg)
-    local index, buffId, type, talentId = strsplit(" ", arg, 4)
+    local index, buffId, type, id = strsplit(" ", arg, 4)
     index = tonumber(index)
     buffId = tonumber(buffId)
     type = type or "spell"
-    talentId = type == "talent" and (tonumber(talentId) or buffId)
+    id = type ~= "spell" and (tonumber(id) or buffId)
     ---@type WlkAuraButton
     local button = _G["WlkBuff" .. index]
     if button then
         if buffId then
-            auras[spec].buffs[index][buffId] = { type = type, talentId = talentId, }
+            auras[spec].buffs[index][buffId] = { type = type, id = id, }
         else
             wipe(auras[spec].buffs[index])
         end
-        if type == "spell" or (type == "talent" and IsSpellKnown(talentId)) then
+        if type == "spell" or (type == "talent" and IsSpellKnown(id)) or (type == "item" and IsEquippedItem(id)) then
             button.icon:SetTexture(GetSpellTexture(buffId))
         end
     end
 end
 
 SlashCmdList["ADD_DEBUFF"] = function(arg)
-    local index, debuffId, type, talentId = strsplit(" ", arg, 4)
+    local index, debuffId, type, id = strsplit(" ", arg, 4)
     index = tonumber(index)
     debuffId = tonumber(debuffId)
     type = type or "spell"
-    talentId = type == "talent" and (tonumber(talentId) or debuffId)
+    id = type ~= "spell" and (tonumber(id) or debuffId)
     ---@type WlkAuraButton
     local button = _G["WlkDebuff" .. index]
     if button then
         if debuffId then
-            auras[spec].debuffs[index][debuffId] = { type = type, talentId = talentId, }
+            auras[spec].debuffs[index][debuffId] = { type = type, id = id, }
         else
             wipe(auras[spec].debuffs[index])
         end
-        if type == "spell" or (type == "talent" and IsSpellKnown(talentId)) then
+        if type == "spell" or (type == "talent" and IsSpellKnown(id)) or (type == "item" and IsEquippedItem(id)) then
             button.icon:SetTexture(GetSpellTexture(debuffId))
         end
     end
@@ -78,7 +78,8 @@ SlashCmdList["ADD_COOLDOWN"] = function(arg)
         local button = _G["WlkBuff" .. i]
         local id
         for buffId, v in pairs(auras[spec].buffs[i]) do
-            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                    or (v.type == "item" and IsEquippedItem(v.id)) then
                 id = buffId
             end
             if id and auras.cooldowns[id] and not button.show then
@@ -106,7 +107,8 @@ SlashCmdList["ADD_COOLDOWN"] = function(arg)
         local button = _G["WlkDebuff" .. i]
         local id
         for debuffId, v in pairs(auras[spec].debuffs[i]) do
-            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                    or (v.type == "item" and IsEquippedItem(v.id)) then
                 id = debuffId
             end
             if id and auras.cooldowns[id] and not button.show then
@@ -143,9 +145,10 @@ buffFrame:SetSize(width, height)
 buffFrame:SetPoint("BOTTOMRIGHT", UIParent, "BOTTOM", -122, 484)
 buffFrame:RegisterEvent("PLAYER_LOGIN")
 buffFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+buffFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 buffFrame:RegisterEvent("UNIT_AURA")
 buffFrame:SetScript("OnEvent", function(_, event)
-    if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" then
+    if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" or event == "PLAYER_EQUIPMENT_CHANGED" then
         spec = GetSpecialization()
         if not auras[spec] then
             auras[spec] = {
@@ -158,7 +161,8 @@ buffFrame:SetScript("OnEvent", function(_, event)
             local button = _G["WlkBuff" .. i]
             local id
             for buffId, v in pairs(auras[spec].buffs[i]) do
-                if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                        or (v.type == "item" and IsEquippedItem(v.id)) then
                     id = buffId
                     button.icon:SetTexture(GetSpellTexture(id))
                 end
@@ -228,7 +232,8 @@ buffFrame:SetScript("OnEvent", function(_, event)
                 button.Count:Hide()
                 local id, cooling
                 for buffId, v in pairs(auras[spec].buffs[i]) do
-                    if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                    if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                            or (v.type == "item" and IsEquippedItem(v.id)) then
                         id = buffId
                     end
                     if id and auras.cooldowns[id] then
@@ -266,16 +271,18 @@ debuffFrame:SetSize(width, height)
 debuffFrame:SetPoint("BOTTOMLEFT", UIParent, "BOTTOM", 122, 484)
 debuffFrame:RegisterEvent("PLAYER_LOGIN")
 debuffFrame:RegisterEvent("PLAYER_SPECIALIZATION_CHANGED")
+debuffFrame:RegisterEvent("PLAYER_EQUIPMENT_CHANGED")
 debuffFrame:RegisterEvent("UNIT_AURA")
 debuffFrame:RegisterEvent("PLAYER_TARGET_CHANGED")
 debuffFrame:SetScript("OnEvent", function(_, event)
-    if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" then
+    if event == "PLAYER_LOGIN" or event == "PLAYER_SPECIALIZATION_CHANGED" or event == "PLAYER_EQUIPMENT_CHANGED" then
         for i = 1, numberOfAuras do
             ---@type WlkAuraButton
             local button = _G["WlkDebuff" .. i]
             local id
             for debuffId, v in pairs(auras[spec].debuffs[i]) do
-                if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                        or (v.type == "item" and IsEquippedItem(v.id)) then
                     id = debuffId
                     button.icon:SetTexture(GetSpellTexture(id))
                 end
@@ -345,7 +352,8 @@ debuffFrame:SetScript("OnEvent", function(_, event)
                 button.Count:Hide()
                 local id, cooling
                 for debuffId, v in pairs(auras[spec].debuffs[i]) do
-                    if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.talentId)) then
+                    if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                            or (v.type == "item" and IsEquippedItem(v.id)) then
                         id = debuffId
                     end
                     if id and auras.cooldowns[id] then
