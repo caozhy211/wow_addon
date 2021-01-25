@@ -387,6 +387,9 @@ debuffFrame:SetScript("OnEvent", function(_, event)
     end
 end)
 
+RegisterStateDriver(buffFrame, "visibility", "[petbattle] hide; show")
+RegisterStateDriver(debuffFrame, "visibility", "[petbattle] hide; show")
+
 for i = 1, numberOfAuras do
     ---@type ActionButtonTemplate
     local button = CreateFrame("Button", "WlkBuff" .. i, buffFrame, "ActionButtonTemplate")
