@@ -2,11 +2,11 @@
 local RED_FONT_COLOR = RED_FONT_COLOR
 
 local frameWidth = 300
-local frameHeight = 132
+local frameHeight = 128
 local maxAlerts = 3
-local spacing = 2
+local spacing = 1
 local width = frameWidth
-local height = (frameHeight - (maxAlerts * spacing)) / maxAlerts
+local height = (frameHeight - (maxAlerts - 1) * spacing) / maxAlerts
 local numAlerts = 0
 local backdrop = {
     bgFile = "Interface/DialogFrame/UI-DialogBox-Background-Dark",
