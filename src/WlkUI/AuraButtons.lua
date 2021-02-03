@@ -25,6 +25,8 @@ local listener = CreateFrame("Frame")
 SLASH_ADD_BUFF1 = "/ab"
 SLASH_ADD_DEBUFF1 = "/ad"
 SLASH_ADD_COOLDOWN1 = "/ac"
+SLASH_DELETE_BUFF1 = "/db"
+SLASH_DELETE_DEBUFF1 = "/dd"
 SLASH_DELETE_COOLDOWN1 = "/dc"
 
 SlashCmdList["ADD_BUFF"] = function(arg)
@@ -35,12 +37,8 @@ SlashCmdList["ADD_BUFF"] = function(arg)
     id = type ~= "spell" and (tonumber(id) or buffId)
     ---@type WlkAuraButton
     local button = _G["WlkBuff" .. index]
-    if button then
-        if buffId then
-            auras[spec].buffs[index][buffId] = { type = type, id = id, }
-        else
-            wipe(auras[spec].buffs[index])
-        end
+    if button and buffId then
+        auras[spec].buffs[index][buffId] = { type = type, id = id, }
         if type == "spell" or (type == "talent" and IsSpellKnown(id)) or (type == "item" and IsEquippedItem(id)) then
             button.icon:SetTexture(GetSpellTexture(buffId))
         end
@@ -55,12 +53,8 @@ SlashCmdList["ADD_DEBUFF"] = function(arg)
     id = type ~= "spell" and (tonumber(id) or debuffId)
     ---@type WlkAuraButton
     local button = _G["WlkDebuff" .. index]
-    if button then
-        if debuffId then
-            auras[spec].debuffs[index][debuffId] = { type = type, id = id, }
-        else
-            wipe(auras[spec].debuffs[index])
-        end
+    if button and debuffId then
+        auras[spec].debuffs[index][debuffId] = { type = type, id = id, }
         if type == "spell" or (type == "talent" and IsSpellKnown(id)) or (type == "item" and IsEquippedItem(id)) then
             button.icon:SetTexture(GetSpellTexture(debuffId))
         end
@@ -130,6 +124,54 @@ SlashCmdList["ADD_COOLDOWN"] = function(arg)
                 break
             end
         end
+    end
+end
+
+SlashCmdList["DELETE_BUFF"] = function(arg)
+    local index, buffId = strsplit(" ", arg)
+    index = tonumber(index)
+    buffId = tonumber(buffId)
+    ---@type WlkAuraButton
+    local button = _G["WlkBuff" .. index]
+    if button then
+        if not buffId then
+            wipe(auras[spec].buffs[index])
+        elseif buffId and auras[spec].buffs[index][buffId] then
+            auras[spec].buffs[index][buffId] = nil
+        end
+        local icon
+        for id, v in pairs(auras[spec].buffs[index]) do
+            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                    or (v.type == "item" and IsEquippedItem(v.id)) then
+                icon = GetSpellTexture(id)
+                break
+            end
+        end
+        button.icon:SetTexture(icon)
+    end
+end
+
+SlashCmdList["DELETE_DEBUFF"] = function(arg)
+    local index, debuffId = strsplit(" ", arg)
+    index = tonumber(index)
+    debuffId = tonumber(debuffId)
+    ---@type WlkAuraButton
+    local button = _G["WlkDebuff" .. index]
+    if button then
+        if not debuffId then
+            wipe(auras[spec].debuffs[index])
+        elseif debuffId and auras[spec].debuffs[index][debuffId] then
+            auras[spec].debuffs[index][debuffId] = nil
+        end
+        local icon
+        for id, v in pairs(auras[spec].debuffs[index]) do
+            if v.type == "spell" or (v.type == "talent" and IsSpellKnown(v.id))
+                    or (v.type == "item" and IsEquippedItem(v.id)) then
+                icon = GetSpellTexture(id)
+                break
+            end
+        end
+        button.icon:SetTexture(icon)
     end
 end
 
