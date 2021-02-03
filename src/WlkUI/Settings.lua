@@ -482,25 +482,29 @@ customsButton:SetScript("OnEvent", function(_, event, ...)
             end)
         end
 
-        if LoadAddOn("DBM-Core") and LoadAddOn("DBM-StatusBarTimers") then
-            DBM_AllSavedOptions.Default.DontShowInfoFrame = true
-            DBM_AllSavedOptions.Default.DontShowRangeFrame = true
-            DBT_AllPersistentOptions.Default.DBM.Alpha = 0
-            DBT_AllPersistentOptions.Default.DBM.HugeScale = 1
-            DBT_AllPersistentOptions.Default.DBM.FontSize = 18
-            DBT_AllPersistentOptions.Default.DBM.HugeWidth = 274
-            DBT_AllPersistentOptions.Default.DBM.Height = 26
-            DBT_AllPersistentOptions.Default.DBM.HugeTimerPoint = "CENTER"
-            DBT_AllPersistentOptions.Default.DBM.HugeTimerX = 43
-            DBT_AllPersistentOptions.Default.DBM.HugeTimerY = -109.5
-            DBT_AllPersistentOptions.Default.DBM.InlineIcons = false
-            DBT_AllPersistentOptions.Default.DBM.Bar7CustomInline = false
-            if LoadAddOn("DBM-VPYike") then
-                DBM_AllSavedOptions.Default.ChosenVoicePack = "Yike"
-                DBM_AllSavedOptions.Default.CountdownVoice = "VP:Yike"
-                DBM_AllSavedOptions.Default.CountdownVoice2 = "VP:Yike"
-                DBM_AllSavedOptions.Default.CountdownVoice3 = "VP:Yike"
-            end
+        if LoadAddOn("BigWigs") then
+            BigWigs3DB.namespaces.BigWigs_Plugins_Victory.profiles.Default.soundName = "None"
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsEmphasizeAnchor_width = 300
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsEmphasizeAnchor_height = 26
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsEmphasizeAnchor_x = 597.33
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsEmphasizeAnchor_y = 305.78
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.visibleBarLimitEmph = 5
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsAnchor_width = 296
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsAnchor_height = 13
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsAnchor_x = 385.24
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.BigWigsAnchor_y = 344.18
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.visibleBarLimit = 4
+            BigWigs3DB.namespaces.BigWigs_Plugins_Bars.profiles.Default.spacing = 0
+            BigWigs3DB.namespaces.BigWigs_Plugins_Messages.profiles.Default.emphPosition[4] = 70
+            BigWigs3DB.namespaces.BigWigs_Plugins_Messages.profiles.Default.normalPosition[4] = -410
+            BigWigs3DB.namespaces.BigWigs_Plugins_Proximity.profiles.Default.posx = 348.44
+            BigWigs3DB.namespaces.BigWigs_Plugins_Proximity.profiles.Default.posy = 429.51
+            BigWigs3DB.namespaces.BigWigs_Plugins_InfoBox.profiles.Default.posx = 234.67
+            BigWigs3DB.namespaces.BigWigs_Plugins_InfoBox.profiles.Default.posy = 415.29
+            BigWigs3DB.namespaces.BigWigs_Plugins_AltPower.profiles.Default.position[1] = "BOTTOMLEFT"
+            BigWigs3DB.namespaces.BigWigs_Plugins_AltPower.profiles.Default.position[2] = "BOTTOMLEFT"
+            BigWigs3DB.namespaces.BigWigs_Plugins_AltPower.profiles.Default.position[3] = 300
+            BigWigs3DB.namespaces.BigWigs_Plugins_AltPower.profiles.Default.position[4] = 380
         end
     end
 end)
