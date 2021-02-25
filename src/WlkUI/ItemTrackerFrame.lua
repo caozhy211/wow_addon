@@ -63,9 +63,11 @@ end
 
 ---@param button WlkItemTrackerButton
 local function updateButtonAttribute(button)
-    button:SetAttribute("macrotext", "/use " .. (button.bag and ("item:" .. button.item) or button.slot))
-    button:SetBackdropBorderColor(classR, classG, classB)
-    button.HotKey:Show()
+    if button.item then
+        button:SetAttribute("macrotext", "/use " .. (button.bag and ("item:" .. button.item) or button.slot))
+        button:SetBackdropBorderColor(classR, classG, classB)
+        button.HotKey:Show()
+    end
 end
 
 ---@param self WlkItemTrackerButton
