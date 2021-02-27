@@ -19,6 +19,7 @@ Filter.lua
 GridFrame.lua
 ItemButton.lua
 ItemTrackerFrame.lua
+LFGFrame.lua
 MarkerFrame.lua
 MerchantFrame.lua
 Minimap.lua
